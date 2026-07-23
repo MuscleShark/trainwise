@@ -1,9 +1,14 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import UserCreate
 from database import SessionLocal
 from models import User
 from pwdlib import PasswordHash
+from schemas import UserLogin
+from sqlalchemy.orm import Session
+from database import get_db
+from security import create_access_token, decode_access_token, get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 password_hasher = PasswordHash.recommended()
@@ -48,4 +53,40 @@ def create_user(user: UserCreate):
 
     return {
         "message": "User created successfully!"
+    }
+
+@app.post("/login")
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+
+    db_user = db.query(User).filter(
+        User.email == form_data.username
+    ).first()
+
+    if db_user is None:
+        db.close()
+        return {"message": "Invalid email or password"}
+
+    if not password_hasher.verify(
+        form_data.password,
+        db_user.password_hash
+    ):
+        db.close()
+        return {"message": "Invalid email or password"}
+
+    token = create_access_token(db_user.id)
+
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
+
+@app.get("/me")
+def me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
     }
