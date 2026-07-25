@@ -1,8 +1,8 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from schemas import UserCreate
+from schemas import UserCreate, WorkoutCreate, WorkoutRead
 from database import SessionLocal
-from models import User
+from models import User, Workout
 from pwdlib import PasswordHash
 from schemas import UserLogin
 from sqlalchemy.orm import Session
@@ -29,7 +29,6 @@ def root():
     return {
         "message": "Backend is running!"
     }
-
 
 @app.get("/hello")
 def hello():
@@ -90,3 +89,23 @@ def me(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "email": current_user.email,
     }
+
+@app.post("/workouts", response_model=WorkoutRead)
+def create_workout(
+    workout_data: WorkoutCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    workout = Workout(
+        user_id=current_user.id,
+        workout_date=workout_data.workout_date,
+        workout_type=workout_data.workout_type,
+        duration_minutes=workout_data.duration_minutes,
+        notes=workout_data.notes,
+    )
+
+    db.add(workout)
+    db.commit()
+    db.refresh(workout)
+
+    return workout
