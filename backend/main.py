@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import UserCreate, WorkoutCreate, WorkoutRead
 from database import SessionLocal
@@ -107,5 +107,28 @@ def create_workout(
     db.add(workout)
     db.commit()
     db.refresh(workout)
+
+    return workout
+
+@app.get("/workouts/{workout_id}", response_model=WorkoutRead)
+def get_workout(
+    workout_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    workout = (
+        db.query(Workout)
+        .filter(
+            Workout.id == workout_id,
+            Workout.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if workout is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Workout not found",
+        )
 
     return workout
