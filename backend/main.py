@@ -163,3 +163,29 @@ def update_workout(
     db.refresh(workout)
 
     return workout
+
+@app.delete("/workouts/{workout_id}")
+def delete_workout(
+    workout_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    workout = (
+        db.query(Workout)
+        .filter(
+            Workout.id == workout_id,
+            Workout.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if workout is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Workout not found",
+        )
+
+    db.delete(workout)
+    db.commit()
+
+    return {"message": "Workout deleted successfully"}
