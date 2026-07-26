@@ -1,10 +1,9 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from schemas import UserCreate, WorkoutCreate, WorkoutRead
+from schemas import UserLogin, UserCreate, WorkoutCreate, WorkoutRead, WorkoutUpdate
 from database import SessionLocal
 from models import User, Workout
 from pwdlib import PasswordHash
-from schemas import UserLogin
 from sqlalchemy.orm import Session
 from database import get_db
 from security import create_access_token, decode_access_token, get_current_user
@@ -130,5 +129,37 @@ def get_workout(
             status_code=404,
             detail="Workout not found",
         )
+
+    return workout
+
+@app.put("/workouts/{workout_id}", response_model=WorkoutRead)
+def update_workout(
+    workout_id: int,
+    workout_data: WorkoutUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    workout = (
+        db.query(Workout)
+        .filter(
+            Workout.id == workout_id,
+            Workout.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if workout is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Workout not found",
+        )
+
+    workout.workout_date = workout_data.workout_date
+    workout.workout_type = workout_data.workout_type
+    workout.duration_minutes = workout_data.duration_minutes
+    workout.notes = workout_data.notes
+
+    db.commit()
+    db.refresh(workout)
 
     return workout

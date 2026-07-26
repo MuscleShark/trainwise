@@ -30,3 +30,9 @@ class WorkoutRead(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class WorkoutUpdate(BaseModel):
+    workout_date: date
+    workout_type: str
+    duration_minutes: int
+    notes: str | None = None
