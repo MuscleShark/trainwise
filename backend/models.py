@@ -28,6 +28,7 @@ class User(Base):
     back_populates="user",
     )
 
+
 class Workout(Base):
     __tablename__ = "workouts"
 

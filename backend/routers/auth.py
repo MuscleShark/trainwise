@@ -2,13 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from pwdlib import PasswordHash
 from database import get_db
 from models import User
 from schemas import UserCreate, UserRead
-from security import create_access_token, get_current_user
-
-password_hasher = PasswordHash.recommended()
+from security import create_access_token, get_current_user, hash_password, verify_password
 
 router = APIRouter(
     tags=["Authentication"],
@@ -34,7 +31,7 @@ def create_user(
 
     new_user = User(
         email=user_data.email,
-        password_hash=password_hasher.hash(user_data.password),
+        password_hash=hash_password(user_data.password)
     )
 
     db.add(new_user)
@@ -62,7 +59,7 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not password_hasher.verify(
+    if not verify_password(
         form_data.password,
         db_user.password_hash,
     ):

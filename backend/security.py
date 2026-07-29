@@ -7,10 +7,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from database import get_db
 from models import User
+from pwdlib import PasswordHash
 
 load_dotenv()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+password_hasher = PasswordHash.recommended()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -33,6 +36,7 @@ def create_access_token(user_id: int) -> str:
 
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
+
 def decode_access_token(token: str) -> int | None:
     try:
         payload = jwt.decode(
@@ -51,16 +55,18 @@ def decode_access_token(token: str) -> int | None:
     except (JWTError, ValueError):
         return None
 
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
-):
+) -> User:
     user_id = decode_access_token(token)
 
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     current_user = (
@@ -73,6 +79,21 @@ def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return current_user
+
+
+def hash_password(password: str) -> str:
+    return password_hasher.hash(password)
+
+
+def verify_password(
+    plain_password: str,
+    hashed_password: str,
+) -> bool:
+    return password_hasher.verify(
+        plain_password,
+        hashed_password,
+    )

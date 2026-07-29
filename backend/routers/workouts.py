@@ -32,6 +32,7 @@ def create_workout(
 
     return workout
 
+
 @router.get("", response_model=list[WorkoutRead])
 def get_workouts(
     current_user: User = Depends(get_current_user),
@@ -44,6 +45,7 @@ def get_workouts(
     )
 
     return workouts
+
 
 @router.get("/{workout_id}", response_model=WorkoutRead)
 def get_workout(
@@ -67,6 +69,7 @@ def get_workout(
         )
 
     return workout
+
 
 @router.put("/{workout_id}", response_model=WorkoutRead)
 def update_workout(
@@ -99,6 +102,7 @@ def update_workout(
     db.refresh(workout)
 
     return workout
+
 
 @router.delete("/{workout_id}")
 def delete_workout(
