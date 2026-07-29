@@ -9,12 +9,13 @@ from database import get_db
 from security import create_access_token, decode_access_token, get_current_user
 from fastapi.security import OAuth2PasswordRequestForm
 from routers import workouts
-from routers import auth, workouts
+from routers import auth, workouts, profiles
 
 app = FastAPI()
 
 app.include_router(workouts.router)
 app.include_router(auth.router)
+app.include_router(profiles.router)
 
 app.add_middleware(
     CORSMiddleware,
