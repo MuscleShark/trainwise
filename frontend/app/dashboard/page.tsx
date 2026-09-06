@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -76,8 +77,15 @@ export default function DashboardPage() {
               Welcome back, {user.email}
             </h1>
             <p className="mt-4 text-slate-400">
-              Your login flow is connected. Profile and workout data come next.
+              Your login flow is connected. Add your fitness details to begin
+              personalizing TrainWise.
             </p>
+            <Link
+              href="/profile"
+              className="mt-8 inline-flex rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300"
+            >
+              Manage profile
+            </Link>
           </>
         ) : (
           <p className="text-slate-400">Loading your dashboard…</p>

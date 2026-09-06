@@ -146,7 +146,7 @@ The registration endpoint accepts JSON. The login endpoint follows the OAuth2 pa
 - [x] Workout API
 - [x] Registration and login UI
 - [x] Protected dashboard foundation
-- [ ] Profile management UI
+- [x] Profile management UI
 - [ ] Workout management UI
 - [ ] Nutrition tracking
 - [ ] Body-weight tracking
