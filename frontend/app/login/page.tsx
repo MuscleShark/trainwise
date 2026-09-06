@@ -86,7 +86,10 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-3 text-slate-400">
-            Enter the email and password you registered with.
+            Enter the email and password you registered with. New here?{" "}
+            <Link href="/register" className="font-medium text-emerald-400 hover:text-emerald-300">
+              Create an account
+            </Link>
           </p>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
