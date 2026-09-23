@@ -137,6 +137,16 @@ Register → Sign in → Store JWT → Open protected dashboard → Sign out
 
 The registration endpoint accepts JSON. The login endpoint follows the OAuth2 password form format and uses the user's email as the `username` field.
 
+## Quality Checks
+
+GitHub Actions runs the following checks for every pull request and every push to `main`:
+
+- Frontend ESLint
+- Frontend production build and TypeScript validation
+- Backend Python syntax compilation
+
+Each feature should include tests for its important behavior before it is merged. Backend API tests must use an isolated test database and cover successful requests, authentication and authorization failures, validation errors, missing resources, and user data isolation. Frontend tests should focus on user-visible behavior rather than styling details.
+
 ## Roadmap
 
 ### Phase 1 — Full-Stack Foundation
