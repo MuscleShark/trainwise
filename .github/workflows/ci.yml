@@ -39,8 +39,12 @@ jobs:
         run: npm run build
 
   backend:
-    name: Backend syntax check
+    name: Backend tests
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Check out repository
@@ -51,5 +55,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Compile backend
-        run: python -m compileall -q backend
+        run: python -m compileall -q .
+
+      - name: Run API tests
+        run: pytest -q
