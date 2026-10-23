@@ -11,7 +11,7 @@ Browser ──► Vercel (Next.js frontend, root directory: frontend/)
 ```
 
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
-- **Backend**: `.github/workflows/deploy-backend.yml` runs after the `CI` workflow succeeds on `main`. It builds a Lambda zip from `backend/requirements.txt` and the backend source, uploads it with short-lived AWS credentials (GitHub OIDC, no stored AWS keys), and calls `/health` as a smoke test.
+- **Backend**: `.github/workflows/deploy-backend.yml` runs after the `CI` workflow succeeds on `main`. It builds a Lambda zip from `backend/requirements.txt` and the backend source, uploads it with the access keys of a least-privilege IAM user (stored as GitHub environment secrets), and calls `/health` as a smoke test.
 - **Database**: tables are created with `backend/create_tables.py`. It only creates missing tables. It does not alter existing ones.
 
 The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accounts. Keep every connection string and secret out of git and out of chat.
@@ -41,7 +41,7 @@ unset NEON_DIRECT_URL
 
 ## 2. Lambda function (AWS console, region **us-east-2**)
 
-Accounts on the AWS free plan can use only one Region. This project uses us-east-2 (Ohio), and the Neon project lives in the same Region.
+This account runs in AWS's simplified "projects" mode, which started out limited to one Region. Everything lives in us-east-2 (Ohio), including the Neon project.
 
 1. Lambda → **Create function** → Author from scratch
    - Name: `trainwise-api`
@@ -64,67 +64,48 @@ Accounts on the AWS free plan can use only one Region. This project uses us-east
 
 The function still contains AWS's placeholder code until the first deploy in step 4.
 
-## 3. Let GitHub Actions deploy (IAM, OIDC)
+## 3. Deploy user for GitHub Actions (IAM)
 
-1. IAM → **Identity providers** → Add provider → *OpenID Connect*
-   - Provider URL: `https://token.actions.githubusercontent.com`
-   - Audience: `sts.amazonaws.com`
-2. IAM → **Roles** → Create role → *Custom trust policy*, replacing `<ACCOUNT_ID>`:
+In AWS's simplified "projects" mode, IAM OpenID Connect providers are not available. They would need "advanced features", and activating those removes project spend limits. So GitHub Actions signs in with the access keys of a dedicated IAM user that can only update this one function.
 
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Principal": {
-           "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
-         },
-         "Action": "sts:AssumeRoleWithWebIdentity",
-         "Condition": {
-           "StringEquals": {
-             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-             "token.actions.githubusercontent.com:sub": "repo:MuscleShark/trainwise:environment:production"
-           }
-         }
-       }
-     ]
-   }
-   ```
+In **CloudShell**, replacing `<ACCOUNT_ID>`:
 
-   Only jobs that run in this repository's `production` environment can assume the role.
+```bash
+aws iam create-user --user-name trainwise-github-deploy --query User.Arn --output text
+```
 
-3. Name the role `trainwise-github-deploy`, then add this **inline policy** (least privilege, only this one function):
+```bash
+aws iam put-user-policy --user-name trainwise-github-deploy --policy-name TrainWiseLambdaDeploy --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["lambda:UpdateFunctionCode","lambda:GetFunction","lambda:GetFunctionConfiguration"],"Resource":"arn:aws:lambda:us-east-2:<ACCOUNT_ID>:function:trainwise-api"}]}'
+```
 
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Action": [
-           "lambda:UpdateFunctionCode",
-           "lambda:GetFunction",
-           "lambda:GetFunctionConfiguration"
-         ],
-         "Resource": "arn:aws:lambda:us-east-2:<ACCOUNT_ID>:function:trainwise-api"
-       }
-     ]
-   }
-   ```
+Create the access key only once the GitHub environment from step 4 exists, because the secret is shown only once:
 
-4. Copy the role ARN (`arn:aws:iam::<ACCOUNT_ID>:role/trainwise-github-deploy`).
+```bash
+aws iam create-access-key --user-name trainwise-github-deploy
+```
+
+Copy `AccessKeyId` and `SecretAccessKey` straight into the GitHub secrets below. Never commit them or paste them anywhere else.
+
+To rotate a key, create a new key, update both GitHub secrets, run a deploy, then delete the old key with `aws iam delete-access-key --user-name trainwise-github-deploy --access-key-id <old id>`. A user can hold at most two keys.
+
+If OIDC becomes available later, switch the workflow to `role-to-assume` with an IAM role trusted for `repo:MuscleShark/trainwise:environment:production`, then delete this user's keys.
 
 ## 4. GitHub environment
 
 Repository → **Settings → Environments → New environment** → `production`.
 
 - Deployment branches and tags: *Selected branches* → `main`.
+- **Environment secrets**:
+
+  | Name | Value |
+  |---|---|
+  | `AWS_ACCESS_KEY_ID` | `AccessKeyId` from step 3 |
+  | `AWS_SECRET_ACCESS_KEY` | `SecretAccessKey` from step 3 |
+
 - **Environment variables** (these are not secrets):
 
   | Name | Value |
   |---|---|
-  | `AWS_DEPLOY_ROLE_ARN` | role ARN from step 3 |
   | `API_URL` | Lambda Function URL from step 2 |
   | `LAMBDA_FUNCTION_NAME` | `trainwise-api` (optional; this is the default) |
 
