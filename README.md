@@ -145,6 +145,24 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Frontend ESLint
 - Frontend production build and TypeScript validation
 - Backend Python syntax compilation
+- Backend API tests (pytest)
+- End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database
+
+### Running the E2E tests locally
+
+The E2E tests start their own backend on port 8001 and frontend on port 3001, and need an empty PostgreSQL database. One way to get one is Docker:
+
+```bash
+docker run -d --rm --name trainwise-e2e-db -e POSTGRES_USER=trainwise -e POSTGRES_PASSWORD=trainwise -e POSTGRES_DB=trainwise_e2e -p 5433:5432 postgres:16
+```
+
+Then, with the backend virtual environment in `backend/.venv`:
+
+```bash
+cd frontend
+npx playwright install chromium
+E2E_DATABASE_URL=postgresql+psycopg://trainwise:trainwise@localhost:5433/trainwise_e2e npx playwright test
+```
 
 Each feature should include tests for its important behavior before it is merged. Backend API tests must use an isolated test database and cover successful requests, authentication and authorization failures, validation errors, missing resources, and user data isolation. Frontend tests should focus on user-visible behavior rather than styling details.
 
