@@ -1,5 +1,4 @@
 from datetime import datetime, date
-import profile
 
 from sqlalchemy import Integer, String, Text, Date, DateTime, ForeignKey, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,7 +26,6 @@ class User(Base):
     )
     workouts: Mapped[list["Workout"]] = relationship(
         back_populates="user",
-        uselist=False,
     )
 
     profile: Mapped["Profile | None"] = relationship(
