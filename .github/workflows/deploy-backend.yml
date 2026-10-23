@@ -1,6 +1,6 @@
 name: Deploy backend
 
-# Deploys the FastAPI backend to AWS Lambda after CI passes on main.
+# Deploys the backend infrastructure and code (infra/, AWS CDK) after CI passes on main.
 # The frontend is deployed by Vercel's Git integration.
 on:
   workflow_run:
@@ -16,9 +16,12 @@ concurrency:
   group: deploy-backend
   cancel-in-progress: false
 
+env:
+  CDK_CLI_VERSION: 2.1146.1
+
 jobs:
   deploy:
-    name: Deploy to AWS Lambda
+    name: Deploy with AWS CDK
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
@@ -26,12 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: ${{ vars.API_URL }}
-    timeout-minutes: 15
-
-    env:
-      AWS_REGION: us-east-2
-      FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME || 'trainwise-api' }}
+      url: ${{ steps.outputs.outputs.function_url }}
+    timeout-minutes: 20
 
     steps:
       - name: Check out the commit that passed CI
@@ -39,51 +38,55 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      # Must match the Lambda function's runtime.
+      # Must match the Lambda runtime (python3.11).
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Build deployment package
-        working-directory: backend
-        run: |
-          mkdir -p build/package
-          pip install \
-            --platform manylinux2014_x86_64 \
-            --implementation cp \
-            --python-version 3.11 \
-            --only-binary=:all: \
-            --target build/package \
-            -r requirements.txt
-          cp *.py build/package/
-          cp -r routers build/package/
-          find build/package -name "__pycache__" -type d -prune -exec rm -rf {} +
-          (cd build/package && zip -qr ../lambda.zip .)
-          ls -lh build/lambda.zip
+      - name: Set up Node.js (CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-      # Access keys of the least-privilege IAM user trainwise-github-deploy, stored as
-      # production environment secrets. The AWS account's simplified (projects) mode
-      # does not allow IAM OIDC providers. Switch to role-to-assume + OIDC if that changes.
+      - name: Build Lambda package
+        run: backend/scripts/build_lambda.sh
+
+      - name: Install CDK app dependencies
+        working-directory: infra
+        run: pip install -r requirements.txt
+
+      # Access keys of the IAM user trainwise-github-deploy. It may only assume the
+      # CDK bootstrap roles; those roles do the actual deployment.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: us-east-2
 
-      - name: Update Lambda code
-        working-directory: backend
+      - name: Show changes
+        working-directory: infra
+        run: npx --yes "aws-cdk@${CDK_CLI_VERSION}" diff
+
+      - name: Deploy
+        working-directory: infra
+        run: >-
+          npx --yes "aws-cdk@${CDK_CLI_VERSION}" deploy
+          --require-approval never
+          --outputs-file cdk-outputs.json
+
+      - name: Read stack outputs
+        id: outputs
+        working-directory: infra
         run: |
-          aws lambda update-function-code \
-            --function-name "$FUNCTION_NAME" \
-            --zip-file fileb://build/lambda.zip \
-            --query '{version: Version, size: CodeSize, sha256: CodeSha256}'
-          aws lambda wait function-updated-v2 --function-name "$FUNCTION_NAME"
+          url=$(python3 -c "import json; print(json.load(open('cdk-outputs.json'))['TrainWiseApi']['FunctionUrl'])")
+          echo "function_url=$url" >> "$GITHUB_OUTPUT"
+          echo "Function URL: $url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Smoke test
         env:
-          API_URL: ${{ vars.API_URL }}
+          API_URL: ${{ steps.outputs.outputs.function_url }}
         run: |
           for attempt in 1 2 3 4 5; do
             status=$(curl -s -o response.json -w '%{http_code}' "${API_URL%/}/health" || true)
