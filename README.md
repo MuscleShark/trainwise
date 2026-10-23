@@ -95,6 +95,7 @@ Create `backend/.env` and add your local configuration:
 ```env
 DATABASE_URL=postgresql+psycopg://USERNAME:PASSWORD@localhost:5432/trainwise
 SECRET_KEY=replace-with-a-secure-random-secret
+FRONTEND_URL=http://localhost:3000
 ```
 
 Create the database tables:
@@ -157,7 +158,7 @@ Each feature should include tests for its important behavior before it is merged
 - [x] Registration and login UI
 - [x] Protected dashboard foundation
 - [x] Profile management UI
-- [ ] Workout management UI
+- [x] Workout management UI
 - [ ] Nutrition tracking
 - [ ] Body-weight tracking
 - [ ] Sleep tracking

@@ -80,12 +80,20 @@ export default function DashboardPage() {
               Your login flow is connected. Add your fitness details to begin
               personalizing TrainWise.
             </p>
-            <Link
-              href="/profile"
-              className="mt-8 inline-flex rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300"
-            >
-              Manage profile
-            </Link>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/profile"
+                className="inline-flex rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300"
+              >
+                Manage profile
+              </Link>
+              <Link
+                href="/workouts"
+                className="inline-flex rounded-xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-white/20 hover:text-white"
+              >
+                View workouts
+              </Link>
+            </div>
           </>
         ) : (
           <p className="text-slate-400">Loading your dashboard…</p>
