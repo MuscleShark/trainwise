@@ -25,6 +25,9 @@ test("login shows an error for a wrong password", async ({ page }) => {
   await page.getByLabel("Password").fill("WrongPassword123!");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  await expect(page.getByRole("alert")).toBeVisible();
+  // Next.js also renders an empty role="alert" route announcer, so match the message text.
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Invalid email or password" }),
+  ).toBeVisible();
   await expect(page).toHaveURL(/\/login$/);
 });
