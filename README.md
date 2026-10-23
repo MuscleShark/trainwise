@@ -152,7 +152,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 
-Dependabot checks backend, frontend and GitHub Actions dependencies weekly and opens pull requests for updates.
+Routine dependency version updates are not automated. Dependabot security alerts stay enabled in the repository settings. When a dependency has a known vulnerability, GitHub shows an alert and may open a security-fix pull request.
 
 ### Running the E2E tests locally
 
