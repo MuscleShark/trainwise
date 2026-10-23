@@ -78,6 +78,41 @@ jobs:
           echo "## Backend coverage" >> "$GITHUB_STEP_SUMMARY"
           coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY" || true
 
+  infra:
+    name: Infrastructure checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js (CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install CDK app dependencies
+        working-directory: infra
+        run: pip install -r requirements-dev.txt
+
+      - name: Run CDK unit tests
+        working-directory: infra
+        run: pytest -q
+
+      # Synthesizing the real app catches config mistakes (cdk.json, asset path)
+      # without AWS credentials.
+      - name: Build Lambda package
+        run: backend/scripts/build_lambda.sh
+
+      - name: Synthesize stack
+        working-directory: infra
+        run: npx --yes aws-cdk@2.1146.1 synth --quiet
+
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest

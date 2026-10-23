@@ -6,31 +6,51 @@ TrainWise runs in production as:
 Browser ──► Vercel (Next.js frontend, root directory: frontend/)
    │
    └──────► AWS Lambda + Function URL (FastAPI via Mangum, us-east-2)
-                 │
+                 │          └── reads secrets from SSM Parameter Store at cold start
                  └──► Neon PostgreSQL (us-east-2, pooled connection)
 ```
 
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
-- **Backend**: `.github/workflows/deploy-backend.yml` runs after the `CI` workflow succeeds on `main`. It builds a Lambda zip from `backend/requirements.txt` and the backend source, uploads it with the access keys of a least-privilege IAM user (stored as GitHub environment secrets), and calls `/health` as a smoke test.
+- **Backend infrastructure and code**: defined with **AWS CDK** in [`infra/`](../infra). After the `CI` workflow succeeds on `main`, `.github/workflows/deploy-backend.yml` builds the Lambda package (`backend/scripts/build_lambda.sh`), runs `cdk deploy` and calls `/health` as a smoke test.
+- **Secrets**: `DATABASE_URL` and `SECRET_KEY` are SSM Parameter Store *SecureString* parameters under `/trainwise/prod/`. CloudFormation cannot create SecureStrings, so they are created by hand (step 3). Only the Lambda role can read them.
 - **Database**: tables are created with `backend/create_tables.py`. It only creates missing tables. It does not alter existing ones.
 
 The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accounts. Keep every connection string and secret out of git and out of chat.
+
+## What the CDK stack (`TrainWiseApi`) manages
+
+| Resource | Notes |
+|---|---|
+| Lambda `trainwise-api-prod` | Python 3.11, x86_64, 512 MB, 15 s, handler `lambda_handler.handler` |
+| Function URL | Auth `NONE` (the API does its own JWT auth). No URL-level CORS, because FastAPI sends the headers |
+| Execution role | Basic logging + `ssm:GetParameters` on `/trainwise/prod/DATABASE_URL` and `/trainwise/prod/SECRET_KEY` only |
+| Log group | `/aws/lambda/trainwise-api-prod`, kept for 30 days |
+
+Settings that are not secret live in [`infra/cdk.json`](../infra/cdk.json) (`frontendUrls`, `functionName`, `ssmParameterPrefix`, account and Region). To change one, edit the file in a PR. The deploy after merge applies the change.
+
+Local commands (from `infra/`, after `backend/scripts/build_lambda.sh`):
+
+```bash
+python3.11 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest -q                                          # unit tests
+PATH="$PWD/.venv/bin:$PATH" npx aws-cdk@2.1146.1 synth --quiet  # render the CloudFormation template
+```
 
 ---
 
 ## 0. AWS budget alert (do this first)
 
-AWS Billing → **Budgets** → Create budget → *Zero spend budget* (or a monthly cost budget of e.g. $1) → your email.
+AWS Billing → **Budgets** → Create budget → *Zero spend budget* → your email. This account also has a $20/month project spend limit.
 
 ## 1. Neon
 
-1. In the Neon console, open the project → **Connect**.
+1. In the Neon console (project in **AWS US East 2**), open **Connect**.
 2. Copy two connection strings:
    - **Pooled**: the host contains `-pooler`. The Lambda function uses this one.
    - **Direct**: pooling turned off. Use it to create tables.
-3. In both, change the scheme `postgresql://` to `postgresql+psycopg://`. Keep `?sslmode=require` (and any other query parameters).
+3. In both, change the scheme `postgresql://` to `postgresql+psycopg://`. Keep `?sslmode=require`.
 
-Create the tables once from your machine using the **direct** string, without it ending up in your shell history:
+Create the tables from your machine using the **direct** string:
 
 ```bash
 cd backend
@@ -39,95 +59,79 @@ DATABASE_URL="$NEON_DIRECT_URL" SECRET_KEY=unused .venv/bin/python create_tables
 unset NEON_DIRECT_URL
 ```
 
-## 2. Lambda function (AWS console, region **us-east-2**)
+## 2. Bootstrap CDK (once per account and Region)
 
-This account runs in AWS's simplified "projects" mode, which started out limited to one Region. Everything lives in us-east-2 (Ohio), including the Neon project.
-
-1. Lambda → **Create function** → Author from scratch
-   - Name: `trainwise-api`
-   - Runtime: **Python 3.11**
-   - Architecture: **x86_64**
-2. **Configuration → General configuration** → Memory `512 MB`, Timeout `15 sec`.
-3. **Code → Runtime settings** → Handler: `main.handler`.
-4. **Configuration → Environment variables**:
-
-   | Key | Value |
-   |---|---|
-   | `DATABASE_URL` | Neon **pooled** string (with `postgresql+psycopg://`) |
-   | `SECRET_KEY` | A new random value, e.g. from `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` (do not reuse your local one) |
-   | `FRONTEND_URL` | Your Vercel production URL, e.g. `https://trainwise.vercel.app` (fill in after step 5; comma-separate several origins) |
-
-5. **Configuration → Function URL** → Create
-   - Auth type: **NONE**. The API does its own JWT authentication.
-   - **Do not** enable CORS here. FastAPI already sends the CORS headers, and enabling both produces duplicate headers.
-   - Copy the Function URL (`https://<id>.lambda-url.us-east-2.on.aws/`).
-
-The function still contains AWS's placeholder code until the first deploy in step 4.
-
-## 3. Deploy user for GitHub Actions (IAM)
-
-In AWS's simplified "projects" mode, IAM OpenID Connect providers are not available. They would need "advanced features", and activating those removes project spend limits. So GitHub Actions signs in with the access keys of a dedicated IAM user that can only update this one function.
-
-In **CloudShell**, replacing `<ACCOUNT_ID>`:
+In **CloudShell** (region us-east-2):
 
 ```bash
-aws iam create-user --user-name trainwise-github-deploy --query User.Arn --output text
+npx --yes aws-cdk@2.1146.1 bootstrap aws://<ACCOUNT_ID>/us-east-2
+```
+
+This creates the `CDKToolkit` stack: an S3 bucket for deployment assets and the `cdk-hnb659fds-*` roles that CDK uses to deploy.
+
+## 3. Secrets in SSM Parameter Store
+
+In **CloudShell**. Each `read` prompt hides what you paste:
+
+```bash
+read -rsp "Neon POOLED url (postgresql+psycopg://...): " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/DATABASE_URL --type SecureString --value "$V" --overwrite && unset V
 ```
 
 ```bash
-aws iam put-user-policy --user-name trainwise-github-deploy --policy-name TrainWiseLambdaDeploy --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["lambda:UpdateFunctionCode","lambda:GetFunction","lambda:GetFunctionConfiguration"],"Resource":"arn:aws:lambda:us-east-2:<ACCOUNT_ID>:function:trainwise-api"}]}'
+read -rsp "Production SECRET_KEY: " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/SECRET_KEY --type SecureString --value "$V" --overwrite && unset V
 ```
 
-Create the access key only once the GitHub environment from step 4 exists, because the secret is shown only once:
+Reuse the existing production `SECRET_KEY` from your password manager so users stay signed in. A new value signs everyone out. Generate one with `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+
+## 4. Deploy user for GitHub Actions (IAM)
+
+In AWS's simplified "projects" mode, IAM OpenID Connect providers are not available. They would need "advanced features", and activating those removes project spend limits. So GitHub Actions signs in with access keys of a dedicated IAM user. That user may **only assume the CDK bootstrap roles**, and those roles perform the deployment.
+
+In **CloudShell**:
+
+```bash
+aws iam create-user --user-name trainwise-github-deploy
+```
+
+```bash
+aws iam put-user-policy --user-name trainwise-github-deploy --policy-name TrainWiseCdkDeploy --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"sts:AssumeRole","Resource":"arn:aws:iam::<ACCOUNT_ID>:role/cdk-hnb659fds-*-<ACCOUNT_ID>-us-east-2"}]}'
+```
+
+Create an access key only once the GitHub environment from step 5 exists, because the secret is shown only once:
 
 ```bash
 aws iam create-access-key --user-name trainwise-github-deploy
 ```
 
-Copy `AccessKeyId` and `SecretAccessKey` straight into the GitHub secrets below. Never commit them or paste them anywhere else.
+To rotate a key, create a new key, update both GitHub secrets, run a deploy, then run `aws iam delete-access-key --user-name trainwise-github-deploy --access-key-id <old id>`.
 
-To rotate a key, create a new key, update both GitHub secrets, run a deploy, then delete the old key with `aws iam delete-access-key --user-name trainwise-github-deploy --access-key-id <old id>`. A user can hold at most two keys.
-
-If OIDC becomes available later, switch the workflow to `role-to-assume` with an IAM role trusted for `repo:MuscleShark/trainwise:environment:production`, then delete this user's keys.
-
-## 4. GitHub environment
+## 5. GitHub environment
 
 Repository → **Settings → Environments → New environment** → `production`.
 
 - Deployment branches and tags: *Selected branches* → `main`.
-- **Environment secrets**:
+- **Environment secrets**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (from step 4).
 
-  | Name | Value |
-  |---|---|
-  | `AWS_ACCESS_KEY_ID` | `AccessKeyId` from step 3 |
-  | `AWS_SECRET_ACCESS_KEY` | `SecretAccessKey` from step 3 |
+Run a deploy with **Actions → Deploy backend → Run workflow** (branch `main`). The job summary shows the Function URL, and the smoke test prints `{"status":"ok"}`.
 
-- **Environment variables** (these are not secrets):
-
-  | Name | Value |
-  |---|---|
-  | `API_URL` | Lambda Function URL from step 2 |
-  | `LAMBDA_FUNCTION_NAME` | `trainwise-api` (optional; this is the default) |
-
-After this branch is merged, run the first deploy manually: **Actions → Deploy backend → Run workflow** (branch `main`). The smoke test should print `{"status":"ok"}`. That proves Lambda can reach Neon.
-
-## 5. Vercel
+## 6. Vercel
 
 1. **Add New → Project** → import `MuscleShark/trainwise`.
 2. **Root Directory**: `frontend` (framework preset: Next.js).
-3. **Environment Variables**: `NEXT_PUBLIC_API_URL` = the Lambda Function URL **without the trailing slash**. The frontend builds URLs as `${API_URL}/login`.
-4. Deploy, then copy the production domain into the Lambda `FRONTEND_URL` variable (step 2.4).
+3. **Environment Variables**: `NEXT_PUBLIC_API_URL` = the Function URL **without the trailing slash**, type **Config**. Do not use *Secret*. `NEXT_PUBLIC_*` values are public by design, and Vercel will not inject a Secret into the browser bundle.
+4. Deploy. The production domain must be listed in `frontendUrls` in `infra/cdk.json`, written exactly as the browser shows it (`https://…`, no trailing slash).
 
 `NEXT_PUBLIC_*` values are baked in at build time, so redeploy on Vercel after changing them.
 
 Pull-request preview deployments get their own `*.vercel.app` URLs. The API rejects those origins on purpose, so previews never write to the production database.
 
-## 6. Check it
+## 7. Check it
 
 Open the Vercel URL → register → sign in → add a profile and a workout → reload and confirm the data is still there.
 
 ## Day-to-day
 
-- Merge a PR into `main`. Vercel redeploys the frontend, CI runs, and if CI passes the backend redeploys.
-- Rotate `SECRET_KEY` by editing the Lambda environment variable. Every user is signed out.
+- Merge a PR into `main`. Vercel redeploys the frontend, CI runs, and if CI passes `cdk deploy` updates the backend infrastructure and code.
+- Infrastructure changes (memory, timeout, allowed origins, permissions) are code changes in `infra/`. The deploy log shows a `cdk diff` before deploying.
+- Rotate `SECRET_KEY` with step 3, then redeploy so new Lambda instances read it. Every user is signed out.
 - New tables: rerun `create_tables.py` against the direct URL. Changes to existing tables need a migration tool (Alembic), which is not set up yet.

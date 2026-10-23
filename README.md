@@ -42,21 +42,29 @@ trainwise/
 │   │   ├── auth.py
 │   │   ├── profiles.py
 │   │   └── workouts.py
+│   ├── scripts/build_lambda.sh   # builds the Lambda package
+│   ├── tests/
 │   ├── create_tables.py
 │   ├── database.py
+│   ├── lambda_handler.py         # AWS Lambda entry point
 │   ├── main.py
 │   ├── models.py
 │   ├── schemas.py
 │   └── security.py
-└── frontend/
-    ├── app/
-    │   ├── dashboard/
-    │   ├── login/
-    │   ├── register/
-    │   ├── globals.css
-    │   ├── layout.tsx
-    │   └── page.tsx
-    └── package.json
+├── frontend/
+│   ├── app/
+│   │   ├── dashboard/
+│   │   ├── login/
+│   │   ├── profile/
+│   │   ├── register/
+│   │   ├── workouts/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── e2e/                      # Playwright tests
+│   └── package.json
+├── infra/                        # AWS CDK app (Lambda, Function URL, IAM)
+└── docs/deployment.md
 ```
 
 ## Getting Started
@@ -149,6 +157,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
 - Backend API tests (pytest) with a coverage report in the job summary (`pytest --cov` locally)
+- Infrastructure checks: CDK unit tests and `cdk synth`
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 
@@ -174,7 +183,7 @@ Each feature should include tests for its important behavior before it is merged
 
 ## Deployment
 
-The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via Mangum), with PostgreSQL on Neon. After CI passes on `main`, the backend is deployed automatically. See [docs/deployment.md](docs/deployment.md) for the architecture and one-time setup.
+The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via Mangum), with PostgreSQL on Neon. The AWS resources are defined as code with AWS CDK in `infra/`, and secrets live in SSM Parameter Store. After CI passes on `main`, `cdk deploy` runs automatically. See [docs/deployment.md](docs/deployment.md) for the architecture and one-time setup.
 
 ## Roadmap
 

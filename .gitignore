@@ -17,3 +17,4 @@ backend/__pycache__
 backend/.env
 backend/.coverage
 backend/htmlcov/
+backend/build/
