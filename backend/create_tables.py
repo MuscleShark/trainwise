@@ -1,5 +1,5 @@
+import models  # noqa: F401  (registers the tables on Base.metadata)
 from database import Base, engine
-import models
 
 Base.metadata.create_all(bind=engine)
 

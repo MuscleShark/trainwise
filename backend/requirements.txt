@@ -8,3 +8,5 @@ pwdlib[argon2]
 python-multipart
 pytest
 httpx
+ruff
+pytest-cov

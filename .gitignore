@@ -15,3 +15,5 @@ backend/__pycache__
 .env
 .env.local
 backend/.env
+backend/.coverage
+backend/htmlcov/

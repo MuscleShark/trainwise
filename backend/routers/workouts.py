@@ -6,7 +6,6 @@ from models import User, Workout
 from schemas import WorkoutCreate, WorkoutRead, WorkoutUpdate
 from security import get_current_user
 
-
 router = APIRouter(
     prefix="/workouts",
     tags=["Workouts"],
