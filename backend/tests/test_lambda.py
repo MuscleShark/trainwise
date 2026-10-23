@@ -8,7 +8,7 @@ def function_url_event(path: str, method: str = "GET", headers: dict | None = No
         "routeKey": "$default",
         "rawPath": path,
         "rawQueryString": "",
-        "headers": {"host": "example.lambda-url.us-east-1.on.aws", **(headers or {})},
+        "headers": {"host": "example.lambda-url.us-east-2.on.aws", **(headers or {})},
         "requestContext": {
             "http": {
                 "method": method,

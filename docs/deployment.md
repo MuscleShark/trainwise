@@ -5,9 +5,9 @@ TrainWise runs in production as:
 ```text
 Browser ──► Vercel (Next.js frontend, root directory: frontend/)
    │
-   └──────► AWS Lambda + Function URL (FastAPI via Mangum, us-east-1)
+   └──────► AWS Lambda + Function URL (FastAPI via Mangum, us-east-2)
                  │
-                 └──► Neon PostgreSQL (us-east-1, pooled connection)
+                 └──► Neon PostgreSQL (us-east-2, pooled connection)
 ```
 
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
@@ -39,7 +39,9 @@ DATABASE_URL="$NEON_DIRECT_URL" SECRET_KEY=unused .venv/bin/python create_tables
 unset NEON_DIRECT_URL
 ```
 
-## 2. Lambda function (AWS console, region **us-east-1**)
+## 2. Lambda function (AWS console, region **us-east-2**)
+
+Accounts on the AWS free plan can use only one Region. This project uses us-east-2 (Ohio), and the Neon project lives in the same Region.
 
 1. Lambda → **Create function** → Author from scratch
    - Name: `trainwise-api`
@@ -58,7 +60,7 @@ unset NEON_DIRECT_URL
 5. **Configuration → Function URL** → Create
    - Auth type: **NONE**. The API does its own JWT authentication.
    - **Do not** enable CORS here. FastAPI already sends the CORS headers, and enabling both produces duplicate headers.
-   - Copy the Function URL (`https://<id>.lambda-url.us-east-1.on.aws/`).
+   - Copy the Function URL (`https://<id>.lambda-url.us-east-2.on.aws/`).
 
 The function still contains AWS's placeholder code until the first deploy in step 4.
 
@@ -105,7 +107,7 @@ The function still contains AWS's placeholder code until the first deploy in ste
            "lambda:GetFunction",
            "lambda:GetFunctionConfiguration"
          ],
-         "Resource": "arn:aws:lambda:us-east-1:<ACCOUNT_ID>:function:trainwise-api"
+         "Resource": "arn:aws:lambda:us-east-2:<ACCOUNT_ID>:function:trainwise-api"
        }
      ]
    }

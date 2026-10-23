@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 15
 
     env:
-      AWS_REGION: us-east-1
+      AWS_REGION: us-east-2
       FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME || 'trainwise-api' }}
 
     steps:
