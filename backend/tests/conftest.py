@@ -12,7 +12,6 @@ from sqlalchemy.pool import StaticPool
 from database import Base, get_db
 from main import app
 
-
 test_engine = create_engine(
     "sqlite://",
     connect_args={"check_same_thread": False},

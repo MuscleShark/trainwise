@@ -144,9 +144,13 @@ GitHub Actions runs the following checks for every pull request and every push t
 
 - Frontend ESLint
 - Frontend production build and TypeScript validation
+- Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
-- Backend API tests (pytest)
+- Backend API tests (pytest) with a coverage report in the job summary (`pytest --cov` locally)
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database
+- CodeQL security analysis for Python and TypeScript (also runs weekly)
+
+Dependabot checks backend, frontend and GitHub Actions dependencies weekly and opens pull requests for updates.
 
 ### Running the E2E tests locally
 

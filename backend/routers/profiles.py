@@ -6,7 +6,6 @@ from models import Profile, User
 from schemas import ProfileCreate, ProfileRead, ProfileUpdate
 from security import get_current_user
 
-
 router = APIRouter(
     prefix="/profile",
     tags=["Profile"],
