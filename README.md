@@ -87,8 +87,10 @@ source .venv/bin/activate
 Install the backend dependencies:
 
 ```bash
-pip install fastapi uvicorn sqlalchemy psycopg python-dotenv python-jose pwdlib python-multipart
+pip install -r requirements-dev.txt
 ```
+
+`requirements.txt` holds the runtime dependencies that ship to production; `requirements-dev.txt` adds the local server, test and lint tools.
 
 Create `backend/.env` and add your local configuration:
 
@@ -169,6 +171,10 @@ E2E_DATABASE_URL=postgresql+psycopg://trainwise:trainwise@localhost:5433/trainwi
 ```
 
 Each feature should include tests for its important behavior before it is merged. Backend API tests must use an isolated test database and cover successful requests, authentication and authorization failures, validation errors, missing resources, and user data isolation. Frontend tests should focus on user-visible behavior rather than styling details.
+
+## Deployment
+
+The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via Mangum), with PostgreSQL on Neon. After CI passes on `main`, the backend is deployed automatically. See [docs/deployment.md](docs/deployment.md) for the architecture and one-time setup.
 
 ## Roadmap
 

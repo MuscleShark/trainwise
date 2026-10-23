@@ -1,0 +1,7 @@
+# Local development, tests and CI.
+-r requirements.txt
+uvicorn[standard]
+pytest
+pytest-cov
+httpx
+ruff
