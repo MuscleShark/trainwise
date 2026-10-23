@@ -1,12 +1,9 @@
+# Runtime dependencies (packaged into the Lambda deployment).
 fastapi
-uvicorn[standard]
+mangum
 sqlalchemy
 psycopg[binary]
 python-dotenv
 python-jose[cryptography]
 pwdlib[argon2]
 python-multipart
-pytest
-httpx
-ruff
-pytest-cov
