@@ -18,7 +18,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import NullPool
 
-from catalog import sync_builtin_exercises
 from ssm_parameters import load_ssm_parameters
 
 ALEMBIC_INI = Path(__file__).resolve().parent / "alembic.ini"
@@ -30,6 +29,10 @@ def handler(event, context):
 
     config = Config(str(ALEMBIC_INI))
     command.upgrade(config, "head")
+
+    # Imported only now: catalog imports models, which imports database.py, and that
+    # module needs DATABASE_URL, which is only set above (from SSM).
+    from catalog import sync_builtin_exercises
 
     engine = create_engine(os.environ["DATABASE_URL"], poolclass=NullPool)
     with Session(engine) as db:

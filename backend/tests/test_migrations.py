@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -87,3 +90,20 @@ def test_migration_lambda_uses_the_direct_url(monkeypatch, database_url):
 
     # A second deploy changes nothing.
     assert migrate_handler.handler({}, None)["catalog"] == {"added": 0, "updated": 0, "removed": 0}
+
+
+def test_lambda_modules_import_without_database_url():
+    # In Lambda, DATABASE_URL only exists after the handler has read SSM, so importing
+    # the handler modules must not need it. (A deploy once failed on exactly this.)
+    # An empty value, not a missing one: load_dotenv() would otherwise fill it from a
+    # developer's backend/.env, but it never overrides a variable that is already set.
+    env = {**os.environ, "DATABASE_URL": "", "SSM_PARAMETER_PREFIX": ""}
+    for module in ("migrate_handler",):
+        result = subprocess.run(
+            [sys.executable, "-c", f"import {module}"],
+            cwd=BACKEND_DIR,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
