@@ -24,7 +24,7 @@ def test_body_measurements_can_be_saved_listed_and_deleted(client):
     )
 
     weights = client.get("/v1/body-measurements?kind=weight", headers=headers).json()
-    assert [m["value"] for m in weights] == ["81.400"]
+    assert [m["value"] for m in weights] == [81.4]
 
     assert client.delete(f"/v1/body-measurements/{weight_id}", headers=headers).status_code == 204
     assert client.get("/v1/body-measurements?kind=weight", headers=headers).json() == []

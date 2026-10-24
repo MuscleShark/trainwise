@@ -9,6 +9,8 @@ from pydantic import (
     AwareDatetime,
     BaseModel,
     Field,
+    PlainSerializer,
+    WithJsonSchema,
     field_validator,
     model_validator,
 )
@@ -51,7 +53,30 @@ Rir = Annotated[int, Field(ge=0, le=10)]
 Seconds = Annotated[int, Field(ge=0, le=86_400)]
 HeartRate = Annotated[int, Field(ge=20, le=250)]
 Minutes = Annotated[int, Field(ge=0, le=1440)]
-WeightKg = Annotated[Decimal, Field(ge=0, le=2000, max_digits=7, decimal_places=3)]
+
+
+def _json_number(**bounds) -> WithJsonSchema:
+    return WithJsonSchema({"type": "number", **bounds})
+
+
+# Decimals are stored exactly but sent as JSON numbers: Pydantic would otherwise send
+# them as strings and document them as "number or string", which generated clients
+# turn into awkward types. Three decimal places survive the trip through a double.
+AsNumber = PlainSerializer(float, return_type=float, when_used="json")
+
+WeightKg = Annotated[
+    Decimal,
+    Field(ge=0, le=2000, max_digits=7, decimal_places=3),
+    AsNumber,
+    _json_number(minimum=0, maximum=2000),
+]
+# kg for weight, % for body_fat, cm for girths.
+MeasurementValue = Annotated[
+    Decimal,
+    Field(gt=0, le=1000, max_digits=8, decimal_places=3),
+    AsNumber,
+    _json_number(exclusiveMinimum=0, maximum=1000),
+]
 
 
 def _check_time_zone(value: str) -> str:
@@ -269,8 +294,7 @@ class TemplateRead(SyncedRead, TemplateWrite):
 class BodyMeasurementWrite(BaseModel):
     measured_at: AwareDatetime
     kind: MeasurementKind
-    # kg for weight, % for body_fat, cm for girths.
-    value: Annotated[Decimal, Field(gt=0, le=1000, max_digits=8, decimal_places=3)]
+    value: MeasurementValue
     source: Source = "manual"
     healthkit_sample_id: HealthKitId | None = None
 

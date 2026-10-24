@@ -8,28 +8,20 @@
             "type": "integer"
           },
           "deleted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deleted At"
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "healthkit_sample_id": {
-            "anyOf": [
-              {
-                "maxLength": 64,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Healthkit Sample Id"
+            "maxLength": 64,
+            "title": "Healthkit Sample Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -70,8 +62,10 @@
             "type": "string"
           },
           "value": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
             "title": "Value",
-            "type": "string"
+            "type": "number"
           }
         },
         "required": [
@@ -89,16 +83,12 @@
       "BodyMeasurementWrite": {
         "properties": {
           "healthkit_sample_id": {
-            "anyOf": [
-              {
-                "maxLength": 64,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Healthkit Sample Id"
+            "maxLength": 64,
+            "title": "Healthkit Sample Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "kind": {
             "enum": [
@@ -129,17 +119,10 @@
             "type": "string"
           },
           "value": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 1000.0,
-                "type": "number"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Value"
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Value",
+            "type": "number"
           }
         },
         "required": [
@@ -153,32 +136,24 @@
       "ExerciseRead": {
         "properties": {
           "base_exercise_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Exercise Id"
+            "format": "uuid",
+            "title": "Base Exercise Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "change_seq": {
             "title": "Change Seq",
             "type": "integer"
           },
           "deleted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deleted At"
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "equipment": {
             "enum": [
@@ -221,17 +196,13 @@
             "type": "string"
           },
           "name_zh": {
-            "anyOf": [
-              {
-                "maxLength": 120,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "primary_muscles": {
             "items": {
@@ -316,16 +287,12 @@
       "ExerciseWrite": {
         "properties": {
           "base_exercise_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Exercise Id"
+            "format": "uuid",
+            "title": "Base Exercise Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "equipment": {
             "enum": [
@@ -359,17 +326,13 @@
             "type": "string"
           },
           "name_zh": {
-            "anyOf": [
-              {
-                "maxLength": 120,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "primary_muscles": {
             "items": {
@@ -457,106 +420,81 @@
       "ProfileRead": {
         "properties": {
           "birthday": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Birthday"
+            "format": "date",
+            "title": "Birthday",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "change_seq": {
             "title": "Change Seq",
             "type": "integer"
           },
           "experience_level": {
-            "anyOf": [
-              {
-                "enum": [
-                  "beginner",
-                  "intermediate",
-                  "advanced"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
             ],
-            "title": "Experience Level"
+            "title": "Experience Level",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "gender": {
-            "anyOf": [
-              {
-                "maxLength": 30,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Gender"
+            "maxLength": 30,
+            "title": "Gender",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "goal": {
-            "anyOf": [
-              {
-                "enum": [
-                  "strength",
-                  "hypertrophy",
-                  "general"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "strength",
+              "hypertrophy",
+              "general",
+              null
             ],
-            "title": "Goal"
+            "title": "Goal",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "height_cm": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 300.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height Cm"
+            "exclusiveMinimum": 0.0,
+            "maximum": 300.0,
+            "title": "Height Cm",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "training_days_per_week": {
-            "anyOf": [
-              {
-                "maximum": 7.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Training Days Per Week"
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Training Days Per Week",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "training_location": {
-            "anyOf": [
-              {
-                "enum": [
-                  "gym",
-                  "home",
-                  "mixed"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "gym",
+              "home",
+              "mixed",
+              null
             ],
-            "title": "Training Location"
+            "title": "Training Location",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "unit_system": {
             "default": "metric",
@@ -583,102 +521,77 @@
       "ProfileWrite": {
         "properties": {
           "birthday": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Birthday"
+            "format": "date",
+            "title": "Birthday",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "experience_level": {
-            "anyOf": [
-              {
-                "enum": [
-                  "beginner",
-                  "intermediate",
-                  "advanced"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
             ],
-            "title": "Experience Level"
+            "title": "Experience Level",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "gender": {
-            "anyOf": [
-              {
-                "maxLength": 30,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Gender"
+            "maxLength": 30,
+            "title": "Gender",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "goal": {
-            "anyOf": [
-              {
-                "enum": [
-                  "strength",
-                  "hypertrophy",
-                  "general"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "strength",
+              "hypertrophy",
+              "general",
+              null
             ],
-            "title": "Goal"
+            "title": "Goal",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "height_cm": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 300.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height Cm"
+            "exclusiveMinimum": 0.0,
+            "maximum": 300.0,
+            "title": "Height Cm",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "training_days_per_week": {
-            "anyOf": [
-              {
-                "maximum": 7.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Training Days Per Week"
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Training Days Per Week",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "training_location": {
-            "anyOf": [
-              {
-                "enum": [
-                  "gym",
-                  "home",
-                  "mixed"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "gym",
+              "home",
+              "mixed",
+              null
             ],
-            "title": "Training Location"
+            "title": "Training Location",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "unit_system": {
             "default": "metric",
@@ -696,34 +609,26 @@
       "ReadinessRead": {
         "properties": {
           "awake_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Awake Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Awake Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "change_seq": {
             "title": "Change Seq",
             "type": "integer"
           },
           "core_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Core Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Core Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "date": {
             "format": "date",
@@ -731,42 +636,30 @@
             "type": "string"
           },
           "deep_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deep Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Deep Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "deleted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deleted At"
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "hrv_sdnn_ms": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 500.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Hrv Sdnn Ms"
+            "exclusiveMinimum": 0.0,
+            "maximum": 500.0,
+            "title": "Hrv Sdnn Ms",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -774,43 +667,31 @@
             "type": "string"
           },
           "rem_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rem Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Rem Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "resting_hr_bpm": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resting Hr Bpm"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Resting Hr Bpm",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "sleep_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sleep Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Sleep Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "source": {
             "default": "healthkit",
@@ -840,95 +721,67 @@
       "ReadinessWrite": {
         "properties": {
           "awake_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Awake Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Awake Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "core_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Core Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Core Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "deep_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deep Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Deep Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "hrv_sdnn_ms": {
-            "anyOf": [
-              {
-                "exclusiveMinimum": 0.0,
-                "maximum": 500.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Hrv Sdnn Ms"
+            "exclusiveMinimum": 0.0,
+            "maximum": 500.0,
+            "title": "Hrv Sdnn Ms",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "rem_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rem Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Rem Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "resting_hr_bpm": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Resting Hr Bpm"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Resting Hr Bpm",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "sleep_minutes": {
-            "anyOf": [
-              {
-                "maximum": 1440.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sleep Minutes"
+            "maximum": 1440.0,
+            "minimum": 0.0,
+            "title": "Sleep Minutes",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "source": {
             "default": "healthkit",
@@ -946,29 +799,21 @@
       "SetRead": {
         "properties": {
           "completed_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Completed At"
+            "format": "date-time",
+            "title": "Completed At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "duration_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Duration Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -976,30 +821,22 @@
             "type": "string"
           },
           "reps": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reps"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Reps",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rir": {
-            "anyOf": [
-              {
-                "maximum": 10.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rir"
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Rir",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "set_type": {
             "default": "working",
@@ -1013,15 +850,13 @@
             "type": "string"
           },
           "weight_kg": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Weight Kg"
+            "maximum": 2000.0,
+            "minimum": 0.0,
+            "title": "Weight Kg",
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1033,29 +868,21 @@
       "SetWrite": {
         "properties": {
           "completed_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Completed At"
+            "format": "date-time",
+            "title": "Completed At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "duration_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Duration Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -1063,30 +890,22 @@
             "type": "string"
           },
           "reps": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reps"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Reps",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rir": {
-            "anyOf": [
-              {
-                "maximum": 10.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rir"
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Rir",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "set_type": {
             "default": "working",
@@ -1100,20 +919,13 @@
             "type": "string"
           },
           "weight_kg": {
-            "anyOf": [
-              {
-                "maximum": 2000.0,
-                "minimum": 0.0,
-                "type": "number"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Weight Kg"
+            "maximum": 2000.0,
+            "minimum": 0.0,
+            "title": "Weight Kg",
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1148,14 +960,7 @@
             "type": "boolean"
           },
           "profile": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ProfileRead"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/ProfileRead"
           },
           "readiness": {
             "items": {
@@ -1182,7 +987,6 @@
         "required": [
           "change_seq",
           "has_more",
-          "profile",
           "exercises",
           "workouts",
           "templates",
@@ -1264,17 +1068,13 @@
             "type": "string"
           },
           "rest_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rest Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Rest Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "sets": {
             "items": {
@@ -1284,17 +1084,13 @@
             "type": "array"
           },
           "superset_group": {
-            "anyOf": [
-              {
-                "maximum": 50.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Superset Group"
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Superset Group",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1318,17 +1114,13 @@
             "type": "string"
           },
           "rest_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rest Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Rest Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "sets": {
             "default": [],
@@ -1340,17 +1132,13 @@
             "type": "array"
           },
           "superset_group": {
-            "anyOf": [
-              {
-                "maximum": 50.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Superset Group"
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Superset Group",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1374,29 +1162,21 @@
             "type": "array"
           },
           "days_per_week": {
-            "anyOf": [
-              {
-                "maximum": 7.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Days Per Week"
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Days Per Week",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "deleted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deleted At"
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -1408,20 +1188,17 @@
             "type": "boolean"
           },
           "level": {
-            "anyOf": [
-              {
-                "enum": [
-                  "beginner",
-                  "intermediate",
-                  "advanced"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
             ],
-            "title": "Level"
+            "title": "Level",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "name_en": {
             "maxLength": 120,
@@ -1430,29 +1207,21 @@
             "type": "string"
           },
           "name_zh": {
-            "anyOf": [
-              {
-                "maxLength": 120,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "updated_at": {
             "format": "date-time",
@@ -1480,30 +1249,22 @@
             "type": "string"
           },
           "rep_max": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rep Max"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Rep Max",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rep_min": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rep Min"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Rep Min",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "set_type": {
             "default": "working",
@@ -1517,17 +1278,13 @@
             "type": "string"
           },
           "target_rir": {
-            "anyOf": [
-              {
-                "maximum": 10.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Target Rir"
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Target Rir",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1544,30 +1301,22 @@
             "type": "string"
           },
           "rep_max": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rep Max"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Rep Max",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rep_min": {
-            "anyOf": [
-              {
-                "maximum": 1000.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rep Min"
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Rep Min",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "set_type": {
             "default": "working",
@@ -1581,17 +1330,13 @@
             "type": "string"
           },
           "target_rir": {
-            "anyOf": [
-              {
-                "maximum": 10.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Target Rir"
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Target Rir",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1612,33 +1357,26 @@
             "type": "array"
           },
           "days_per_week": {
-            "anyOf": [
-              {
-                "maximum": 7.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Days Per Week"
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Days Per Week",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "level": {
-            "anyOf": [
-              {
-                "enum": [
-                  "beginner",
-                  "intermediate",
-                  "advanced"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
             ],
-            "title": "Level"
+            "title": "Level",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "name_en": {
             "maxLength": 120,
@@ -1647,29 +1385,21 @@
             "type": "string"
           },
           "name_zh": {
-            "anyOf": [
-              {
-                "maxLength": 120,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1756,29 +1486,21 @@
             "type": "string"
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "rest_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rest Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Rest Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "sets": {
             "items": {
@@ -1788,17 +1510,13 @@
             "type": "array"
           },
           "superset_group": {
-            "anyOf": [
-              {
-                "maximum": 50.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Superset Group"
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Superset Group",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1822,29 +1540,21 @@
             "type": "string"
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "rest_seconds": {
-            "anyOf": [
-              {
-                "maximum": 86400.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rest Seconds"
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Rest Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "sets": {
             "default": [],
@@ -1856,17 +1566,13 @@
             "type": "array"
           },
           "superset_group": {
-            "anyOf": [
-              {
-                "maximum": 50.0,
-                "minimum": 1.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Superset Group"
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Superset Group",
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1886,16 +1592,12 @@
             "type": "array"
           },
           "next_before": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next Before"
+            "format": "date-time",
+            "title": "Next Before",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1908,45 +1610,33 @@
       "WorkoutRead": {
         "properties": {
           "avg_heart_rate": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Avg Heart Rate"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Avg Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "change_seq": {
             "title": "Change Seq",
             "type": "integer"
           },
           "deleted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deleted At"
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "ended_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ended At"
+            "format": "date-time",
+            "title": "Ended At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "exercises": {
             "items": {
@@ -1956,16 +1646,12 @@
             "type": "array"
           },
           "healthkit_workout_id": {
-            "anyOf": [
-              {
-                "maxLength": 64,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Healthkit Workout Id"
+            "maxLength": 64,
+            "title": "Healthkit Workout Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
             "format": "uuid",
@@ -1973,29 +1659,21 @@
             "type": "string"
           },
           "max_heart_rate": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Heart Rate"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Max Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "started_at": {
             "format": "date-time",
@@ -2003,16 +1681,12 @@
             "type": "string"
           },
           "template_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Template Id"
+            "format": "uuid",
+            "title": "Template Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "time_zone": {
             "maxLength": 64,
@@ -2047,29 +1721,21 @@
       "WorkoutWrite": {
         "properties": {
           "avg_heart_rate": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Avg Heart Rate"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Avg Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "ended_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ended At"
+            "format": "date-time",
+            "title": "Ended At",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "exercises": {
             "default": [],
@@ -2081,41 +1747,29 @@
             "type": "array"
           },
           "healthkit_workout_id": {
-            "anyOf": [
-              {
-                "maxLength": 64,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Healthkit Workout Id"
+            "maxLength": 64,
+            "title": "Healthkit Workout Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "max_heart_rate": {
-            "anyOf": [
-              {
-                "maximum": 250.0,
-                "minimum": 20.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Heart Rate"
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Max Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "notes": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "started_at": {
             "format": "date-time",
@@ -2123,16 +1777,12 @@
             "type": "string"
           },
           "template_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Template Id"
+            "format": "uuid",
+            "title": "Template Id",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "time_zone": {
             "maxLength": 64,
@@ -2193,16 +1843,12 @@
             "name": "from",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date-time",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "From"
+              "format": "date-time",
+              "title": "From",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -2210,16 +1856,12 @@
             "name": "to",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date-time",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "To"
+              "format": "date-time",
+              "title": "To",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -2227,15 +1869,11 @@
             "name": "kind",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Kind"
+              "title": "Kind",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
         ],
@@ -2627,16 +2265,12 @@
             "name": "from",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "From"
+              "format": "date",
+              "title": "From",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -2644,16 +2278,12 @@
             "name": "to",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "To"
+              "format": "date",
+              "title": "To",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
         ],
@@ -3000,16 +2630,12 @@
             "name": "before",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date-time",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Before"
+              "format": "date-time",
+              "title": "Before",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -3017,16 +2643,12 @@
             "name": "from",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date-time",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "From"
+              "format": "date-time",
+              "title": "From",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
@@ -3034,16 +2656,12 @@
             "name": "to",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "format": "date-time",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "To"
+              "format": "date-time",
+              "title": "To",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           {
