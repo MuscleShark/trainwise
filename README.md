@@ -8,15 +8,21 @@ TrainWise is becoming an iOS-first strength-training log with a paid AI coach. S
 
 ## Current Features
 
-- Sign-in with Clerk: email verification code, Google or Apple (no passwords)
-- Backend verification of Clerk session tokens
-- Protected current-user endpoint
-- Personal fitness profile creation, retrieval, and updates
-- Workout creation, retrieval, updates, and deletion
-- Account deletion: removes the profile, all workouts and the Clerk user
-- Responsive registration and login pages
-- Protected dashboard with authentication checks
-- Sign-out flow
+The product ships as **IronSage**. The iPhone app is next; the backend is ready for it.
+
+**API** (`/v1`, built for an offline-first iPhone app)
+
+- Sign-in with Clerk: email verification code, Google or Apple (no passwords); the API verifies Clerk session tokens
+- Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
+- Built-in exercise catalog (145 exercises, English and Chinese) plus users' own exercises, such as a specific machine
+- Training templates with rep ranges and target RIR
+- Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate)
+- Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
+- Account deletion: removes all of the user's data and the Clerk user
+
+**Web**
+
+- Landing page, Clerk sign-in, and an account page (sign out, delete account)
 
 ## Tech Stack
 
@@ -40,27 +46,25 @@ TrainWise is becoming an iOS-first strength-training log with a paid AI coach. S
 ```text
 trainwise/
 ├── backend/
-│   ├── routers/
-│   │   ├── auth.py
-│   │   ├── profiles.py
-│   │   └── workouts.py
+│   ├── routers/                  # /v1 endpoints (auth, profile, exercises, workouts,
+│   │                             #   templates, body, sync)
 │   ├── migrations/               # Alembic database migrations
 │   ├── scripts/build_lambda.sh   # builds the Lambda package
 │   ├── tests/
+│   ├── catalog.py                # built-in exercise catalog
 │   ├── database.py
 │   ├── lambda_handler.py         # AWS Lambda entry point
 │   ├── migrate_handler.py        # Lambda that runs migrations during deploys
 │   ├── main.py
 │   ├── models.py
 │   ├── schemas.py
-│   └── security.py
+│   ├── security.py
+│   └── sync.py                   # change counter and shared write helpers
 ├── frontend/
 │   ├── app/
-│   │   ├── dashboard/
+│   │   ├── account/
 │   │   ├── login/
-│   │   ├── profile/
 │   │   ├── register/
-│   │   ├── workouts/
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   └── page.tsx
@@ -135,7 +139,16 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`. Interactive API documentation is available at `http://localhost:8000/docs`.
 
-Client endpoints are versioned under `/v1` (for example `GET /v1/me`, `DELETE /v1/me`, `/v1/profile`, `/v1/workouts`). A breaking change ships as `/v2` so installed app versions keep working. `/health` stays unversioned.
+Client endpoints are versioned under `/v1`. A breaking change ships as `/v2` so installed app versions keep working. `/health` stays unversioned.
+
+How the iPhone app uses the API:
+
+- The app creates records offline with its own UUIDs and saves them with `PUT` (for example `PUT /v1/workouts/{id}` with the whole workout, exercises and sets included). Sending the same request again gives the same result, so retries are safe.
+- Deleting marks a record as deleted instead of removing it, so other devices learn about it.
+- `GET /v1/sync?since=N` returns everything that changed after `N`, deletions included, plus the new `change_seq` to send next time.
+- Times must include a time zone and are returned in UTC; a workout also stores its local `time_zone`.
+
+Load the built-in exercise catalog into a local database with `python catalog.py` (deploys do this automatically).
 
 ### 3. Configure the frontend
 

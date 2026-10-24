@@ -6,3 +6,7 @@ extend-exclude = [".venv"]
 # E/F: pycodestyle errors and pyflakes (bugs like unused or undefined names).
 # I: import sorting.
 select = ["E", "F", "I"]
+
+[lint.per-file-ignores]
+# The exercise catalog is a data table with one exercise per line.
+"catalog.py" = ["E501"]

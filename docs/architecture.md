@@ -113,28 +113,39 @@ The web app (Vercel) uses the same API and Clerk instance.
 
 ## Data model (version 1)
 
+Built in `backend/models.py` (migration `0002`).
+
 ```text
-users                 id, clerk_user_id, email, created_at
-profiles              birthday, height_cm, gender, goal, unit preference (kg/lb), experience level
-exercises             name, equipment (barbell, dumbbell, machine, cable, smith, bodyweight),
-                      primary and secondary muscles, owner (null = built-in catalog, else user id)
-workouts              started_at, ended_at, time zone, notes, healthkit_workout_id
-workout_exercises     workout, exercise, position
-sets                  reps, weight_kg, rir or rpe, type (warm-up, working, drop), completed_at
-body_metrics          date, weight_kg, body_fat_percentage, source (manual or healthkit)
-daily_readiness       date, sleep minutes and stages, HRV (SDNN), resting HR, source
-workout_heart_rate    workout, average and max heart rate
-recommendations       inputs snapshot, rule-based plan, final suggestion, explanation, model, created_at
-ai_usage              user, endpoint, input and output tokens, created_at
-subscriptions         user, original transaction id, product, status, expires_at
+users                 id, clerk_user_id, email, created_at, change_seq (per-user sync counter)
+profiles              birthday, height_cm, gender, training_location, unit_system (metric or imperial),
+                      experience_level, goal, training_days_per_week
+exercises             name_en, name_zh, equipment, load_type, primary and secondary muscles,
+                      base_exercise_id (custom exercise → built-in one), owner (null = built-in)
+workouts              title, started_at, ended_at, time_zone, notes, average and max heart rate,
+                      healthkit_workout_id, template_id
+workout_exercises     workout, exercise, position, notes, superset group, rest seconds
+sets                  position, type (warm-up, working, drop, failure), reps, weight_kg (3 decimals),
+                      rir, duration_seconds, completed_at (null = planned)
+templates             name_en, name_zh, level, days_per_week, owner (null = built-in)
+template_days         template, position, name
+template_exercises    day, exercise, position, rest seconds, superset group
+template_sets         position, type, rep_min, rep_max, target_rir
+body_measurements     measured_at, kind (weight, body_fat, waist, ...), value, source, healthkit_sample_id
+daily_readiness       date (local), sleep minutes and stages, HRV (SDNN), resting HR, source
 ```
+
+Synced records (exercises, workouts, templates, body measurements, readiness, profile) carry `updated_at`, `deleted_at` (soft delete) and `change_seq`.
+
+Added with the AI coach (P1): `recommendations`, `ai_usage`, `subscriptions`.
 
 Notes:
 
-- **Machines differ by brand**, so a user can add their own exercise ("Hammer Strength chest press") and loads are only compared within the same exercise.
-- **Offline logging**: the app creates records offline. Records that the app creates get a client-generated UUID, `updated_at` and a soft-delete flag. The API offers "changes since" queries so the app can sync.
-- **History instead of snapshots**: weight, body fat and sleep move out of `profiles` into dated tables, so trends can be charted.
-- The built-in exercise catalog is seeded once from [wger](https://wger.de) data (check its license before importing) and then maintained in our database.
+- **Machines differ by brand**, so a user can add their own exercise ("Hammer Strength chest press") linked to a built-in one. Loads are only compared within the same exercise, while volume per muscle still counts it as a chest press.
+- **Load types**: `total` (barbell, machine stack), `per_side` (one dumbbell, cable handle or lever arm), `bodyweight_plus` (added weight on pull-ups or dips) and `assisted` (assistance, where more is easier). Progress and suggestions depend on this.
+- **Offline logging**: the app creates records with its own UUIDs and saves each workout as a whole (`PUT`, safe to retry; last write wins). Every write takes the next value of the user's `change_seq`. The update locks the user's row until commit, so `GET /v1/sync?since=N` never skips a change, and users never wait for each other.
+- **History instead of snapshots**: weight, body fat and sleep live in dated tables, so trends can be charted.
+- **Derived values are not stored**: personal records, estimated one-rep max and weekly sets are computed from sets.
+- **Exercise catalog**: 145 exercises written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
 
 ## AI coach
 
@@ -198,9 +209,9 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 ### P0: before the iOS app
 
 1. ~~**Alembic** for database migrations~~. Done: migrations run automatically during each deploy (see [deployment.md](deployment.md)).
-2. **Data model version 1** as above (strength sets, exercise catalog, dated body and readiness tables).
-3. **Offline sync support**: client UUIDs, `updated_at`, soft delete, "changes since" queries.
-4. **API conventions**: pagination, date filters, time zones, generated clients.
+2. ~~**Data model version 1**~~. Done: strength sets, a 145-exercise catalog written for IronSage (wger's data is CC BY-SA, so it was not imported), templates, dated body and readiness tables. Old workouts and profiles were dropped.
+3. ~~**Offline sync support**~~. Done: client UUIDs, soft deletes, a per-user `change_seq` and `GET /v1/sync`.
+4. **API conventions**: pagination, date filters and time zones are done; generated Swift and TypeScript clients are still to do.
 5. **Privacy policy** and AI data consent text.
 
 ### P1: before the AI coach

@@ -17,6 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import security
+from catalog import sync_builtin_exercises
 from database import Base, get_db
 from main import app
 
@@ -50,14 +51,16 @@ PRIVATE_PEM = _private_key.private_bytes(
     serialization.PrivateFormat.PKCS8,
     serialization.NoEncryption(),
 ).decode()
-_public_pem = _private_key.public_key().public_bytes(
-    serialization.Encoding.PEM,
-    serialization.PublicFormat.SubjectPublicKeyInfo,
-).decode()
+_public_pem = (
+    _private_key.public_key()
+    .public_bytes(
+        serialization.Encoding.PEM,
+        serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    .decode()
+)
 TEST_JWKS = {
-    "keys": [
-        {**jwk.construct(_public_pem, "RS256").to_dict(), "kid": TEST_KID, "use": "sig"}
-    ]
+    "keys": [{**jwk.construct(_public_pem, "RS256").to_dict(), "kid": TEST_KID, "use": "sig"}]
 }
 
 
@@ -101,6 +104,8 @@ def fake_clerk_jwks(monkeypatch):
 def client():
     Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
+    with TestingSessionLocal() as db:
+        sync_builtin_exercises(db)
 
     with TestClient(app) as test_client:
         yield test_client

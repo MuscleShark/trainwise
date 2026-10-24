@@ -114,13 +114,12 @@ def get_current_user(
     if not email:
         raise _unauthorized("Session token has no email claim")
 
-    # First sign-in through Clerk: link an existing account with the same email,
-    # or create a new one.
-    user = (
-        db.query(User)
-        .filter(func.lower(User.email) == email, User.clerk_user_id.is_(None))
-        .first()
-    )
+    # First sign-in with this Clerk user: link the account with the same email, or
+    # create a new one. The account may already belong to an older Clerk user, for
+    # example one deleted in Clerk before the person signed up again with the same
+    # address. Clerk has verified the email and allows it on one Clerk user only, so
+    # the account moves to the new Clerk user.
+    user = db.query(User).filter(func.lower(User.email) == email).first()
     if user is None:
         user = User(email=email)
         db.add(user)
