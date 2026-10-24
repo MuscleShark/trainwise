@@ -40,8 +40,12 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      # ClerkProvider needs the publishable key to prerender pages. It is public
+      # (it ships in the browser bundle), so it is a repository variable.
       - name: Build frontend
         run: npm run build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
 
   backend:
     name: Backend tests
@@ -134,8 +138,12 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+    # E2E signs in through the Clerk *development* instance with test emails.
+    # The secret key is only used to fetch a testing token that skips bot protection.
     env:
       E2E_DATABASE_URL: postgresql+psycopg://trainwise:trainwise@localhost:5432/trainwise_e2e
+      CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
 
     steps:
       - name: Check out repository

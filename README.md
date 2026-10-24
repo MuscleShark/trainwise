@@ -6,9 +6,8 @@ The project is currently in active development. Its first milestone focuses on b
 
 ## Current Features
 
-- User registration
-- Secure password hashing
-- JWT-based authentication
+- Sign-in with Clerk: email verification code, Google or Apple (no passwords)
+- Backend verification of Clerk session tokens
 - Protected current-user endpoint
 - Personal fitness profile creation, retrieval, and updates
 - Workout creation, retrieval, updates, and deletion
@@ -30,7 +29,7 @@ The project is currently in active development. Its first milestone focuses on b
 - FastAPI
 - SQLAlchemy
 - PostgreSQL
-- JWT authentication
+- Clerk session token verification (JWKS)
 - Pydantic
 
 ## Project Structure
@@ -104,7 +103,7 @@ Create `backend/.env` and add your local configuration:
 
 ```env
 DATABASE_URL=postgresql+psycopg://USERNAME:PASSWORD@localhost:5432/trainwise
-SECRET_KEY=replace-with-a-secure-random-secret
+CLERK_ISSUER=https://YOUR-INSTANCE.clerk.accounts.dev
 FRONTEND_URL=http://localhost:3000
 ```
 
@@ -134,19 +133,32 @@ npm run dev
 
 The application will be available at `http://localhost:3000`.
 
-By default, the frontend connects to `http://localhost:8000`. To use a different API URL, create `frontend/.env.local`:
+Create `frontend/.env.local` with the keys from Clerk dashboard → **API keys** (development instance). The file is gitignored:
 
 ```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+# Optional; defaults to http://localhost:8000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
+
+`CLERK_ISSUER` in `backend/.env` is the instance's Frontend API URL, shown in Clerk dashboard → **API keys**. It is also the publishable key's base64 part decoded, without the trailing `$`.
 
 ## Authentication Flow
 
 ```text
-Register → Sign in → Store JWT → Open protected dashboard → Sign out
+Clerk sign-in (email code / Google / Apple) → Clerk session token → API verifies it → dashboard
 ```
 
-The registration endpoint accepts JSON. The login endpoint follows the OAuth2 password form format and uses the user's email as the `username` field.
+The web app uses Clerk's `<SignIn>` and `<SignUp>` components at `/login` and `/register`. Every API request carries the Clerk session token as `Authorization: Bearer …`. The backend verifies it locally against the instance's public keys (JWKS): signature, expiry, issuer, and, for browser requests, that it came from an allowed origin (`azp`). The token must carry an `email` claim, configured in Clerk dashboard → **Sessions → Customize session token**:
+
+```json
+{ "email": "{{user.primary_email_address}}" }
+```
+
+On first sign-in the backend links the Clerk user to an existing account with the same email (accounts created before Clerk), or creates a new one.
+
+Clerk dashboard settings: email address with **verification code**, Google and Apple enabled, password off.
 
 ## Quality Checks
 
@@ -158,7 +170,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Backend Python syntax compilation
 - Backend API tests (pytest) with a coverage report in the job summary (`pytest --cov` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
-- End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database
+- End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 
 Routine dependency version updates are not automated. Dependabot security alerts stay enabled in the repository settings. When a dependency has a known vulnerability, GitHub shows an alert and may open a security-fix pull request.
@@ -171,11 +183,12 @@ The E2E tests start their own backend on port 8001 and frontend on port 3001, an
 docker run -d --rm --name trainwise-e2e-db -e POSTGRES_USER=trainwise -e POSTGRES_PASSWORD=trainwise -e POSTGRES_DB=trainwise_e2e -p 5433:5432 postgres:16
 ```
 
-Then, with the backend virtual environment in `backend/.venv`:
+The tests sign up through the Clerk development instance with `+clerk_test` emails, which accept the code `424242`. They read the Clerk keys from the environment, so load `frontend/.env.local` first. Then, with the backend virtual environment in `backend/.venv`:
 
 ```bash
 cd frontend
 npx playwright install chromium
+set -a && source .env.local && set +a
 E2E_DATABASE_URL=postgresql+psycopg://trainwise:trainwise@localhost:5433/trainwise_e2e npx playwright test
 ```
 
@@ -192,7 +205,7 @@ The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via
 - [x] User authentication
 - [x] Fitness profiles
 - [x] Workout API
-- [x] Registration and login UI
+- [x] Registration and login UI (Clerk)
 - [x] Protected dashboard foundation
 - [x] Profile management UI
 - [x] Workout management UI

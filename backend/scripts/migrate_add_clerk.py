@@ -6,7 +6,7 @@
 Run against the database's *direct* (non-pooled) connection string:
 
     read -rs "NEON_DIRECT_URL?Neon direct URL: " && echo
-    DATABASE_URL="$NEON_DIRECT_URL" CLERK_ISSUER=unused .venv/bin/python scripts/migrate_add_clerk.py
+    DATABASE_URL="$NEON_DIRECT_URL" .venv/bin/python scripts/migrate_add_clerk.py
     unset NEON_DIRECT_URL
 """
 
