@@ -171,7 +171,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Frontend production build and TypeScript validation
 - Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
-- Backend API tests (pytest) with a coverage report in the job summary (`pytest --cov` locally)
+- Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
