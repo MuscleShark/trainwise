@@ -8,14 +8,21 @@ export function uniqueEmail(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}+clerk_test@example.com`;
 }
 
+// Submits the email and waits until Clerk has actually sent the code. Typing the
+// code earlier fails with "You need to send a verification code before attempting
+// to verify", and the code screen appears before the send has finished.
 async function enterEmail(page: Page, email: string) {
+  const codeSent = page.waitForResponse(
+    (response) =>
+      /\/(prepare_verification|prepare_first_factor)/.test(response.url()) && response.ok(),
+  );
   await page.getByLabel("Email address").fill(email);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await codeSent;
 }
 
 async function enterCode(page: Page, code: string) {
-  await expect(page.getByText(/verification code|check your email/i).first()).toBeVisible();
-  await page.keyboard.type(code);
+  await page.getByRole("textbox", { name: "Enter verification code" }).pressSequentially(code);
 }
 
 export async function expectDashboardFor(page: Page, email: string) {
