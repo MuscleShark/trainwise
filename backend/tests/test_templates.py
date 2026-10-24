@@ -102,7 +102,9 @@ def test_invalid_templates_are_rejected(client):
     headers = auth_headers("me@example.com")
     duplicate = template_body()
     duplicate["days"][1]["id"] = duplicate["days"][0]["id"]
-    for body in (template_body(days=[]), template_body(level="pro"), duplicate):
+    reversed_range = template_body()
+    reversed_range["days"][0]["exercises"][0]["sets"][0].update(rep_min=12, rep_max=8)
+    for body in (template_body(days=[]), template_body(level="pro"), duplicate, reversed_range):
         assert (
             client.put(f"/v1/templates/{new_id()}", json=body, headers=headers).status_code == 422
         )

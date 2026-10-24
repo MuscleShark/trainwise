@@ -60,5 +60,26 @@ def test_sync_only_returns_the_users_own_records(client):
     assert data["workouts"] == []
 
 
+def test_sync_is_paged_by_change_seq(client):
+    headers = auth_headers("me@example.com")
+    ids = [new_id() for _ in range(5)]
+    for workout_id in ids:
+        client.put(f"/v1/workouts/{workout_id}", json=workout_body(), headers=headers)
+    client.put("/v1/readiness/2026-10-20", json={"sleep_minutes": 420}, headers=headers)
+
+    seen, since, pages = [], 0, 0
+    while True:
+        page = client.get("/v1/sync", params={"since": since, "limit": 2}, headers=headers).json()
+        pages += 1
+        seen += [w["id"] for w in page["workouts"]] + [r["date"] for r in page["readiness"]]
+        since = page["change_seq"]
+        if not page["has_more"]:
+            break
+
+    assert pages == 3
+    assert seen == [*ids, "2026-10-20"]
+    assert since == 6
+
+
 def test_sync_requires_sign_in(client):
     assert client.get("/v1/sync").status_code == 401

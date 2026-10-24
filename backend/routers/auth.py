@@ -9,8 +9,13 @@ from models import (
     Exercise,
     Profile,
     Template,
+    TemplateDay,
+    TemplateExercise,
+    TemplateSet,
     User,
     Workout,
+    WorkoutExercise,
+    WorkoutSet,
 )
 from schemas import UserRead
 from security import get_current_user
@@ -39,13 +44,22 @@ def delete_me(
     `user.delete()`), so the API never needs the Clerk secret key. If that step
     fails, the next sign-in simply starts a new, empty account.
     """
-    # Workouts and templates go through the ORM so their exercises and sets are
-    # deleted with them. Custom exercises go last: workouts and templates use them.
-    for workout in db.scalars(select(Workout).where(Workout.user_id == current_user.id)):
-        db.delete(workout)
-    for template in db.scalars(select(Template).where(Template.owner_user_id == current_user.id)):
-        db.delete(template)
-    db.flush()
+    # Bulk deletes, children first, so a long history is a handful of queries.
+    # Custom exercises go last: workouts and templates use them.
+    workouts = select(Workout.id).where(Workout.user_id == current_user.id)
+    workout_exercises = select(WorkoutExercise.id).where(WorkoutExercise.workout_id.in_(workouts))
+    templates = select(Template.id).where(Template.owner_user_id == current_user.id)
+    days = select(TemplateDay.id).where(TemplateDay.template_id.in_(templates))
+    template_exercises = select(TemplateExercise.id).where(
+        TemplateExercise.template_day_id.in_(days)
+    )
+    db.execute(delete(WorkoutSet).where(WorkoutSet.workout_exercise_id.in_(workout_exercises)))
+    db.execute(delete(WorkoutExercise).where(WorkoutExercise.workout_id.in_(workouts)))
+    db.execute(delete(Workout).where(Workout.user_id == current_user.id))
+    db.execute(delete(TemplateSet).where(TemplateSet.template_exercise_id.in_(template_exercises)))
+    db.execute(delete(TemplateExercise).where(TemplateExercise.template_day_id.in_(days)))
+    db.execute(delete(TemplateDay).where(TemplateDay.template_id.in_(templates)))
+    db.execute(delete(Template).where(Template.owner_user_id == current_user.id))
     db.execute(delete(BodyMeasurement).where(BodyMeasurement.user_id == current_user.id))
     db.execute(delete(DailyReadiness).where(DailyReadiness.user_id == current_user.id))
     db.execute(delete(Profile).where(Profile.user_id == current_user.id))

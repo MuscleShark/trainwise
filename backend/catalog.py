@@ -232,8 +232,7 @@ def exercise_id(slug: str) -> uuid.UUID:
 def sync_builtin_exercises(db: Session) -> dict[str, int]:
     """Makes the built-in rows in `exercises` match BUILTIN_EXERCISES."""
     existing = {
-        row.id: row
-        for row in db.scalars(select(Exercise).where(Exercise.owner_user_id.is_(None)))
+        row.id: row for row in db.scalars(select(Exercise).where(Exercise.owner_user_id.is_(None)))
     }
     counts = {"added": 0, "updated": 0, "removed": 0}
 

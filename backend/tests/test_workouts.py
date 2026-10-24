@@ -166,6 +166,7 @@ def test_invalid_workouts_are_rejected(client):
         workout_body(started_at="2026-10-20T18:00:00"),  # no time zone offset
         workout_body(weight="-5"),
         workout_body(title=""),
+        workout_body(ended_at="2026-10-20T17:00:00+02:00"),  # ends before it starts
     ]
     duplicate_ids = workout_body()
     duplicate_ids["exercises"][0]["sets"][1]["id"] = duplicate_ids["exercises"][0]["sets"][0]["id"]

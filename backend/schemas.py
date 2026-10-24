@@ -4,7 +4,14 @@ from decimal import Decimal
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import AfterValidator, AwareDatetime, BaseModel, Field, field_validator
+from pydantic import (
+    AfterValidator,
+    AwareDatetime,
+    BaseModel,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 Muscle = Literal[
     "chest",
@@ -149,6 +156,12 @@ class WorkoutWrite(BaseModel):
     healthkit_workout_id: HealthKitId | None = None
     exercises: Annotated[list[WorkoutExerciseWrite], Field(max_length=50)] = []
 
+    @model_validator(mode="after")
+    def ends_after_start(self):
+        if self.ended_at is not None and self.ended_at < self.started_at:
+            raise ValueError("ended_at must not be before started_at")
+        return self
+
     @field_validator("exercises")
     @classmethod
     def ids_are_unique(cls, exercises: list[WorkoutExerciseWrite]):
@@ -188,6 +201,12 @@ class TemplateSetWrite(BaseModel):
     rep_min: Reps | None = None
     rep_max: Reps | None = None
     target_rir: Rir | None = None
+
+    @model_validator(mode="after")
+    def rep_range_is_ordered(self):
+        if self.rep_min is not None and self.rep_max is not None and self.rep_min > self.rep_max:
+            raise ValueError("rep_min must not be greater than rep_max")
+        return self
 
 
 class TemplateExerciseWrite(BaseModel):
@@ -282,6 +301,8 @@ class SyncResponse(BaseModel):
     """Everything of the user's that changed after `since`, including deletions."""
 
     change_seq: int
+    # True when more changes are waiting: call again with since=change_seq.
+    has_more: bool
     profile: ProfileRead | None
     exercises: list[ExerciseRead]
     workouts: list[WorkoutRead]
