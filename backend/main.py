@@ -7,7 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import get_db
-from routers import auth, profiles, workouts
+from routers import auth, body, exercises, profiles, sync, templates, workouts
 
 app = FastAPI()
 
@@ -22,9 +22,13 @@ frontend_urls = [
 # /v2 while installed iOS app versions keep calling /v1. /health stays unversioned
 # because the deploy smoke test calls it.
 v1 = APIRouter(prefix="/v1")
-v1.include_router(workouts.router)
 v1.include_router(auth.router)
 v1.include_router(profiles.router)
+v1.include_router(exercises.router)
+v1.include_router(workouts.router)
+v1.include_router(templates.router)
+v1.include_router(body.router)
+v1.include_router(sync.router)
 app.include_router(v1)
 
 app.add_middleware(

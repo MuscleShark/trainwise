@@ -62,11 +62,15 @@ def test_token_from_other_issuer_is_rejected(client):
 
 
 def test_token_signed_with_other_key_is_rejected(client):
-    other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048).private_bytes(
-        serialization.Encoding.PEM,
-        serialization.PrivateFormat.PKCS8,
-        serialization.NoEncryption(),
-    ).decode()
+    other_key = (
+        rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        .private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+        .decode()
+    )
     token = make_session_token(private_key=other_key)
     assert client.get("/v1/me", headers=bearer(token)).status_code == 401
 
@@ -100,3 +104,14 @@ def test_endpoints_are_only_served_under_v1(client):
     headers = bearer(make_session_token())
     assert client.get("/me", headers=headers).status_code == 404
     assert client.get("/v1/me", headers=headers).status_code == 200
+
+
+def test_account_moves_to_a_new_clerk_user_with_the_same_email(client):
+    first = client.get("/v1/me", headers=bearer(make_session_token("me@example.com", "user_old")))
+    # The old Clerk user was deleted in Clerk; the person signed up again.
+    second = client.get("/v1/me", headers=bearer(make_session_token("me@example.com", "user_new")))
+
+    assert second.status_code == 200
+    assert second.json()["id"] == first.json()["id"]
+    with TestingSessionLocal() as db:
+        assert db.query(User).one().clerk_user_id == "user_new"

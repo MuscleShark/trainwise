@@ -25,9 +25,9 @@ async function enterCode(page: Page, code: string) {
   await page.getByRole("textbox", { name: "Enter verification code" }).pressSequentially(code);
 }
 
-export async function expectDashboardFor(page: Page, email: string) {
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: `Welcome back, ${email}` })).toBeVisible();
+export async function expectAccountFor(page: Page, email: string) {
+  await expect(page).toHaveURL(/\/account$/);
+  await expect(page.getByText(`Signed in as ${email}`)).toBeVisible();
 }
 
 export async function signUp(page: Page, email: string) {
@@ -35,7 +35,7 @@ export async function signUp(page: Page, email: string) {
   await page.goto("/register");
   await enterEmail(page, email);
   await enterCode(page, TEST_CODE);
-  await expectDashboardFor(page, email);
+  await expectAccountFor(page, email);
 }
 
 export async function signIn(page: Page, email: string, code: string = TEST_CODE) {
