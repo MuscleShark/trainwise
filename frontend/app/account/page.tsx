@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { UnauthorizedError, useApi } from "../lib/api";
+import type { components } from "../lib/api-types";
 
-type Account = {
-  id: number;
-  email: string;
-};
+type Account = components["schemas"]["UserRead"];
 
 export default function AccountPage() {
   const { apiFetch, isReady } = useApi();
