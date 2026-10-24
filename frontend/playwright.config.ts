@@ -42,7 +42,8 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "clerk setup", testMatch: /global\.setup\.ts/ },
+    { name: "clerk setup", testMatch: /global\.setup\.ts/, teardown: "clerk cleanup" },
+    { name: "clerk cleanup", testMatch: /global\.teardown\.ts/ },
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
