@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from lambda_handler import load_ssm_parameters
+from ssm_parameters import load_ssm_parameters
 
 
 class FakeSSM:
@@ -29,14 +29,14 @@ def restore_env(monkeypatch):
 
 def test_no_prefix_does_nothing():
     ssm = FakeSSM({})
-    load_ssm_parameters(None, ssm)
+    load_ssm_parameters(None, ("DATABASE_URL",), ssm)
     assert ssm.calls == []
 
 
 def test_loads_secrets_into_environment(restore_env):
     ssm = FakeSSM({"/trainwise/prod/DATABASE_URL": "postgresql+psycopg://from-ssm"})
 
-    load_ssm_parameters("/trainwise/prod/", ssm)
+    load_ssm_parameters("/trainwise/prod/", ("DATABASE_URL",), ssm)
 
     assert ssm.calls == [(["/trainwise/prod/DATABASE_URL"], True)]
     assert os.environ["DATABASE_URL"] == "postgresql+psycopg://from-ssm"
@@ -46,4 +46,4 @@ def test_missing_parameter_fails_fast(restore_env):
     ssm = FakeSSM({})
 
     with pytest.raises(RuntimeError, match="DATABASE_URL"):
-        load_ssm_parameters("/trainwise/prod", ssm)
+        load_ssm_parameters("/trainwise/prod", ("DATABASE_URL",), ssm)

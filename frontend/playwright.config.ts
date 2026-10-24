@@ -52,7 +52,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: `.venv/bin/python create_tables.py && .venv/bin/uvicorn main:app --port ${BACKEND_PORT}`,
+      // `alembic check` fails if the models and the migrations have drifted apart.
+      command: `.venv/bin/alembic upgrade head && .venv/bin/alembic check && .venv/bin/uvicorn main:app --port ${BACKEND_PORT}`,
       cwd: "../backend",
       url: `${BACKEND_URL}/docs`,
       env: {

@@ -44,11 +44,12 @@ trainwise/
 │   │   ├── auth.py
 │   │   ├── profiles.py
 │   │   └── workouts.py
+│   ├── migrations/               # Alembic database migrations
 │   ├── scripts/build_lambda.sh   # builds the Lambda package
 │   ├── tests/
-│   ├── create_tables.py
 │   ├── database.py
 │   ├── lambda_handler.py         # AWS Lambda entry point
+│   ├── migrate_handler.py        # Lambda that runs migrations during deploys
 │   ├── main.py
 │   ├── models.py
 │   ├── schemas.py
@@ -110,11 +111,21 @@ CLERK_ISSUER=https://YOUR-INSTANCE.clerk.accounts.dev
 FRONTEND_URL=http://localhost:3000
 ```
 
-Create the database tables:
+Create or update the database tables:
 
 ```bash
-python create_tables.py
+alembic upgrade head
 ```
+
+To change the schema, edit `models.py`, then generate a migration, read it, and commit it with the change:
+
+```bash
+alembic revision --autogenerate -m "add exercises table"
+alembic upgrade head
+alembic check   # fails if models.py and the migrations differ
+```
+
+Migrations run automatically in production during each deploy (see [docs/deployment.md](docs/deployment.md)). Keep them backward compatible with the code that is still running: add columns and tables first, and remove old ones in a later release.
 
 Start the API:
 
