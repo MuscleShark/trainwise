@@ -9,6 +9,16 @@ test("protected pages redirect to login when signed out", async ({ page }) => {
   }
 });
 
+// Google and Apple sign-in go through real provider pages, so E2E only checks the
+// buttons are offered; the full OAuth flows are checked by hand.
+for (const path of ["/login", "/register"]) {
+  test(`${path} offers Google and Apple sign-in`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page.getByRole("button", { name: /google/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /apple/i })).toBeVisible();
+  });
+}
+
 test("user can sign up with an email code, sign out and sign back in", async ({ page }) => {
   const email = await signUpNewUser(page, "auth");
 
