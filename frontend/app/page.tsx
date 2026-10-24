@@ -58,8 +58,14 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="mx-auto w-full max-w-6xl px-4 py-8 text-sm text-steel sm:px-8">
-        © {new Date().getFullYear()} IronSage
+      <footer className="mx-auto flex w-full max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-8 text-sm text-steel sm:px-8">
+        <span>© {new Date().getFullYear()} IronSage</span>
+        <Link href="/privacy" className="hover:text-ink">
+          Privacy
+        </Link>
+        <Link href="/support" className="hover:text-ink">
+          Support
+        </Link>
       </footer>
     </div>
   );
