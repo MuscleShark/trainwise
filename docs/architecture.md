@@ -211,7 +211,7 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 1. ~~**Alembic** for database migrations~~. Done: migrations run automatically during each deploy (see [deployment.md](deployment.md)).
 2. ~~**Data model version 1**~~. Done: strength sets, a 145-exercise catalog written for IronSage (wger's data is CC BY-SA, so it was not imported), templates, dated body and readiness tables. Old workouts and profiles were dropped.
 3. ~~**Offline sync support**~~. Done: client UUIDs, soft deletes, a per-user `change_seq` and `GET /v1/sync`.
-4. **API conventions**: pagination, date filters and time zones are done; generated Swift and TypeScript clients are still to do.
+4. ~~**API conventions**~~. Done: pagination, date filters, time zones, and `api/openapi.json` as the contract with readable operation ids. The web generates TypeScript types from it; the iPhone app will use swift-openapi-generator with the same file.
 5. ~~**Privacy policy** and AI data consent text~~. Done: [ironsage.app/privacy](https://ironsage.app/privacy) and [/support](https://ironsage.app/support) in English and Chinese, and the app's consent screens in [consent-copy.md](consent-copy.md). Have the policy reviewed before the App Store submission.
 
 ### P1: before the AI coach

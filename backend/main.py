@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRoute
 from mangum import Mangum
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -9,7 +10,22 @@ from sqlalchemy.orm import Session
 from database import get_db
 from routers import auth, body, exercises, profiles, sync, templates, workouts
 
-app = FastAPI()
+
+def operation_id(route: APIRoute) -> str:
+    """listWorkouts instead of list_workouts_v1_workouts_get.
+
+    The Swift and TypeScript clients are generated from the OpenAPI document
+    (api/openapi.json), and these ids become their method names.
+    """
+    first, *rest = route.name.split("_")
+    return first + "".join(word.title() for word in rest)
+
+
+app = FastAPI(
+    title="IronSage API",
+    version="1.0.0",
+    generate_unique_id_function=operation_id,
+)
 
 # Comma-separated, e.g. "https://trainwise.vercel.app,http://localhost:3000".
 frontend_urls = [
@@ -41,7 +57,7 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health(db: Session = Depends(get_db)):
+def get_health(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"status": "ok"}
 

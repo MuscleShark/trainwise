@@ -70,6 +70,7 @@ trainwise/
 │   │   └── page.tsx
 │   ├── e2e/                      # Playwright tests
 │   └── package.json
+├── api/openapi.json              # API contract; clients generate their code from it
 ├── infra/                        # AWS CDK app (Lambda, Function URL, IAM)
 └── docs/deployment.md
 ```
@@ -149,6 +150,22 @@ How the iPhone app uses the API:
 - Times must include a time zone and are returned in UTC; a workout also stores its local `time_zone`.
 
 Load the built-in exercise catalog into a local database with `python catalog.py` (deploys do this automatically).
+
+### API contract
+
+[`api/openapi.json`](api/openapi.json) is the API's contract, generated from the FastAPI code. Clients generate their code from it instead of writing requests by hand:
+
+- Web: `npm run api:types` (in `frontend/`) regenerates `app/lib/api-types.ts`.
+- iPhone app: Apple's swift-openapi-generator reads the same file when the app builds.
+
+After changing an endpoint or schema, regenerate and commit both files:
+
+```bash
+cd backend && python scripts/export_openapi.py
+cd ../frontend && npm run api:types
+```
+
+Backend tests fail while `api/openapi.json` is out of date.
 
 ### 3. Configure the frontend
 
