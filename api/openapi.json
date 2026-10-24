@@ -1,0 +1,3240 @@
+{
+  "components": {
+    "schemas": {
+      "BodyMeasurementRead": {
+        "properties": {
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "healthkit_sample_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Healthkit Sample Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "weight",
+              "body_fat",
+              "waist",
+              "chest",
+              "arm",
+              "thigh",
+              "hips",
+              "neck"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "measured_at": {
+            "format": "date-time",
+            "title": "Measured At",
+            "type": "string"
+          },
+          "source": {
+            "default": "manual",
+            "enum": [
+              "manual",
+              "healthkit"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "measured_at",
+          "kind",
+          "value",
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq"
+        ],
+        "title": "BodyMeasurementRead",
+        "type": "object"
+      },
+      "BodyMeasurementWrite": {
+        "properties": {
+          "healthkit_sample_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Healthkit Sample Id"
+          },
+          "kind": {
+            "enum": [
+              "weight",
+              "body_fat",
+              "waist",
+              "chest",
+              "arm",
+              "thigh",
+              "hips",
+              "neck"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "measured_at": {
+            "format": "date-time",
+            "title": "Measured At",
+            "type": "string"
+          },
+          "source": {
+            "default": "manual",
+            "enum": [
+              "manual",
+              "healthkit"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "measured_at",
+          "kind",
+          "value"
+        ],
+        "title": "BodyMeasurementWrite",
+        "type": "object"
+      },
+      "ExerciseRead": {
+        "properties": {
+          "base_exercise_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Exercise Id"
+          },
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "equipment": {
+            "enum": [
+              "barbell",
+              "dumbbell",
+              "machine",
+              "cable",
+              "smith",
+              "bodyweight",
+              "kettlebell",
+              "band",
+              "other"
+            ],
+            "title": "Equipment",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_custom": {
+            "title": "Is Custom",
+            "type": "boolean"
+          },
+          "load_type": {
+            "enum": [
+              "total",
+              "per_side",
+              "bodyweight_plus",
+              "assisted"
+            ],
+            "title": "Load Type",
+            "type": "string"
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "primary_muscles": {
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Primary Muscles",
+            "type": "array"
+          },
+          "secondary_muscles": {
+            "default": [],
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Secondary Muscles",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name_en",
+          "equipment",
+          "load_type",
+          "primary_muscles",
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq",
+          "is_custom"
+        ],
+        "title": "ExerciseRead",
+        "type": "object"
+      },
+      "ExerciseWrite": {
+        "properties": {
+          "base_exercise_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Exercise Id"
+          },
+          "equipment": {
+            "enum": [
+              "barbell",
+              "dumbbell",
+              "machine",
+              "cable",
+              "smith",
+              "bodyweight",
+              "kettlebell",
+              "band",
+              "other"
+            ],
+            "title": "Equipment",
+            "type": "string"
+          },
+          "load_type": {
+            "enum": [
+              "total",
+              "per_side",
+              "bodyweight_plus",
+              "assisted"
+            ],
+            "title": "Load Type",
+            "type": "string"
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "primary_muscles": {
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Primary Muscles",
+            "type": "array"
+          },
+          "secondary_muscles": {
+            "default": [],
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Secondary Muscles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name_en",
+          "equipment",
+          "load_type",
+          "primary_muscles"
+        ],
+        "title": "ExerciseWrite",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ProfileRead": {
+        "properties": {
+          "birthday": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthday"
+          },
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "experience_level": {
+            "anyOf": [
+              {
+                "enum": [
+                  "beginner",
+                  "intermediate",
+                  "advanced"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Level"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "strength",
+                  "hypertrophy",
+                  "general"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "height_cm": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 300.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height Cm"
+          },
+          "training_days_per_week": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Days Per Week"
+          },
+          "training_location": {
+            "anyOf": [
+              {
+                "enum": [
+                  "gym",
+                  "home",
+                  "mixed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Location"
+          },
+          "unit_system": {
+            "default": "metric",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "title": "Unit System",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "updated_at",
+          "change_seq"
+        ],
+        "title": "ProfileRead",
+        "type": "object"
+      },
+      "ProfileWrite": {
+        "properties": {
+          "birthday": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthday"
+          },
+          "experience_level": {
+            "anyOf": [
+              {
+                "enum": [
+                  "beginner",
+                  "intermediate",
+                  "advanced"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Level"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "strength",
+                  "hypertrophy",
+                  "general"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "height_cm": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 300.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height Cm"
+          },
+          "training_days_per_week": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Days Per Week"
+          },
+          "training_location": {
+            "anyOf": [
+              {
+                "enum": [
+                  "gym",
+                  "home",
+                  "mixed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Location"
+          },
+          "unit_system": {
+            "default": "metric",
+            "enum": [
+              "metric",
+              "imperial"
+            ],
+            "title": "Unit System",
+            "type": "string"
+          }
+        },
+        "title": "ProfileWrite",
+        "type": "object"
+      },
+      "ReadinessRead": {
+        "properties": {
+          "awake_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awake Minutes"
+          },
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "core_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Core Minutes"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "deep_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deep Minutes"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "hrv_sdnn_ms": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 500.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hrv Sdnn Ms"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rem_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rem Minutes"
+          },
+          "resting_hr_bpm": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resting Hr Bpm"
+          },
+          "sleep_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sleep Minutes"
+          },
+          "source": {
+            "default": "healthkit",
+            "enum": [
+              "manual",
+              "healthkit"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq",
+          "date"
+        ],
+        "title": "ReadinessRead",
+        "type": "object"
+      },
+      "ReadinessWrite": {
+        "properties": {
+          "awake_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awake Minutes"
+          },
+          "core_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Core Minutes"
+          },
+          "deep_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deep Minutes"
+          },
+          "hrv_sdnn_ms": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 500.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hrv Sdnn Ms"
+          },
+          "rem_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rem Minutes"
+          },
+          "resting_hr_bpm": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resting Hr Bpm"
+          },
+          "sleep_minutes": {
+            "anyOf": [
+              {
+                "maximum": 1440.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sleep Minutes"
+          },
+          "source": {
+            "default": "healthkit",
+            "enum": [
+              "manual",
+              "healthkit"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "title": "ReadinessWrite",
+        "type": "object"
+      },
+      "SetRead": {
+        "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reps": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reps"
+          },
+          "rir": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rir"
+          },
+          "set_type": {
+            "default": "working",
+            "enum": [
+              "warmup",
+              "working",
+              "drop",
+              "failure"
+            ],
+            "title": "Set Type",
+            "type": "string"
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Kg"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "SetRead",
+        "type": "object"
+      },
+      "SetWrite": {
+        "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reps": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reps"
+          },
+          "rir": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rir"
+          },
+          "set_type": {
+            "default": "working",
+            "enum": [
+              "warmup",
+              "working",
+              "drop",
+              "failure"
+            ],
+            "title": "Set Type",
+            "type": "string"
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "maximum": 2000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Kg"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "SetWrite",
+        "type": "object"
+      },
+      "SyncResponse": {
+        "description": "Everything of the user's that changed after `since`, including deletions.",
+        "properties": {
+          "body_measurements": {
+            "items": {
+              "$ref": "#/components/schemas/BodyMeasurementRead"
+            },
+            "title": "Body Measurements",
+            "type": "array"
+          },
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/ExerciseRead"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readiness": {
+            "items": {
+              "$ref": "#/components/schemas/ReadinessRead"
+            },
+            "title": "Readiness",
+            "type": "array"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateRead"
+            },
+            "title": "Templates",
+            "type": "array"
+          },
+          "workouts": {
+            "items": {
+              "$ref": "#/components/schemas/WorkoutRead"
+            },
+            "title": "Workouts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "change_seq",
+          "has_more",
+          "profile",
+          "exercises",
+          "workouts",
+          "templates",
+          "body_measurements",
+          "readiness"
+        ],
+        "title": "SyncResponse",
+        "type": "object"
+      },
+      "TemplateDayRead": {
+        "properties": {
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateExerciseRead"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "exercises"
+        ],
+        "title": "TemplateDayRead",
+        "type": "object"
+      },
+      "TemplateDayWrite": {
+        "properties": {
+          "exercises": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TemplateExerciseWrite"
+            },
+            "maxItems": 30,
+            "title": "Exercises",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TemplateDayWrite",
+        "type": "object"
+      },
+      "TemplateExerciseRead": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rest_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rest Seconds"
+          },
+          "sets": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateSetRead"
+            },
+            "title": "Sets",
+            "type": "array"
+          },
+          "superset_group": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superset Group"
+          }
+        },
+        "required": [
+          "id",
+          "exercise_id",
+          "sets"
+        ],
+        "title": "TemplateExerciseRead",
+        "type": "object"
+      },
+      "TemplateExerciseWrite": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rest_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rest Seconds"
+          },
+          "sets": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/TemplateSetWrite"
+            },
+            "maxItems": 20,
+            "title": "Sets",
+            "type": "array"
+          },
+          "superset_group": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superset Group"
+          }
+        },
+        "required": [
+          "id",
+          "exercise_id"
+        ],
+        "title": "TemplateExerciseWrite",
+        "type": "object"
+      },
+      "TemplateRead": {
+        "properties": {
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateDayRead"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "days_per_week": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Per Week"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_custom": {
+            "title": "Is Custom",
+            "type": "boolean"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "enum": [
+                  "beginner",
+                  "intermediate",
+                  "advanced"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name_en",
+          "days",
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq",
+          "is_custom"
+        ],
+        "title": "TemplateRead",
+        "type": "object"
+      },
+      "TemplateSetRead": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rep_max": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rep Max"
+          },
+          "rep_min": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rep Min"
+          },
+          "set_type": {
+            "default": "working",
+            "enum": [
+              "warmup",
+              "working",
+              "drop",
+              "failure"
+            ],
+            "title": "Set Type",
+            "type": "string"
+          },
+          "target_rir": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Rir"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "TemplateSetRead",
+        "type": "object"
+      },
+      "TemplateSetWrite": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "rep_max": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rep Max"
+          },
+          "rep_min": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rep Min"
+          },
+          "set_type": {
+            "default": "working",
+            "enum": [
+              "warmup",
+              "working",
+              "drop",
+              "failure"
+            ],
+            "title": "Set Type",
+            "type": "string"
+          },
+          "target_rir": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Rir"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "TemplateSetWrite",
+        "type": "object"
+      },
+      "TemplateWrite": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateDayWrite"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Days",
+            "type": "array"
+          },
+          "days_per_week": {
+            "anyOf": [
+              {
+                "maximum": 7.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Per Week"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "enum": [
+                  "beginner",
+                  "intermediate",
+                  "advanced"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "required": [
+          "name_en",
+          "days"
+        ],
+        "title": "TemplateWrite",
+        "type": "object"
+      },
+      "UserRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "created_at"
+        ],
+        "title": "UserRead",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WorkoutExerciseRead": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "rest_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rest Seconds"
+          },
+          "sets": {
+            "items": {
+              "$ref": "#/components/schemas/SetRead"
+            },
+            "title": "Sets",
+            "type": "array"
+          },
+          "superset_group": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superset Group"
+          }
+        },
+        "required": [
+          "id",
+          "exercise_id",
+          "sets"
+        ],
+        "title": "WorkoutExerciseRead",
+        "type": "object"
+      },
+      "WorkoutExerciseWrite": {
+        "properties": {
+          "exercise_id": {
+            "format": "uuid",
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "rest_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rest Seconds"
+          },
+          "sets": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/SetWrite"
+            },
+            "maxItems": 50,
+            "title": "Sets",
+            "type": "array"
+          },
+          "superset_group": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superset Group"
+          }
+        },
+        "required": [
+          "id",
+          "exercise_id"
+        ],
+        "title": "WorkoutExerciseWrite",
+        "type": "object"
+      },
+      "WorkoutPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkoutRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_before": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Before"
+          }
+        },
+        "required": [
+          "items",
+          "next_before"
+        ],
+        "title": "WorkoutPage",
+        "type": "object"
+      },
+      "WorkoutRead": {
+        "properties": {
+          "avg_heart_rate": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Heart Rate"
+          },
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/WorkoutExerciseRead"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "healthkit_workout_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Healthkit Workout Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "max_heart_rate": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Heart Rate"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "time_zone": {
+            "maxLength": 64,
+            "title": "Time Zone",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "started_at",
+          "time_zone",
+          "exercises",
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq"
+        ],
+        "title": "WorkoutRead",
+        "type": "object"
+      },
+      "WorkoutWrite": {
+        "properties": {
+          "avg_heart_rate": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Heart Rate"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "exercises": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/WorkoutExerciseWrite"
+            },
+            "maxItems": 50,
+            "title": "Exercises",
+            "type": "array"
+          },
+          "healthkit_workout_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Healthkit Workout Id"
+          },
+          "max_heart_rate": {
+            "anyOf": [
+              {
+                "maximum": 250.0,
+                "minimum": 20.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Heart Rate"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "time_zone": {
+            "maxLength": 64,
+            "title": "Time Zone",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "started_at",
+          "time_zone"
+        ],
+        "title": "WorkoutWrite",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "IronSage API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Health"
+      }
+    },
+    "/v1/body-measurements": {
+      "get": {
+        "operationId": "listBodyMeasurements",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BodyMeasurementRead"
+                  },
+                  "title": "Response Listbodymeasurements",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Body Measurements",
+        "tags": [
+          "Body and readiness"
+        ]
+      }
+    },
+    "/v1/body-measurements/{measurement_id}": {
+      "delete": {
+        "operationId": "deleteBodyMeasurement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "measurement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Measurement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Body Measurement",
+        "tags": [
+          "Body and readiness"
+        ]
+      },
+      "put": {
+        "operationId": "putBodyMeasurement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "measurement_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Measurement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BodyMeasurementWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyMeasurementRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Body Measurement",
+        "tags": [
+          "Body and readiness"
+        ]
+      }
+    },
+    "/v1/exercises": {
+      "get": {
+        "description": "The built-in catalog plus the user's own exercises.",
+        "operationId": "listExercises",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExerciseRead"
+                  },
+                  "title": "Response Listexercises",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Exercises",
+        "tags": [
+          "Exercises"
+        ]
+      }
+    },
+    "/v1/exercises/{exercise_id}": {
+      "delete": {
+        "description": "Soft-deletes the exercise; past workouts keep showing it.",
+        "operationId": "deleteExercise",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exercise_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Exercise Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Exercise",
+        "tags": [
+          "Exercises"
+        ]
+      },
+      "put": {
+        "description": "Creates or replaces one of the user's own exercises.",
+        "operationId": "putExercise",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "exercise_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Exercise Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExerciseWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExerciseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Exercise",
+        "tags": [
+          "Exercises"
+        ]
+      }
+    },
+    "/v1/me": {
+      "delete": {
+        "description": "Deletes the signed-in user's account and all of their data.\n\nThe Clerk user is deleted by the client afterwards (web and iOS call Clerk's\n`user.delete()`), so the API never needs the Clerk secret key. If that step\nfails, the next sign-in simply starts a new, empty account.",
+        "operationId": "deleteMe",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Me",
+        "tags": [
+          "Authentication"
+        ]
+      },
+      "get": {
+        "operationId": "getMe",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Me",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/v1/profile": {
+      "get": {
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Profile",
+        "tags": [
+          "Profile"
+        ]
+      },
+      "put": {
+        "description": "Creates the profile or replaces all of its fields.",
+        "operationId": "putProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Profile",
+        "tags": [
+          "Profile"
+        ]
+      }
+    },
+    "/v1/readiness": {
+      "get": {
+        "operationId": "listReadiness",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReadinessRead"
+                  },
+                  "title": "Response Listreadiness",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Readiness",
+        "tags": [
+          "Body and readiness"
+        ]
+      }
+    },
+    "/v1/readiness/{day}": {
+      "put": {
+        "description": "Creates or replaces the summary for one local date.",
+        "operationId": "putReadiness",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "day",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Day",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadinessWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Readiness",
+        "tags": [
+          "Body and readiness"
+        ]
+      }
+    },
+    "/v1/sync": {
+      "get": {
+        "description": "Returns up to `limit` of the user's records changed after `since`, deletions included.\n\nStore the returned `change_seq` and send it as `since` next time. While `has_more`\nis true, call again right away. `since=0` starts from the beginning. The built-in\ncatalog comes from GET /v1/exercises and GET /v1/templates instead.\n\nEvery change takes a unique value of the user's counter, so a page ends exactly at\nthe `limit`-th change and the next page starts after it.",
+        "operationId": "sync",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Since",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sync",
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/v1/templates": {
+      "get": {
+        "description": "Built-in templates plus the user's own.",
+        "operationId": "listTemplates",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateRead"
+                  },
+                  "title": "Response Listtemplates",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Templates",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/v1/templates/{template_id}": {
+      "delete": {
+        "operationId": "deleteTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Template",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "get": {
+        "operationId": "getTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Template",
+        "tags": [
+          "Templates"
+        ]
+      },
+      "put": {
+        "description": "Creates or completely replaces one of the user's own templates.",
+        "operationId": "putTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Template",
+        "tags": [
+          "Templates"
+        ]
+      }
+    },
+    "/v1/workouts": {
+      "get": {
+        "description": "Newest first. Pass `next_before` from a page as `before` to get the next page.",
+        "operationId": "listWorkouts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Workouts",
+        "tags": [
+          "Workouts"
+        ]
+      }
+    },
+    "/v1/workouts/{workout_id}": {
+      "delete": {
+        "operationId": "deleteWorkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workout_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Workout",
+        "tags": [
+          "Workouts"
+        ]
+      },
+      "get": {
+        "operationId": "getWorkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workout_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Workout",
+        "tags": [
+          "Workouts"
+        ]
+      },
+      "put": {
+        "description": "Creates the workout or replaces it completely, exercises and sets included.\n\nSending the same body again gives the same result, so the app can retry safely.",
+        "operationId": "putWorkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workout_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Workout",
+        "tags": [
+          "Workouts"
+        ]
+      }
+    }
+  }
+}
