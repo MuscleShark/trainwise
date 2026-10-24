@@ -7,8 +7,7 @@
     "migrateFunctionName": "trainwise-migrate-prod",
     "frontendUrls": [
       "https://ironsage.app",
-      "https://www.ironsage.app",
-      "https://muscleshark.vercel.app"
+      "https://www.ironsage.app"
     ],
     "ssmParameterPrefix": "/trainwise/prod",
     "clerkIssuer": "https://helping-ladybug-3945.clerk.accounts.dev"
