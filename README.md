@@ -11,6 +11,7 @@ The project is currently in active development. Its first milestone focuses on b
 - Protected current-user endpoint
 - Personal fitness profile creation, retrieval, and updates
 - Workout creation, retrieval, updates, and deletion
+- Account deletion: removes the profile, all workouts and the Clerk user
 - Responsive registration and login pages
 - Protected dashboard with authentication checks
 - Sign-out flow
@@ -121,6 +122,8 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`. Interactive API documentation is available at `http://localhost:8000/docs`.
 
+Client endpoints are versioned under `/v1` (for example `GET /v1/me`, `DELETE /v1/me`, `/v1/profile`, `/v1/workouts`). A breaking change ships as `/v2` so installed app versions keep working. `/health` stays unversioned.
+
 ### 3. Configure the frontend
 
 In a separate terminal:
@@ -168,7 +171,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Frontend production build and TypeScript validation
 - Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
-- Backend API tests (pytest) with a coverage report in the job summary (`pytest --cov` locally)
+- Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
@@ -209,6 +212,7 @@ The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via
 - [x] Protected dashboard foundation
 - [x] Profile management UI
 - [x] Workout management UI
+- [x] Versioned API (`/v1`) and account deletion
 - [ ] Nutrition tracking
 - [ ] Body-weight tracking
 - [ ] Sleep tracking

@@ -1,6 +1,6 @@
 import os
 
-from fastapi import Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from sqlalchemy import text
@@ -18,9 +18,14 @@ frontend_urls = [
     if url.strip()
 ]
 
-app.include_router(workouts.router)
-app.include_router(auth.router)
-app.include_router(profiles.router)
+# Every client-facing endpoint lives under /v1, so a later breaking change can ship as
+# /v2 while installed iOS app versions keep calling /v1. /health stays unversioned
+# because the deploy smoke test calls it.
+v1 = APIRouter(prefix="/v1")
+v1.include_router(workouts.router)
+v1.include_router(auth.router)
+v1.include_router(profiles.router)
+app.include_router(v1)
 
 app.add_middleware(
     CORSMiddleware,

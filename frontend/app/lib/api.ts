@@ -6,6 +6,9 @@ import { useCallback, useEffect } from "react";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+// Version prefix of the TrainWise API. Paths passed to apiFetch leave it out.
+const API_VERSION = "/v1";
+
 export class UnauthorizedError extends Error {
   constructor() {
     super("Your session has ended. Please sign in again.");
@@ -34,7 +37,7 @@ export function useApi() {
 
       const headers = new Headers(init.headers);
       headers.set("Authorization", `Bearer ${token}`);
-      const response = await fetch(`${API_URL}${path}`, { ...init, headers });
+      const response = await fetch(`${API_URL}${API_VERSION}${path}`, { ...init, headers });
 
       if (response.status === 401) {
         router.replace("/login");

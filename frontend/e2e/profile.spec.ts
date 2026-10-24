@@ -1,3 +1,4 @@
+import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { expect, test } from "@playwright/test";
 
 import { signUpNewUser } from "./helpers";
@@ -29,4 +30,24 @@ test("user can create and update a profile", async ({ page }) => {
 
   await page.reload();
   await expect(page.getByLabel("Weight (kg)")).toHaveValue("72.5");
+});
+
+test("user can delete their account", async ({ page }) => {
+  const email = await signUpNewUser(page, "delete");
+  await page.getByRole("link", { name: "Manage profile" }).click();
+  await page.getByLabel("Height (cm)").fill("170");
+  await page.getByRole("button", { name: "Create profile" }).click();
+  await expect(page.getByRole("status")).toHaveText("Your profile has been saved.");
+
+  await page.getByRole("button", { name: "Delete account" }).click();
+  await page.getByRole("button", { name: "Yes, delete everything" }).click();
+  await expect(page).not.toHaveURL(/\/profile/);
+
+  // The Clerk user is gone too, so signing in with the same email no longer works.
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/login/);
+  await setupClerkTestingToken({ page });
+  await page.getByLabel("Email address").fill(email);
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await expect(page.getByText("Couldn't find your account.").first()).toBeVisible();
 });

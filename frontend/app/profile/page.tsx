@@ -1,6 +1,8 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 import { UnauthorizedError, useApi } from "../lib/api";
@@ -334,8 +336,84 @@ export default function ProfilePage() {
             </button>
           </div>
         </form>
+
+        <DeleteAccount />
       </section>
     </main>
+  );
+}
+
+// Deletes the TrainWise data first, then the Clerk user. If the Clerk step fails the
+// data is already gone, and signing in again starts an empty account.
+function DeleteAccount() {
+  const { apiFetch } = useApi();
+  const { user } = useUser();
+  const router = useRouter();
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  async function deleteAccount() {
+    setError("");
+    setIsDeleting(true);
+
+    try {
+      const response = await apiFetch("/me", { method: "DELETE" });
+      if (!response.ok) throw new Error("Unable to delete your account.");
+      await user?.delete();
+      router.replace("/");
+    } catch (deleteError) {
+      if (deleteError instanceof UnauthorizedError) return;
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Unable to connect to the server.",
+      );
+      setIsDeleting(false);
+    }
+  }
+
+  return (
+    <div className="mt-12 rounded-2xl border border-red-400/20 p-6 sm:p-8">
+      <h2 className="text-xl font-semibold">Delete account</h2>
+      <p className="mt-2 max-w-2xl text-sm text-slate-400">
+        Permanently deletes your account, your profile and all of your workouts.
+        This cannot be undone.
+      </p>
+      {error ? (
+        <p role="alert" className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+          {error}
+        </p>
+      ) : null}
+      {isConfirming ? (
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={deleteAccount}
+            disabled={isDeleting}
+            className="rounded-xl bg-red-500 px-5 py-3 font-semibold text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeleting ? "Deleting…" : "Yes, delete everything"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsConfirming(false)}
+            disabled={isDeleting}
+            className="rounded-xl border border-white/10 px-5 py-3 font-semibold text-slate-200 transition hover:border-white/20 hover:text-white"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsConfirming(true)}
+          className="mt-6 rounded-xl border border-red-400/40 px-5 py-3 font-semibold text-red-300 transition hover:border-red-400 hover:text-red-200"
+        >
+          Delete account
+        </button>
+      )}
+    </div>
   );
 }
 
