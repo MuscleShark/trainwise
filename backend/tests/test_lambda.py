@@ -38,7 +38,7 @@ def test_lambda_handler_serves_requests(client):
 def test_lambda_handler_applies_cors(client):
     response = handler(
         function_url_event(
-            "/workouts",
+            "/v1/workouts",
             method="OPTIONS",
             headers={
                 "origin": "http://localhost:3000",

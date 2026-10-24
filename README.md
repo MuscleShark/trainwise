@@ -11,6 +11,7 @@ The project is currently in active development. Its first milestone focuses on b
 - Protected current-user endpoint
 - Personal fitness profile creation, retrieval, and updates
 - Workout creation, retrieval, updates, and deletion
+- Account deletion: removes the profile, all workouts and the Clerk user
 - Responsive registration and login pages
 - Protected dashboard with authentication checks
 - Sign-out flow
@@ -121,6 +122,8 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`. Interactive API documentation is available at `http://localhost:8000/docs`.
 
+Client endpoints are versioned under `/v1` (for example `GET /v1/me`, `DELETE /v1/me`, `/v1/profile`, `/v1/workouts`). A breaking change ships as `/v2` so installed app versions keep working. `/health` stays unversioned.
+
 ### 3. Configure the frontend
 
 In a separate terminal:
@@ -209,6 +212,7 @@ The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via
 - [x] Protected dashboard foundation
 - [x] Profile management UI
 - [x] Workout management UI
+- [x] Versioned API (`/v1`) and account deletion
 - [ ] Nutrition tracking
 - [ ] Body-weight tracking
 - [ ] Sleep tracking
