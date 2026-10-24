@@ -1,13 +1,12 @@
 """AWS Lambda entry point (function handler: "lambda_handler.handler").
 
-When SSM_PARAMETER_PREFIX is set, DATABASE_URL and SECRET_KEY are read from SSM
-Parameter Store (SecureString) at cold start, before the app modules that need them
-are imported.
+When SSM_PARAMETER_PREFIX is set, DATABASE_URL is read from SSM Parameter Store
+(SecureString) at cold start, before the app modules that need it are imported.
 """
 
 import os
 
-SECRET_NAMES = ("DATABASE_URL", "SECRET_KEY")
+SECRET_NAMES = ("DATABASE_URL",)
 
 
 def load_ssm_parameters(prefix: str | None, ssm_client=None) -> None:

@@ -15,9 +15,15 @@ class User(Base):
         unique=True,
         nullable=False,
     )
-    password_hash: Mapped[str] = mapped_column(
+    clerk_user_id: Mapped[str | None] = mapped_column(
         String(255),
-        nullable=False,
+        unique=True,
+        nullable=True,
+    )
+    # Only set for accounts created before sign-in moved to Clerk. No longer used.
+    password_hash: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useClerk } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { UnauthorizedError, useApi } from "../lib/api";
 
 type User = {
   id: number;
@@ -12,42 +12,30 @@ type User = {
 };
 
 export default function DashboardPage() {
-  const router = useRouter();
+  const { apiFetch, isReady } = useApi();
+  const { signOut: clerkSignOut } = useClerk();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
+    if (!isReady) return;
 
     async function loadUser() {
       try {
-        const response = await fetch(`${API_URL}/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-          localStorage.removeItem("access_token");
-          router.replace("/login");
-          return;
-        }
-
+        const response = await apiFetch("/me");
+        if (!response.ok) throw new Error("Could not load your account.");
         setUser(await response.json());
-      } catch {
+      } catch (loadError) {
+        if (loadError instanceof UnauthorizedError) return;
         setError("Could not connect to the TrainWise API.");
       }
     }
 
     void loadUser();
-  }, [router]);
+  }, [isReady, apiFetch]);
 
   function signOut() {
-    localStorage.removeItem("access_token");
-    router.replace("/login");
+    void clerkSignOut({ redirectUrl: "/login" });
   }
 
   return (

@@ -6,7 +6,7 @@ from constructs import Construct
 
 # Secrets are created by hand as SSM SecureString parameters (CloudFormation cannot
 # create SecureStrings). The function reads them at cold start; see backend/lambda_handler.py.
-SECRET_PARAMETER_NAMES = ("DATABASE_URL", "SECRET_KEY")
+SECRET_PARAMETER_NAMES = ("DATABASE_URL",)
 
 
 class ApiStack(Stack):
@@ -20,6 +20,7 @@ class ApiStack(Stack):
         code: lambda_.Code,
         function_name: str,
         frontend_urls: list[str],
+        clerk_issuer: str,
         ssm_parameter_prefix: str,
         **kwargs,
     ) -> None:
@@ -46,6 +47,7 @@ class ApiStack(Stack):
             log_group=log_group,
             environment={
                 "FRONTEND_URL": ",".join(frontend_urls),
+                "CLERK_ISSUER": clerk_issuer,
                 "SSM_PARAMETER_PREFIX": ssm_parameter_prefix,
             },
         )
