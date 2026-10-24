@@ -4,12 +4,13 @@ This document describes where TrainWise is going and why. [deployment.md](deploy
 
 ## Positioning
 
-TrainWise is an **iOS-first strength-training log with an AI coach**.
+TrainWise is an **iOS-first strength-training log with an AI coach**. The product ships as **IronSage** (see [Name](#name)). The repository and AWS resources keep the `trainwise` name; users never see it.
 
 - **Users** lift weights. They log exercises, sets, reps and load, for example a chest press on a specific machine at a specific weight.
 - **Core loop**: log a session, then before the next one the coach suggests what to do (exercise, load, sets and reps) and explains why. The suggestion uses past sessions and Apple Health data (sleep, heart rate variability, resting heart rate, heart rate during earlier workouts).
 - **Business model**: logging, history and charts are free. The AI coach is a subscription.
-- **Platforms**: iPhone app (main product). The web app shrinks to a landing page plus privacy and support pages. No Android.
+- **Platforms**: iPhone app (main product), including the foldable iPhone Duo. The web app shrinks to a landing page plus privacy and support pages. No Android, no iPad or Apple Watch app in version 1.
+- **Languages**: English and Chinese.
 - **Constraints**: one developer, costs close to zero until there are paying users.
 
 ## Decisions
@@ -23,6 +24,65 @@ TrainWise is an **iOS-first strength-training log with an AI coach**.
 | Next-session suggestion | Deterministic progression rules first, then Claude adjusts and explains | Numbers stay stable and testable. The model only sees a small summary, which keeps calls cheap |
 | Subscriptions (v1) | StoreKit 2 only | See [Subscriptions](#subscriptions) |
 | Nutrition | Version 2 | Large feature that is not part of the core strength loop |
+
+## Name
+
+**IronSage**: "iron" for lifting, "sage" for a coach that explains its advice.
+
+Checked on 2026-10-24:
+
+- App Store: no app named IronSage or Iron Sage in the US, UK, Canada, Australia, Singapore, Hong Kong, Taiwan, Japan or Germany stores. "TrainWise" was dropped because four App Store apps already use it.
+- USPTO: no trademark for "ironsage" or "iron sage".
+- Domains: `ironsage.app` is unregistered (preferred). `ironsage.com` belongs to an unrelated site; `getironsage.com` and `ironsageapp.com` are unregistered.
+
+The name is only ours once the app is created in App Store Connect and the domain is bought. Check again right before both.
+
+## iOS app version 1
+
+### Milestones
+
+Each milestone goes to TestFlight and is used in real workouts before the next one starts.
+
+| Milestone | Scope | Done when |
+|---|---|---|
+| **M1 Logging** | Sign-in, profile, workout logging (works offline), history, templates | A full gym session can be logged without a connection |
+| **M2 Health and progress** | Read sleep, HRV, resting HR and workout heart rate; write workouts to Apple Health; charts; personal records | Each exercise shows its progress, and workouts appear in Apple Fitness |
+| **M3 AI coach** | Next-session suggestion with its reason, weekly summary, StoreKit 2 subscription | A subscriber gets suggestions end to end. **Then submit to the App Store** |
+
+### Screens
+
+1. **Onboarding**: Clerk sign-in (email code, Google, Apple); short profile (kg or lb, experience, goal; height and birthday optional); an explanation page, then the HealthKit permission prompt.
+2. **Today**: start a workout (empty or from a template); readiness card (M2); AI suggestion card or the subscription offer (M3).
+3. **Workout logging** (the core screen):
+   - Add exercises by search, equipment or muscle, or create a custom one (a specific machine).
+   - One row per set, **prefilled with last time's load and reps** and labelled "Last: 60 kg × 8".
+   - Completing a set **starts the rest timer**, which notifies even when the phone is locked.
+   - Optional RIR; warm-up sets can be marked.
+   - Finishing shows a summary: total volume and new personal records. From M2 the workout is written to Apple Health.
+4. **History**: workouts by date; view, edit and delete.
+5. **Exercise detail** (M2): all past sets, estimated one-rep max chart, personal records.
+6. **Progress** (M2): body-weight trend from Apple Health, weekly sets per muscle group.
+7. **Templates**: built-in templates from [coaching.md](coaching.md) and the user's own.
+8. **Settings**: units, language, Apple Health, subscription, privacy policy, sign out, delete account.
+
+Not in version 1: Apple Watch app, Live Activities and widgets, iPad layout, social features, nutrition, coach chat and plan generation.
+
+### Languages
+
+- English and Chinese (Simplified). iOS picks the language from the phone's language list, not from the App Store region.
+- Users can change it per app in iOS Settings; the app's Language row opens that page instead of offering its own switcher.
+- The AI coach answers in the app's current language.
+- App Store listings (name, description, screenshots) are written for each language.
+- **Not offered in the mainland China App Store** in version 1. Generative AI features need regulatory approval there, and the Claude API is not available there. Chinese-speaking users in other regions use the Chinese version.
+
+### Technical choices
+
+- SwiftUI and Swift Charts, **minimum iOS 18**.
+- Adaptive layouts (size classes, no fixed sizes) so the folded and unfolded **iPhone Duo** both work. Side-by-side layouts for the unfolded screen can come later.
+- Offline first: SwiftData on the phone, synced with the API when online.
+- Clerk iOS SDK; API client generated from the OpenAPI document (swift-openapi-generator).
+- Code lives in `ios/`. CI builds and tests on a macOS runner (CI change to be agreed first).
+- Needs an Apple Developer Program membership (99 USD a year) from TestFlight onwards.
 
 ## Target architecture
 
@@ -84,6 +144,7 @@ Notes:
    - Estimated one-rep max (e1RM) from recent sets.
    - Double progression: when every working set reaches the top of the rep range, add load next time.
    - Trend for each exercise over the last sessions.
+   - The rules follow [coaching.md](coaching.md).
 2. **Claude adjusts and explains**
    - Input: the rule-based plan, recent sessions, and readiness (sleep, HRV and resting HR compared with the user's own baseline, heart rate in the last session).
    - Output: the final suggestion and a short reason. Example: "You slept 5.5 h and HRV is 20% below your usual, so keep 60 kg instead of adding weight."
@@ -162,7 +223,7 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 | Feature | External integrations |
 |---|---|
 | Sign-in | Clerk |
-| Strength logging, rest timer | None (exercise catalog seeded from wger) |
+| Strength logging, rest timer, templates | None (exercise catalog seeded from wger; templates from [coaching.md](coaching.md)) |
 | Sleep, heart rate, workout sync | Apple HealthKit (read and write) |
 | Progress charts, personal records | None (Swift Charts) |
 | AI coach: next-session suggestion, weekly summary (paid) | Claude API, StoreKit 2, App Store Server Notifications V2, AWS SQS, EventBridge Scheduler |
