@@ -15,9 +15,12 @@ class User(Base):
         unique=True,
         nullable=False,
     )
+    # A unique index (not a constraint) named ix_users_clerk_user_id, which is what
+    # production got from the one-off Clerk migration before Alembic.
     clerk_user_id: Mapped[str | None] = mapped_column(
         String(255),
         unique=True,
+        index=True,
         nullable=True,
     )
     # Only set for accounts created before sign-in moved to Clerk. No longer used.

@@ -49,3 +49,10 @@ def test_lambda_handler_applies_cors(client):
     )
     assert response["statusCode"] == 200
     assert response["headers"]["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_lambda_entry_point_serves_requests(client):
+    from lambda_handler import handler as entry_point
+
+    response = entry_point(function_url_event("/health"), None)
+    assert response["statusCode"] == 200

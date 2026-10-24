@@ -4,7 +4,6 @@ omit =
     .venv/*
     tests/*
     scripts/*
-    create_tables.py
 
 [report]
 show_missing = true

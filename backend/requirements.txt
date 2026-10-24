@@ -2,6 +2,7 @@
 fastapi
 mangum
 sqlalchemy
+alembic
 psycopg[binary]
 python-dotenv
 python-jose[cryptography]

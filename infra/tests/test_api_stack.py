@@ -16,6 +16,7 @@ def template() -> Template:
         "TestApi",
         code=lambda_.Code.from_inline("def handler(event, context): pass"),
         function_name="trainwise-api-test",
+        migrate_function_name="trainwise-migrate-test",
         frontend_urls=["https://example.vercel.app", "http://localhost:3000"],
         clerk_issuer="https://test-instance.clerk.accounts.dev",
         ssm_parameter_prefix="/trainwise/test",
@@ -48,8 +49,9 @@ def test_function_configuration(template):
 def test_secrets_are_not_in_environment(template):
     functions = template.find_resources("AWS::Lambda::Function")
     for function in functions.values():
-        variables = function["Properties"]["Environment"]["Variables"]
+        variables = function["Properties"].get("Environment", {}).get("Variables", {})
         assert "DATABASE_URL" not in variables
+        assert "DATABASE_URL_DIRECT" not in variables
         assert "SECRET_KEY" not in variables
         assert "CLERK_SECRET_KEY" not in variables
 
@@ -61,16 +63,55 @@ def test_public_function_url_without_cors(template):
     )
 
 
-def test_function_can_read_only_its_parameters(template):
-    policies = json.dumps(template.find_resources("AWS::IAM::Policy"))
-    assert "ssm:GetParameters" in policies
-    assert "parameter/trainwise/test/DATABASE_URL" in policies
-    assert "parameter/trainwise/test/*" not in policies
-    assert "SECRET_KEY" not in policies
+def policy_for_function(template: Template, function_name: str) -> str:
+    functions = template.find_resources(
+        "AWS::Lambda::Function", {"Properties": {"FunctionName": function_name}}
+    )
+    (function,) = functions.values()
+    role_id = function["Properties"]["Role"]["Fn::GetAtt"][0]
+    policies = template.find_resources("AWS::IAM::Policy")
+    return json.dumps(
+        [p for p in policies.values() if {"Ref": role_id} in p["Properties"]["Roles"]]
+    )
+
+
+def test_api_function_can_read_only_its_parameter(template):
+    policy = policy_for_function(template, "trainwise-api-test")
+    assert "parameter/trainwise/test/DATABASE_URL\"" in policy
+    assert "DATABASE_URL_DIRECT" not in policy
+    assert "parameter/trainwise/test/*" not in policy
+    assert "SECRET_KEY" not in policy
+
+
+def test_migrate_function_can_read_only_the_direct_url(template):
+    policy = policy_for_function(template, "trainwise-migrate-test")
+    assert "parameter/trainwise/test/DATABASE_URL_DIRECT" in policy
+    assert "parameter/trainwise/test/DATABASE_URL\"" not in policy
+
+
+def test_migrations_run_before_the_api_function_is_updated(template):
+    template.has_resource_properties(
+        "AWS::Lambda::Function",
+        {
+            "FunctionName": "trainwise-migrate-test",
+            "Handler": "migrate_handler.handler",
+            "Timeout": 300,
+            "Environment": {"Variables": {"SSM_PARAMETER_PREFIX": "/trainwise/test"}},
+        },
+    )
+    triggers = template.find_resources("Custom::Trigger")
+    assert len(triggers) == 1
+    (trigger_id,) = triggers
+    api_functions = template.find_resources(
+        "AWS::Lambda::Function", {"Properties": {"FunctionName": "trainwise-api-test"}}
+    )
+    (api_function,) = api_functions.values()
+    assert trigger_id in api_function["DependsOn"]
 
 
 def test_logs_are_kept_for_a_month(template):
-    template.has_resource_properties(
-        "AWS::Logs::LogGroup",
-        {"LogGroupName": "/aws/lambda/trainwise-api-test", "RetentionInDays": 30},
-    )
+    for name in ("trainwise-api-test", "trainwise-migrate-test"):
+        template.has_resource_properties(
+            "AWS::Logs::LogGroup",
+            {"LogGroupName": f"/aws/lambda/{name}", "RetentionInDays": 30},
+        )

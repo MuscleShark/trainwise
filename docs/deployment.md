@@ -13,8 +13,8 @@ Browser ──► Vercel (Next.js frontend, root directory: frontend/)
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
 - **Backend infrastructure and code**: defined with **AWS CDK** in [`infra/`](../infra). After the `CI` workflow succeeds on `main`, `.github/workflows/deploy-backend.yml` builds the Lambda package (`backend/scripts/build_lambda.sh`), runs `cdk deploy` and calls `/health` as a smoke test.
 - **Sign-in**: [Clerk](https://clerk.com). The Lambda only needs the Clerk instance's issuer URL (`clerkIssuer` in `infra/cdk.json`, not a secret) to verify session tokens. The Clerk secret key is used only by Vercel.
-- **Secrets**: `DATABASE_URL` is an SSM Parameter Store *SecureString* parameter under `/trainwise/prod/`. CloudFormation cannot create SecureStrings, so it is created by hand (step 3). Only the Lambda role can read them.
-- **Database**: tables are created with `backend/create_tables.py`. It only creates missing tables. It does not alter existing ones.
+- **Secrets**: `DATABASE_URL` (pooled) and `DATABASE_URL_DIRECT` (direct) are SSM Parameter Store *SecureString* parameters under `/trainwise/prod/`. CloudFormation cannot create SecureStrings, so they are created by hand (step 3). The API role can only read `DATABASE_URL`; the migration role can only read `DATABASE_URL_DIRECT`.
+- **Database migrations**: [Alembic](https://alembic.sqlalchemy.org) (`backend/migrations/`). During each `cdk deploy`, a CDK trigger runs the `trainwise-migrate-prod` Lambda (`alembic upgrade head`) **before** the API function is updated. If a migration fails, the deploy fails and the API keeps its previous code.
 
 The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accounts. Keep every connection string and secret out of git and out of chat.
 
@@ -25,6 +25,8 @@ The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accoun
 | Lambda `trainwise-api-prod` | Python 3.11, x86_64, 512 MB, 15 s, handler `lambda_handler.handler` |
 | Function URL | Auth `NONE` (the API verifies Clerk session tokens itself). No URL-level CORS, because FastAPI sends the headers |
 | Execution role | Basic logging + `ssm:GetParameters` on `/trainwise/prod/DATABASE_URL` only |
+| Lambda `trainwise-migrate-prod` | Same code package, handler `migrate_handler.handler`, 5-minute timeout. Its role may only read `/trainwise/prod/DATABASE_URL_DIRECT`. Log group kept for 30 days |
+| Migration trigger | CDK trigger that invokes `trainwise-migrate-prod` whenever its code changes, before the API function is updated |
 | Log group | `/aws/lambda/trainwise-api-prod`, kept for 30 days |
 
 Settings that are not secret live in [`infra/cdk.json`](../infra/cdk.json) (`frontendUrls`, `clerkIssuer`, `functionName`, `ssmParameterPrefix`, account and Region). To change one, edit the file in a PR. The deploy after merge applies the change.
@@ -47,18 +49,11 @@ AWS Billing → **Budgets** → Create budget → *Zero spend budget* → your e
 
 1. In the Neon console (project in **AWS US East 2**), open **Connect**.
 2. Copy two connection strings:
-   - **Pooled**: the host contains `-pooler`. The Lambda function uses this one.
-   - **Direct**: pooling turned off. Use it to create tables.
+   - **Pooled**: the host contains `-pooler`. The API function uses this one.
+   - **Direct**: pooling turned off. The migration function uses this one, because schema changes should not go through the pooler.
 3. In both, change the scheme `postgresql://` to `postgresql+psycopg://`. Keep `?sslmode=require`.
 
-Create the tables from your machine using the **direct** string:
-
-```bash
-cd backend
-read -rs "NEON_DIRECT_URL?Neon direct URL: " && echo
-DATABASE_URL="$NEON_DIRECT_URL" .venv/bin/python create_tables.py
-unset NEON_DIRECT_URL
-```
+Both go into SSM in step 3. The first deploy creates the tables.
 
 ## 2. Bootstrap CDK (once per account and Region)
 
@@ -77,6 +72,12 @@ In **CloudShell**. Each `read` prompt hides what you paste:
 ```bash
 read -rsp "Neon POOLED url (postgresql+psycopg://...): " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/DATABASE_URL --type SecureString --value "$V" --overwrite && unset V
 ```
+
+```bash
+read -rsp "Neon DIRECT url (postgresql+psycopg://...): " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/DATABASE_URL_DIRECT --type SecureString --value "$V" --overwrite && unset V
+```
+
+The deploy fails (and changes nothing) if `DATABASE_URL_DIRECT` is missing, because migrations cannot run.
 
 `/trainwise/prod/SECRET_KEY` was used by the old password sign-in and is no longer read. It can be deleted.
 
@@ -136,4 +137,4 @@ Open the Vercel URL → sign up with an email code (and with Google / Apple) →
 - Merge a PR into `main`. Vercel redeploys the frontend, CI runs, and if CI passes `cdk deploy` updates the backend infrastructure and code.
 - Infrastructure changes (memory, timeout, allowed origins, permissions) are code changes in `infra/`. The deploy log shows a `cdk diff` before deploying.
 - Rotate the Clerk secret key in the Clerk dashboard, then update it in Vercel and the `CLERK_SECRET_KEY` repository secret.
-- New tables: rerun `create_tables.py` against the direct URL. Changes to existing tables need a migration tool (Alembic), which is not set up yet. Until then, one-off scripts live in `backend/scripts/` (for example `migrate_add_clerk.py`), run against the direct URL before merging the code that needs them.
+- Schema changes: edit `backend/models.py`, generate an Alembic migration (see the README), review it and merge it with the code. The deploy applies it. To run migrations by hand (for example to check a migration against a Neon branch), use `DATABASE_URL=<direct url> alembic upgrade head` from `backend/`.

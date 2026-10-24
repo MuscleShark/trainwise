@@ -10,7 +10,7 @@ LAMBDA_PACKAGE = Path(__file__).resolve().parent.parent / "backend" / "build" / 
 
 app = cdk.App()
 
-if not (LAMBDA_PACKAGE / "lambda_handler.py").exists():
+if not (LAMBDA_PACKAGE / "lambda_handler.py").exists() or not (LAMBDA_PACKAGE / "alembic.ini").exists():
     raise SystemExit(
         f"Lambda package not found at {LAMBDA_PACKAGE}. Run backend/scripts/build_lambda.sh first."
     )
@@ -20,6 +20,7 @@ ApiStack(
     "TrainWiseApi",
     code=lambda_.Code.from_asset(str(LAMBDA_PACKAGE)),
     function_name=app.node.get_context("functionName"),
+    migrate_function_name=app.node.get_context("migrateFunctionName"),
     frontend_urls=app.node.get_context("frontendUrls"),
     clerk_issuer=app.node.get_context("clerkIssuer"),
     ssm_parameter_prefix=app.node.get_context("ssmParameterPrefix"),

@@ -197,7 +197,7 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 
 ### P0: before the iOS app
 
-1. **Alembic** for database migrations, instead of `create_tables.py` and one-off scripts.
+1. ~~**Alembic** for database migrations~~. Done: migrations run automatically during each deploy (see [deployment.md](deployment.md)).
 2. **Data model version 1** as above (strength sets, exercise catalog, dated body and readiness tables).
 3. **Offline sync support**: client UUIDs, `updated_at`, soft delete, "changes since" queries.
 4. **API conventions**: pagination, date filters, time zones, generated clients.
