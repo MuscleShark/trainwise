@@ -1,33 +1,39 @@
 @import "tailwindcss";
 
+/* Colours taken from the gym: chalk, iron, steel and calibrated competition plates. */
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --chalk: #e8ebe8;
+  --chalk-deep: #dde1dd;
+  --ink: #18212b;
+  --steel: #59646e;
+  --plate-blue: #1d4e9e;
+  --plate-red: #c22b2b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --color-chalk: var(--chalk);
+  --color-chalk-deep: var(--chalk-deep);
+  --color-ink: var(--ink);
+  --color-steel: var(--steel);
+  --color-plate-blue: var(--plate-blue);
+  --color-plate-red: var(--plate-red);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--chalk);
+  color: var(--ink);
+  font-family: var(--font-sans);
 }
 
-@layer components {
-  .profile-input {
-    @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20;
-  }
+/* Archivo's width axis: expanded for headings, like the lettering stamped on plates. */
+.type-stamp {
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
 
-  select.profile-input option {
-    @apply bg-slate-900 text-white;
-  }
-
-  .workout-input {
-    @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20;
-  }
+:focus-visible {
+  outline: 2px solid var(--plate-blue);
+  outline-offset: 3px;
 }

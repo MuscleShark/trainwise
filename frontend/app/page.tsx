@@ -1,26 +1,102 @@
 import Link from "next/link";
 
+const features = [
+  {
+    title: "Log a set in two taps",
+    body: "Every set starts with last time's weight and reps. Finish it and the rest timer starts, even with the phone locked. Works without signal.",
+  },
+  {
+    title: "See every lift move",
+    body: "Estimated one-rep max, personal records and weekly sets per muscle, for each machine and bar you use.",
+  },
+  {
+    title: "A coach that shows its work",
+    body: "Suggestions follow published training research and your own history, and each one says which numbers it used.",
+  },
+];
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <section className="max-w-2xl text-center">
-        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-emerald-400">
-          TrainWise
-        </p>
-        <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl">
-          Train with better data.
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-300">
-          Keep your training, recovery, and progress in one place—and turn it
-          into decisions you can act on.
-        </p>
+    <div className="flex flex-1 flex-col">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-8">
+        <span className="type-stamp text-xl">IronSage</span>
         <Link
           href="/login"
-          className="mt-10 inline-flex rounded-xl bg-emerald-400 px-6 py-3 font-semibold text-slate-950 transition hover:bg-emerald-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400"
+          className="rounded-md px-3 py-2 text-sm font-medium text-steel transition-colors hover:text-ink"
         >
-          Sign in to TrainWise
+          Sign in
         </Link>
-      </section>
-    </main>
+      </header>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8">
+        <section className="grid items-center gap-12 py-12 sm:py-20 lg:grid-cols-[1.1fr_1fr]">
+          <div>
+            <h1 className="type-stamp text-5xl leading-[0.95] sm:text-7xl">
+              Know what to lift next.
+            </h1>
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-steel">
+              IronSage logs your sets, reads sleep and heart rate from Apple Health,
+              and suggests the weight and reps for your next session, with the reason
+              behind every change.
+            </p>
+            <p className="mt-8 text-sm font-medium text-ink">Coming soon to iPhone.</p>
+          </div>
+
+          <LogbookEntry />
+        </section>
+
+        <section
+          aria-label="Features"
+          className="grid gap-10 border-t border-ink/15 py-14 sm:grid-cols-3"
+        >
+          {features.map((feature) => (
+            <div key={feature.title}>
+              <h2 className="text-lg font-semibold">{feature.title}</h2>
+              <p className="mt-3 leading-relaxed text-steel">{feature.body}</p>
+            </div>
+          ))}
+        </section>
+      </main>
+
+      <footer className="mx-auto w-full max-w-6xl px-4 py-8 text-sm text-steel sm:px-8">
+        © {new Date().getFullYear()} IronSage
+      </footer>
+    </div>
+  );
+}
+
+// The product's core moment, set like a page in a training log.
+function LogbookEntry() {
+  const lastSets = ["60 × 8", "60 × 8", "60 × 7"];
+
+  return (
+    <figure
+      aria-label="Example coach suggestion for bench press"
+      className="rounded-sm border border-ink/15 bg-white/70 p-6 shadow-[6px_6px_0_var(--chalk-deep)] sm:p-8"
+    >
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="type-stamp text-2xl">Bench press</h2>
+        <span className="text-sm text-steel">Barbell, kg</span>
+      </div>
+
+      <dl className="mt-6 grid grid-cols-[5rem_1fr] gap-y-3 tabular-nums">
+        <dt className="text-sm text-steel">Last time</dt>
+        <dd className="flex flex-wrap gap-x-4 gap-y-1">
+          {lastSets.map((set, index) => (
+            <span key={index}>{set}</span>
+          ))}
+        </dd>
+        <dt className="text-sm text-steel">Today</dt>
+        <dd>
+          <span className="font-semibold">60 × 8, three sets.</span>{" "}
+          <span className="font-semibold text-plate-red">Hold the weight.</span>
+        </dd>
+      </dl>
+
+      <figcaption className="mt-6 border-l-4 border-plate-blue pl-4 leading-relaxed">
+        You slept 5 h 40 min and your HRV is 18% below your usual. The last set
+        also fell one rep short, so stay at 60 kg and aim for 8 on every set.
+      </figcaption>
+    </figure>
   );
 }

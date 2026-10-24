@@ -1,12 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { expectDashboardFor, signIn, signUpNewUser } from "./helpers";
+import { expectAccountFor, signIn, signUpNewUser } from "./helpers";
 
-test("protected pages redirect to login when signed out", async ({ page }) => {
-  for (const path of ["/dashboard", "/workouts", "/profile"]) {
-    await page.goto(path);
-    await expect(page).toHaveURL(/\/login/);
-  }
+test("the account page redirects to login when signed out", async ({ page }) => {
+  await page.goto("/account");
+  await expect(page).toHaveURL(/\/login/);
 });
 
 // Google and Apple sign-in go through real provider pages, so E2E only checks the
@@ -23,22 +21,22 @@ test("user can sign up with an email code, sign out and sign back in", async ({ 
   const email = await signUpNewUser(page, "auth");
 
   await page.getByRole("button", { name: "Sign out" }).click();
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 
-  await page.goto("/dashboard");
+  await page.goto("/account");
   await expect(page).toHaveURL(/\/login/);
 
   await signIn(page, email);
-  await expectDashboardFor(page, email);
+  await expectAccountFor(page, email);
 });
 
 test("a wrong email code is rejected", async ({ page }) => {
   const email = await signUpNewUser(page, "wrong-code");
   await page.getByRole("button", { name: "Sign out" }).click();
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
 
   await signIn(page, email, "000000");
 
   await expect(page.getByText(/incorrect|invalid/i).first()).toBeVisible();
-  await expect(page).not.toHaveURL(/\/dashboard/);
+  await expect(page).not.toHaveURL(/\/account/);
 });
