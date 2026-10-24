@@ -24,8 +24,7 @@ class FakeSSM:
 
 @pytest.fixture
 def restore_env(monkeypatch):
-    for name in ("DATABASE_URL", "SECRET_KEY"):
-        monkeypatch.setenv(name, os.environ.get(name, ""))
+    monkeypatch.setenv("DATABASE_URL", os.environ.get("DATABASE_URL", ""))
 
 
 def test_no_prefix_does_nothing():
@@ -35,24 +34,16 @@ def test_no_prefix_does_nothing():
 
 
 def test_loads_secrets_into_environment(restore_env):
-    ssm = FakeSSM(
-        {
-            "/trainwise/prod/DATABASE_URL": "postgresql+psycopg://from-ssm",
-            "/trainwise/prod/SECRET_KEY": "secret-from-ssm",
-        }
-    )
+    ssm = FakeSSM({"/trainwise/prod/DATABASE_URL": "postgresql+psycopg://from-ssm"})
 
     load_ssm_parameters("/trainwise/prod/", ssm)
 
-    assert ssm.calls == [
-        (["/trainwise/prod/DATABASE_URL", "/trainwise/prod/SECRET_KEY"], True)
-    ]
+    assert ssm.calls == [(["/trainwise/prod/DATABASE_URL"], True)]
     assert os.environ["DATABASE_URL"] == "postgresql+psycopg://from-ssm"
-    assert os.environ["SECRET_KEY"] == "secret-from-ssm"
 
 
 def test_missing_parameter_fails_fast(restore_env):
-    ssm = FakeSSM({"/trainwise/prod/DATABASE_URL": "postgresql+psycopg://from-ssm"})
+    ssm = FakeSSM({})
 
-    with pytest.raises(RuntimeError, match="SECRET_KEY"):
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
         load_ssm_parameters("/trainwise/prod", ssm)

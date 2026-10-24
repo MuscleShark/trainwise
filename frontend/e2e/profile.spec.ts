@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-import { registerAndLogin } from "./helpers";
+import { signUpNewUser } from "./helpers";
 
 test("user can create and update a profile", async ({ page }) => {
-  await registerAndLogin(page, "profile");
+  await signUpNewUser(page, "profile");
 
   await page.getByRole("link", { name: "Manage profile" }).click();
   await expect(page).toHaveURL(/\/profile$/);

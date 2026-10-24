@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { UnauthorizedError, useApi } from "../lib/api";
 
 type Workout = {
   id: number;
@@ -29,7 +28,7 @@ const emptyForm: WorkoutForm = {
 };
 
 export default function WorkoutsPage() {
-  const router = useRouter();
+  const { apiFetch, isReady } = useApi();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [form, setForm] = useState<WorkoutForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -38,34 +37,18 @@ export default function WorkoutsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
-  function handleUnauthorized() {
-    localStorage.removeItem("access_token");
-    router.replace("/login");
-  }
-
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
+    if (!isReady) return;
 
     async function loadWorkouts() {
       try {
-        const response = await fetch(`${API_URL}/workouts`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem("access_token");
-          router.replace("/login");
-          return;
-        }
+        const response = await apiFetch("/workouts");
         if (!response.ok) throw new Error("Unable to load your workouts.");
 
         const data: Workout[] = await response.json();
         setWorkouts(data);
       } catch (loadError) {
+        if (loadError instanceof UnauthorizedError) return;
         setError(
           loadError instanceof Error
             ? loadError.message
@@ -77,7 +60,7 @@ export default function WorkoutsPage() {
     }
 
     void loadWorkouts();
-  }, [router]);
+  }, [isReady, apiFetch]);
 
   function updateField(field: keyof WorkoutForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -105,23 +88,12 @@ export default function WorkoutsPage() {
     event.preventDefault();
     setError("");
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      handleUnauthorized();
-      return;
-    }
-
     setIsSaving(true);
     try {
-      const url = editingId
-        ? `${API_URL}/workouts/${editingId}`
-        : `${API_URL}/workouts`;
-      const response = await fetch(url, {
+      const path = editingId ? `/workouts/${editingId}` : "/workouts";
+      const response = await apiFetch(path, {
         method: editingId ? "PUT" : "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workout_date: form.workout_date,
           workout_type: form.workout_type.trim(),
@@ -129,11 +101,6 @@ export default function WorkoutsPage() {
           notes: form.notes.trim() || null,
         }),
       });
-
-      if (response.status === 401) {
-        handleUnauthorized();
-        return;
-      }
 
       const data = await response.json().catch(() => null);
       if (!response.ok) {
@@ -154,6 +121,7 @@ export default function WorkoutsPage() {
       );
       resetForm();
     } catch (saveError) {
+      if (saveError instanceof UnauthorizedError) return;
       setError(
         saveError instanceof Error
           ? saveError.message
@@ -169,24 +137,10 @@ export default function WorkoutsPage() {
       return;
     }
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      handleUnauthorized();
-      return;
-    }
-
     setDeletingId(workoutId);
     setError("");
     try {
-      const response = await fetch(`${API_URL}/workouts/${workoutId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.status === 401) {
-        handleUnauthorized();
-        return;
-      }
+      const response = await apiFetch(`/workouts/${workoutId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Unable to delete the workout.");
 
       setWorkouts((current) =>
@@ -194,6 +148,7 @@ export default function WorkoutsPage() {
       );
       if (editingId === workoutId) resetForm();
     } catch (deleteError) {
+      if (deleteError instanceof UnauthorizedError) return;
       setError(
         deleteError instanceof Error
           ? deleteError.message

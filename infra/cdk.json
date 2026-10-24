@@ -4,7 +4,10 @@
     "account": "119033255980",
     "region": "us-east-2",
     "functionName": "trainwise-api-prod",
-    "frontendUrls": ["https://muscleshark.vercel.app"],
-    "ssmParameterPrefix": "/trainwise/prod"
+    "frontendUrls": [
+      "https://muscleshark.vercel.app"
+    ],
+    "ssmParameterPrefix": "/trainwise/prod",
+    "clerkIssuer": "https://helping-ladybug-3945.clerk.accounts.dev"
   }
 }

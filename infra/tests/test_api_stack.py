@@ -1,3 +1,5 @@
+import json
+
 import aws_cdk as cdk
 import pytest
 from aws_cdk import aws_lambda as lambda_
@@ -15,6 +17,7 @@ def template() -> Template:
         code=lambda_.Code.from_inline("def handler(event, context): pass"),
         function_name="trainwise-api-test",
         frontend_urls=["https://example.vercel.app", "http://localhost:3000"],
+        clerk_issuer="https://test-instance.clerk.accounts.dev",
         ssm_parameter_prefix="/trainwise/test",
         env=cdk.Environment(account="123456789012", region="us-east-2"),
     )
@@ -34,6 +37,7 @@ def test_function_configuration(template):
             "Environment": {
                 "Variables": {
                     "FRONTEND_URL": "https://example.vercel.app,http://localhost:3000",
+                    "CLERK_ISSUER": "https://test-instance.clerk.accounts.dev",
                     "SSM_PARAMETER_PREFIX": "/trainwise/test",
                 }
             },
@@ -47,6 +51,7 @@ def test_secrets_are_not_in_environment(template):
         variables = function["Properties"]["Environment"]["Variables"]
         assert "DATABASE_URL" not in variables
         assert "SECRET_KEY" not in variables
+        assert "CLERK_SECRET_KEY" not in variables
 
 
 def test_public_function_url_without_cors(template):
@@ -57,40 +62,11 @@ def test_public_function_url_without_cors(template):
 
 
 def test_function_can_read_only_its_parameters(template):
-    template.has_resource_properties(
-        "AWS::IAM::Policy",
-        {
-            "PolicyDocument": {
-                "Statement": Match.array_with(
-                    [
-                        Match.object_like(
-                            {
-                                "Action": "ssm:GetParameters",
-                                "Resource": [
-                                    Match.object_like(
-                                        {
-                                            "Fn::Join": Match.array_with(
-                                                [
-                                                    Match.array_with(
-                                                        [
-                                                            Match.string_like_regexp(
-                                                                "parameter/trainwise/test/DATABASE_URL"
-                                                            )
-                                                        ]
-                                                    )
-                                                ]
-                                            )
-                                        }
-                                    ),
-                                    Match.any_value(),
-                                ],
-                            }
-                        )
-                    ]
-                )
-            }
-        },
-    )
+    policies = json.dumps(template.find_resources("AWS::IAM::Policy"))
+    assert "ssm:GetParameters" in policies
+    assert "parameter/trainwise/test/DATABASE_URL" in policies
+    assert "parameter/trainwise/test/*" not in policies
+    assert "SECRET_KEY" not in policies
 
 
 def test_logs_are_kept_for_a_month(template):

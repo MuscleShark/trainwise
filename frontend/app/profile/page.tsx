@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { UnauthorizedError, useApi } from "../lib/api";
 
 type Profile = {
   birthday: string | null;
@@ -61,7 +60,7 @@ function optionalNumber(value: string) {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
+  const { apiFetch, isReady } = useApi();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [hasProfile, setHasProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,24 +69,11 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
+    if (!isReady) return;
 
     async function loadProfile() {
       try {
-        const response = await fetch(`${API_URL}/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status === 401) {
-          localStorage.removeItem("access_token");
-          router.replace("/login");
-          return;
-        }
+        const response = await apiFetch("/profile");
 
         if (response.status === 404) {
           setHasProfile(false);
@@ -102,6 +88,7 @@ export default function ProfilePage() {
         setForm(profileToForm(profile));
         setHasProfile(true);
       } catch (loadError) {
+        if (loadError instanceof UnauthorizedError) return;
         setError(
           loadError instanceof Error
             ? loadError.message
@@ -113,7 +100,7 @@ export default function ProfilePage() {
     }
 
     void loadProfile();
-  }, [router]);
+  }, [isReady, apiFetch]);
 
   function updateField(field: keyof ProfileForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -124,21 +111,12 @@ export default function ProfilePage() {
     setError("");
     setSuccess("");
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-
     setIsSaving(true);
 
     try {
-      const response = await fetch(`${API_URL}/profile`, {
+      const response = await apiFetch("/profile", {
         method: hasProfile ? "PUT" : "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           birthday: form.birthday || null,
           gender: form.gender || null,
@@ -151,12 +129,6 @@ export default function ProfilePage() {
           sleep_hours: optionalNumber(form.sleep_hours),
         }),
       });
-
-      if (response.status === 401) {
-        localStorage.removeItem("access_token");
-        router.replace("/login");
-        return;
-      }
 
       const data = await response.json().catch(() => null);
 
@@ -172,6 +144,7 @@ export default function ProfilePage() {
       setHasProfile(true);
       setSuccess("Your profile has been saved.");
     } catch (saveError) {
+      if (saveError instanceof UnauthorizedError) return;
       setError(
         saveError instanceof Error
           ? saveError.message

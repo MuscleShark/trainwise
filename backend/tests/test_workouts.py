@@ -1,23 +1,8 @@
-def register_and_login(client, email: str) -> dict[str, str]:
-    password = "StrongPassword123!"
-    register_response = client.post(
-        "/users",
-        json={"email": email, "password": password},
-    )
-    assert register_response.status_code == 200
-
-    login_response = client.post(
-        "/login",
-        data={"username": email, "password": password},
-    )
-    assert login_response.status_code == 200
-
-    token = login_response.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+from conftest import auth_headers
 
 
 def test_workout_crud(client):
-    headers = register_and_login(client, "workout-owner@example.com")
+    headers = auth_headers("workout-owner@example.com")
     workout_data = {
         "workout_date": "2026-09-23",
         "workout_type": "Strength",
@@ -65,8 +50,8 @@ def test_workouts_require_authentication(client):
 
 
 def test_users_cannot_access_each_others_workouts(client):
-    owner_headers = register_and_login(client, "owner@example.com")
-    other_headers = register_and_login(client, "other@example.com")
+    owner_headers = auth_headers("owner@example.com")
+    other_headers = auth_headers("other@example.com")
 
     create_response = client.post(
         "/workouts",
@@ -92,7 +77,7 @@ def test_users_cannot_access_each_others_workouts(client):
 
 
 def test_missing_workout_returns_not_found(client):
-    headers = register_and_login(client, "missing@example.com")
+    headers = auth_headers("missing@example.com")
     response = client.get("/workouts/999", headers=headers)
     assert response.status_code == 404
     assert response.json()["detail"] == "Workout not found"

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-import { registerAndLogin } from "./helpers";
+import { signUpNewUser } from "./helpers";
 
 test("user can add, edit and delete a workout", async ({ page }) => {
-  await registerAndLogin(page, "workouts");
+  await signUpNewUser(page, "workouts");
 
   await page.getByRole("link", { name: "View workouts" }).click();
   await expect(page).toHaveURL(/\/workouts$/);
@@ -36,7 +36,7 @@ test("user can add, edit and delete a workout", async ({ page }) => {
 test("users only see their own workouts", async ({ browser }) => {
   const ownerContext = await browser.newContext();
   const owner = await ownerContext.newPage();
-  await registerAndLogin(owner, "owner");
+  await signUpNewUser(owner, "owner");
   await owner.goto("/workouts");
   await owner.getByLabel("Date").fill("2026-09-23");
   await owner.getByLabel("Workout type").fill("Owner only cardio");
@@ -46,7 +46,7 @@ test("users only see their own workouts", async ({ browser }) => {
 
   const otherContext = await browser.newContext();
   const other = await otherContext.newPage();
-  await registerAndLogin(other, "other");
+  await signUpNewUser(other, "other");
   await other.goto("/workouts");
   await expect(other.getByText("No workouts yet.")).toBeVisible();
   await expect(other.getByText("Owner only cardio")).toHaveCount(0);
