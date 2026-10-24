@@ -24,3 +24,17 @@ test("user can delete their account", async ({ page }) => {
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByText("Couldn't find your account.").first()).toBeVisible();
 });
+
+test("privacy policy and support pages are linked and available in Chinese", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Privacy" }).click();
+  await expect(page.getByRole("heading", { name: "Privacy policy" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The AI coach" })).toBeVisible();
+  await page.getByRole("link", { name: "中文" }).click();
+  await expect(page.getByRole("heading", { name: "隐私政策" })).toBeVisible();
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "Support" }).click();
+  await expect(page.getByRole("heading", { name: "Support" })).toBeVisible();
+  await expect(page.getByText("support@ironsage.app").first()).toBeVisible();
+});
