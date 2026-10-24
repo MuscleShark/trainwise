@@ -4,6 +4,8 @@ TrainWise is a full-stack fitness tracking application designed to help users re
 
 The project is currently in active development. Its first milestone focuses on building a reliable full-stack foundation before adding analytics and AI-powered features.
 
+TrainWise is becoming an iOS-first strength-training log with a paid AI coach. See [docs/architecture.md](docs/architecture.md) for the target design, decisions and roadmap.
+
 ## Current Features
 
 - Sign-in with Clerk: email verification code, Google or Apple (no passwords)
