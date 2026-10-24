@@ -123,6 +123,7 @@ Run a deploy with **Actions → Deploy backend → Run workflow** (branch `main`
 
    Do not make `NEXT_PUBLIC_*` variables *Secret*. They are public by design, and Vercel will not inject a Secret into the browser bundle.
 4. Deploy. The production domain must be listed in `frontendUrls` in `infra/cdk.json`, written exactly as the browser shows it (`https://…`, no trailing slash).
+5. Custom domain: the site is served at `https://ironsage.app` (bought on Cloudflare Registrar). In Vercel → **Settings → Domains**, add `ironsage.app` and `www.ironsage.app`, then add the DNS records Vercel shows in Cloudflare as **DNS only** (grey cloud): Cloudflare's proxy breaks Vercel's certificates. Make `ironsage.app` the primary domain and redirect the others to it.
 
 `NEXT_PUBLIC_*` values are baked in at build time, so redeploy on Vercel after changing them.
 
