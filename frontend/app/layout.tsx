@@ -42,15 +42,19 @@ export default function RootLayout({
           signUpUrl="/register"
           signInFallbackRedirectUrl="/account"
           signUpFallbackRedirectUrl="/account"
+          // The brand tokens from globals.css, so the card follows the color scheme.
           appearance={{
             variables: {
-              colorPrimary: "#111111",
-              colorPrimaryForeground: "#f4efe6",
-              colorForeground: "#111111",
-              colorMutedForeground: "#5e5a52",
-              colorBackground: "#ffffff",
-              colorDanger: "#c8372d",
-              colorRing: "#c8372d",
+              colorPrimary: "var(--ink)",
+              colorPrimaryForeground: "var(--chalk)",
+              colorForeground: "var(--ink)",
+              colorMutedForeground: "var(--steel)",
+              colorNeutral: "var(--ink)",
+              colorBackground: "var(--card)",
+              colorInput: "var(--card)",
+              colorInputForeground: "var(--ink)",
+              colorDanger: "var(--accent)",
+              colorRing: "var(--accent)",
               fontFamily: "var(--font-archivo), ui-sans-serif, system-ui, sans-serif",
               borderRadius: "0.5rem",
             },
