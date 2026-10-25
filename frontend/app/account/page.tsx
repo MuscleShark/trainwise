@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import Logo from "../components/Logo";
 import { UnauthorizedError, useApi } from "../lib/api";
 import type { components } from "../lib/api-types";
 
@@ -36,8 +37,8 @@ export default function AccountPage() {
   return (
     <div className="flex flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-6 sm:px-8">
-        <Link href="/" className="type-stamp text-xl">
-          IronSage
+        <Link href="/" aria-label="IronSage home">
+          <Logo height={52} />
         </Link>
         <button
           type="button"
@@ -52,7 +53,7 @@ export default function AccountPage() {
         <h1 className="type-stamp text-4xl">Account</h1>
 
         {error ? (
-          <p role="alert" className="mt-8 rounded-sm border border-plate-red/30 bg-white/70 px-4 py-3 text-plate-red">
+          <p role="alert" className="mt-8 rounded-sm border border-accent/30 bg-card px-4 py-3 text-accent">
             {error}
           </p>
         ) : account ? (

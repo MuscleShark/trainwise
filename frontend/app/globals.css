@@ -1,23 +1,38 @@
 @import "tailwindcss";
 
-/* Colours taken from the gym: chalk, iron, steel and calibrated competition plates. */
+/* The IronSage brand (brand/README.md): bone white, ink black and a rust red accent.
+   The plate red is the logo's own; text and links use the darker accent. */
 :root {
-  --chalk: #e8ebe8;
-  --chalk-deep: #dde1dd;
-  --ink: #18212b;
-  --steel: #59646e;
-  --plate-blue: #1d4e9e;
-  --plate-red: #c22b2b;
+  --chalk: #f4efe6;
+  --chalk-deep: #e8e1d4;
+  --card: #ffffff;
+  --ink: #111111;
+  --steel: #5e5a52;
+  --accent: #c8372d;
+  --plate-red: #e2412d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --chalk: #161514;
+    --chalk-deep: #26231f;
+    --card: #1f1d1b;
+    --ink: #f4efe6;
+    --steel: #a9a399;
+    --accent: #ff6a55;
+  }
 }
 
 @theme inline {
   --color-chalk: var(--chalk);
   --color-chalk-deep: var(--chalk-deep);
+  --color-card: var(--card);
   --color-ink: var(--ink);
   --color-steel: var(--steel);
-  --color-plate-blue: var(--plate-blue);
+  --color-accent: var(--accent);
   --color-plate-red: var(--plate-red);
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-archivo), ui-sans-serif, sans-serif;
 }
 
 body {
@@ -26,14 +41,14 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Archivo's width axis: expanded for headings, like the lettering stamped on plates. */
+/* Headings in the logo's typeface: Barlow Condensed ExtraBold. */
 .type-stamp {
-  font-stretch: 125%;
+  font-family: var(--font-display);
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 :focus-visible {
-  outline: 2px solid var(--plate-blue);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }

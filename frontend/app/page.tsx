@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import Logo from "./components/Logo";
+
 const features = [
   {
     title: "Log a set in two taps",
@@ -19,7 +21,9 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-8">
-        <span className="type-stamp text-xl">IronSage</span>
+        <Link href="/" aria-label="IronSage home">
+          <Logo height={52} />
+        </Link>
         <Link
           href="/login"
           className="rounded-md px-3 py-2 text-sm font-medium text-steel transition-colors hover:text-ink"
@@ -78,7 +82,7 @@ function LogbookEntry() {
   return (
     <figure
       aria-label="Example coach suggestion for bench press"
-      className="rounded-sm border border-ink/15 bg-white/70 p-6 shadow-[6px_6px_0_var(--chalk-deep)] sm:p-8"
+      className="rounded-sm border border-ink/15 bg-card p-6 shadow-[6px_6px_0_var(--chalk-deep)] sm:p-8"
     >
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="type-stamp text-2xl">Bench press</h2>
@@ -95,11 +99,11 @@ function LogbookEntry() {
         <dt className="text-sm text-steel">Today</dt>
         <dd>
           <span className="font-semibold">60 × 8, three sets.</span>{" "}
-          <span className="font-semibold text-plate-red">Hold the weight.</span>
+          <span className="font-semibold text-accent">Hold the weight.</span>
         </dd>
       </dl>
 
-      <figcaption className="mt-6 border-l-4 border-plate-blue pl-4 leading-relaxed">
+      <figcaption className="mt-6 border-l-4 border-accent pl-4 leading-relaxed">
         You slept 5 h 40 min and your HRV is 18% below your usual. The last set
         also fell one rep short, so stay at 60 kg and aim for 8 on every set.
       </figcaption>
