@@ -46,6 +46,7 @@ Source = Literal["manual", "healthkit"]
 MeasurementKind = Literal["weight", "body_fat", "waist", "chest", "arm", "thigh", "hips", "neck"]
 
 Name = Annotated[str, Field(min_length=1, max_length=120)]
+Alias = Annotated[str, Field(min_length=1, max_length=60)]
 Notes = Annotated[str, Field(max_length=2000)]
 HealthKitId = Annotated[str, Field(max_length=64)]
 Reps = Annotated[int, Field(ge=0, le=1000)]
@@ -140,6 +141,7 @@ class ExerciseWrite(BaseModel):
     load_type: LoadType
     primary_muscles: Annotated[list[Muscle], Field(min_length=1, max_length=5)]
     secondary_muscles: Annotated[list[Muscle], Field(max_length=8)] = []
+    aliases: Annotated[list[Alias], Field(max_length=10)] = []
     base_exercise_id: uuid.UUID | None = None
 
 

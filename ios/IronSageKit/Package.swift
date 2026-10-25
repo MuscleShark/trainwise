@@ -8,6 +8,7 @@ let package = Package(
     products: [
         .library(name: "IronSageAPI", targets: ["IronSageAPI"]),
         .library(name: "IronSageCore", targets: ["IronSageCore"]),
+        .library(name: "IronSageStore", targets: ["IronSageStore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.14.0"),
@@ -31,6 +32,15 @@ let package = Package(
         ),
         // App logic that needs no UI, so `swift test` covers it without a simulator.
         .target(name: "IronSageCore"),
+        // The data on the phone (SwiftData) and its sync with the API.
+        .target(
+            name: "IronSageStore",
+            dependencies: [
+                "IronSageAPI",
+                "IronSageCore",
+                .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+            ]
+        ),
         .testTarget(
             name: "IronSageAPITests",
             dependencies: ["IronSageAPI"]
@@ -38,6 +48,14 @@ let package = Package(
         .testTarget(
             name: "IronSageCoreTests",
             dependencies: ["IronSageCore"]
+        ),
+        .testTarget(
+            name: "IronSageStoreTests",
+            dependencies: [
+                "IronSageStore",
+                .product(name: "HTTPTypes", package: "swift-http-types"),
+                .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
+            ]
         ),
     ]
 )

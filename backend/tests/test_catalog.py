@@ -1,10 +1,10 @@
 import typing
 
-from conftest import TestingSessionLocal
+from conftest import TestingSessionLocal, auth_headers
 from sqlalchemy import select
 
 import catalog
-from catalog import BUILTIN_EXERCISES, EQUIPMENT, LOAD_TYPES, MUSCLES, exercise_id
+from catalog import ALIASES, BUILTIN_EXERCISES, EQUIPMENT, LOAD_TYPES, MUSCLES, exercise_id
 from models import Exercise
 from schemas import Equipment, LoadType, Muscle
 
@@ -25,6 +25,22 @@ def test_catalog_entries_are_valid():
         assert entry.load_type in LOAD_TYPES
         assert entry.primary
         assert set(entry.primary + entry.secondary) <= set(MUSCLES)
+
+
+def test_aliases_belong_to_catalog_entries():
+    slugs = {entry.slug for entry in BUILTIN_EXERCISES}
+    assert set(ALIASES) <= slugs
+    for names in ALIASES.values():
+        assert names
+        assert all(0 < len(name) <= 60 for name in names)
+
+
+def test_aliases_are_served_with_the_catalog(client):
+    response = client.get("/v1/exercises", headers=auth_headers("a@example.com"))
+
+    by_id = {exercise["id"]: exercise for exercise in response.json()}
+    assert "RDL" in by_id[str(exercise_id("romanian_deadlift"))]["aliases"]
+    assert by_id[str(exercise_id("floor_press"))]["aliases"] == []
 
 
 def test_sync_is_idempotent(client):

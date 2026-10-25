@@ -98,10 +98,22 @@ M1 ships as six pull requests: project skeleton (sign-in, generated API client, 
 
 - SwiftUI and Swift Charts, **minimum iOS 18**.
 - Adaptive layouts (size classes, no fixed sizes) so the folded and unfolded **iPhone Duo** both work. Side-by-side layouts for the unfolded screen can come later.
-- Offline first: SwiftData on the phone, synced with the API when online.
+- Offline first: SwiftData on the phone, synced with the API when online (see "Sync on the phone" below).
 - Clerk iOS SDK; API client generated from the OpenAPI document (swift-openapi-generator).
 - Code lives in `ios/`: the app (`IronSage/`) and a Swift package (`IronSageKit/`) with the generated API client and the logic that `swift test` covers without a simulator. CI builds and tests it on a macOS runner.
 - Needs an Apple Developer Program membership (99 USD a year) from TestFlight onwards.
+
+### Sync on the phone
+
+`IronSageStore` keeps each record (exercise, workout, template, profile) as the JSON of the app's own type in one SwiftData table, and loads everything into memory at launch. Every edit is saved there first and marked pending.
+
+A sync, run at launch, when the app returns to the foreground and after a workout:
+
+1. **Push**: each pending record goes up whole (`PUT`, or `DELETE`), exercises before the templates and workouts that use them. An edit made while its request runs stays pending. A deletion is always sent, even for a record that looks new (a 404 counts as done). A record the API rejects for good (400, 403, 404, 409, 422) stops being retried and stays on the phone, so it cannot block the others; 401, 429 and 5xx stop the sync until next time.
+2. **Pull**: `GET /v1/sync?since=N` page by page; the cursor is saved after each page. A record with unsent local edits keeps the local version, which replaces the server's on the next push (last write wins).
+3. **Catalog**: the built-in exercises are fetched once a day. Exercises that leave the catalog, or that a user deletes, stay readable so old workouts keep their names.
+
+A sync requested while one runs starts again when it ends. The phone keeps only the signed-in user's data: signing out, or another user signing in, removes it, and a sync still running for the previous user stops without writing.
 
 ## Target architecture
 
@@ -139,7 +151,8 @@ users                 id, clerk_user_id, email, created_at, change_seq (per-user
 profiles              birthday, height_cm, gender, training_location, unit_system (metric or imperial),
                       experience_level, goal, training_days_per_week
 exercises             name_en, name_zh, equipment, load_type, primary and secondary muscles,
-                      base_exercise_id (custom exercise → built-in one), owner (null = built-in)
+                      aliases (search names, migration 0004), base_exercise_id (custom exercise →
+                      built-in one), owner (null = built-in)
 workouts              title, started_at, ended_at, time_zone, notes, average and max heart rate,
                       healthkit_workout_id, template_id
 workout_exercises     workout, exercise, position, notes, superset group, rest seconds

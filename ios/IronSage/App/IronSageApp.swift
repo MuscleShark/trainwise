@@ -1,27 +1,25 @@
 import ClerkKit
 import IronSageAPI
 import IronSageCore
+import IronSageStore
 import SwiftUI
 
 @main
 struct IronSageApp: App {
-    private let config = Result { try AppConfig.fromMainBundle() }
-
-    init() {
-        if case .success(let config) = config {
-            Clerk.configure(publishableKey: config.clerkPublishableKey)
-        }
-    }
+    private let setup = Result { try AppServices() }
 
     var body: some Scene {
         WindowGroup {
-            switch config {
-            case .success(let config):
+            switch setup {
+            case .success(let services):
                 RootView()
                     .environment(Clerk.shared)
-                    .environment(\.api, APIClient.ironSage(serverURL: config.apiBaseURL, token: sessionToken))
+                    .environment(\.api, services.api)
+                    .environment(services.store)
+                    .environment(services.sync)
+                    .environment(\.services, services)
             case .failure(let error):
-                // Only reachable with a broken build configuration.
+                // Only reachable with a broken build configuration or a broken disk.
                 ContentUnavailableView(
                     "IronSage isn't set up",
                     systemImage: "exclamationmark.triangle",
@@ -32,6 +30,40 @@ struct IronSageApp: App {
     }
 }
 
+/// What the app is built from: configuration, the API client, and the phone's copy of
+/// the signed-in user's data with its sync.
+@MainActor
+final class AppServices {
+    let api: APIClient
+    let store: LocalStore
+    let sync: SyncEngine
+
+    private static let ownerKey = "IronSage.store.owner"
+
+    init() throws {
+        let config = try AppConfig.fromMainBundle()
+        Clerk.configure(publishableKey: config.clerkPublishableKey)
+        api = APIClient.ironSage(serverURL: config.apiBaseURL, token: sessionToken)
+        store = try LocalStore()
+        sync = SyncEngine(store: store, api: api)
+    }
+
+    /// Keeps only this user's data on the phone: another user's is removed first.
+    func prepare(forUser userID: String) {
+        let defaults = UserDefaults.standard
+        if defaults.string(forKey: Self.ownerKey) != userID {
+            removeLocalData()
+            defaults.set(userID, forKey: Self.ownerKey)
+        }
+    }
+
+    func removeLocalData() {
+        store.removeAll()
+        sync.reset()
+        UserDefaults.standard.removeObject(forKey: Self.ownerKey)
+    }
+}
+
 /// The current Clerk session token; nil when signed out.
 @Sendable private func sessionToken() async throws -> String? {
     try await Clerk.shared.auth.getToken()
@@ -39,4 +71,5 @@ struct IronSageApp: App {
 
 extension EnvironmentValues {
     @Entry var api: APIClient?
+    @Entry var services: AppServices?
 }

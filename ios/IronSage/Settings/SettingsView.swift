@@ -1,5 +1,6 @@
 import ClerkKit
 import IronSageAPI
+import IronSageStore
 import OSLog
 import SwiftUI
 
@@ -8,9 +9,13 @@ private let log = Logger(subsystem: "app.ironsage.IronSage", category: "settings
 struct SettingsView: View {
     @Environment(Clerk.self) private var clerk
     @Environment(\.api) private var api
+    @Environment(\.services) private var services
+    @Environment(LocalStore.self) private var store
+    @Environment(SyncEngine.self) private var sync
     @Environment(\.openURL) private var openURL
     @State private var account: AccountState = .loading
     @State private var isConfirmingSignOut = false
+    @State private var signOutFailed = false
 
     enum AccountState {
         case loading
@@ -31,6 +36,9 @@ struct SettingsView: View {
                         Text("Couldn't load your account. Check your connection, then pull down to try again.")
                             .foregroundStyle(.secondary)
                     }
+                    LabeledContent("Sync") {
+                        SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
+                    }
                     Button("Sign out", role: .destructive) {
                         isConfirmingSignOut = true
                     }
@@ -50,15 +58,35 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .task { await loadAccount() }
-            .refreshable { await loadAccount() }
+            .refreshable {
+                await loadAccount()
+                await sync.sync()
+            }
             .confirmationDialog(
                 "Sign out of IronSage?",
                 isPresented: $isConfirmingSignOut,
                 titleVisibility: .visible
             ) {
                 Button("Sign out", role: .destructive) {
-                    Task { try? await clerk.auth.signOut() }
+                    Task {
+                        do {
+                            try await clerk.auth.signOut()
+                            services?.removeLocalData()
+                        } catch {
+                            log.error("Signing out failed: \(String(describing: error), privacy: .public)")
+                            signOutFailed = true
+                        }
+                    }
                 }
+            } message: {
+                if store.hasUnsyncedChanges {
+                    Text("Some changes haven't synced yet and will be removed from this iPhone.")
+                }
+            }
+            .alert("Couldn't sign out", isPresented: $signOutFailed) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Check your connection and try again. Your data is still on this iPhone.")
             }
         }
     }
@@ -79,6 +107,29 @@ struct SettingsView: View {
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
         return "\(version) (\(build))"
+    }
+}
+
+/// "Synced 2 min ago", or why it isn't.
+struct SyncStatusText: View {
+    let state: SyncEngine.State
+    let lastSyncedAt: Date?
+
+    var body: some View {
+        switch state {
+        case .syncing:
+            Text("Syncing…")
+        case .offline:
+            Text("Waiting for a connection")
+        case .failed:
+            Text("Couldn't sync")
+        case .idle:
+            if let lastSyncedAt {
+                Text("Synced \(lastSyncedAt, format: .relative(presentation: .named))")
+            } else {
+                Text("Not synced yet")
+            }
+        }
     }
 }
 

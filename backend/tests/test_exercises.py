@@ -11,6 +11,7 @@ MACHINE = {
     "primary_muscles": ["chest"],
     "secondary_muscles": ["triceps"],
     "base_exercise_id": BENCH,
+    "aliases": ["HS press"],
 }
 
 
@@ -24,6 +25,7 @@ def test_list_contains_the_catalog_and_own_exercises(client):
     assert len(exercises) == len(BUILTIN_EXERCISES) + 1
     custom = [e for e in exercises if e["is_custom"]]
     assert [e["id"] for e in custom] == [exercise_id]
+    assert custom[0]["aliases"] == ["HS press"]
     bench = next(e for e in exercises if e["id"] == BENCH)
     assert bench["name_zh"] == "杠铃卧推"
     assert bench["is_custom"] is False
@@ -68,6 +70,8 @@ def test_invalid_exercises_are_rejected(client):
         {**MACHINE, "primary_muscles": ["pecs"]},
         {**MACHINE, "equipment": "rock"},
         {**MACHINE, "load_type": "half"},
+        {**MACHINE, "aliases": [""]},
+        {**MACHINE, "aliases": ["x"] * 11},
     ):
         assert (
             client.put(f"/v1/exercises/{new_id()}", json=body, headers=headers).status_code == 422
