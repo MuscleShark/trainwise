@@ -7,6 +7,7 @@ struct WorkoutView: View {
     @Bindable var session: WorkoutSession
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
+    @Environment(HealthService.self) private var health
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focus: SetField?
     @State private var isPickingExercise = false
@@ -107,7 +108,11 @@ struct WorkoutView: View {
                 Button("Finish workout") {
                     session.finish()
                     finished = session.workout
-                    Task { await sync.sync() }
+                    let workout = session.workout
+                    Task {
+                        await health.saveToHealth(workout)
+                        await sync.sync()
+                    }
                 }
             } message: {
                 if session.hasUnfinishedSets {

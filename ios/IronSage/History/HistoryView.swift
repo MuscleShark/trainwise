@@ -6,6 +6,7 @@ import SwiftUI
 struct HistoryView: View {
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
+    @Environment(HealthService.self) private var health
     @State private var pendingDelete: Workout?
 
     var body: some View {
@@ -52,7 +53,10 @@ struct HistoryView: View {
             ) { workout in
                 Button("Delete workout", role: .destructive) {
                     store.deleteWorkout(id: workout.id)
-                    Task { await sync.sync() }
+                    Task {
+                        await health.removeFromHealth(workout)
+                        await sync.sync()
+                    }
                 }
             } message: { workout in
                 Text("“\(workout.title)” will be removed from all your devices.")
@@ -91,6 +95,7 @@ struct WorkoutDetailView: View {
     let workoutID: UUID
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
+    @Environment(HealthService.self) private var health
     @Environment(\.dismiss) private var dismiss
     @State private var editing: WorkoutSession?
     @State private var isConfirmingDelete = false
@@ -116,6 +121,9 @@ struct WorkoutDetailView: View {
                     LabeledContent("Duration", value: Duration.clock(endedAt.timeIntervalSince(workout.startedAt)))
                 }
                 LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
+                if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
+                    LabeledContent("Heart rate", value: String(localized: "\(average) avg, \(maximum) max"))
+                }
             }
 
             ForEach(workout.exercises) { item in
@@ -188,7 +196,10 @@ struct WorkoutDetailView: View {
         .confirmationDialog("Delete this workout?", isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             Button("Delete workout", role: .destructive) {
                 store.deleteWorkout(id: workout.id)
-                Task { await sync.sync() }
+                Task {
+                    await health.removeFromHealth(workout)
+                    await sync.sync()
+                }
                 dismiss()
             }
         } message: {
