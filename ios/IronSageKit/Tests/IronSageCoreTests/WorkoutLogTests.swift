@@ -156,3 +156,37 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(weeks[0].start == calendar.date(from: DateComponents(year: 2026, month: 10, day: 19)))
     #expect(weeks[0].setCount == 3)
 }
+
+@Test func templateDaysStartFromLastTimeOrTheBottomOfTheRange() {
+    let day = TemplateDay(name: "Push", exercises: [
+        TemplateExercise(exerciseId: bench.id, restSeconds: 180, sets: [
+            TemplateSet(repMin: 5, repMax: 8, targetRir: 2),
+            TemplateSet(repMin: 5, repMax: 8, targetRir: 2),
+            TemplateSet(repMin: 5, repMax: 8, targetRir: 2),
+        ]),
+        TemplateExercise(exerciseId: curl.id, restSeconds: 90, sets: [TemplateSet(repMin: 10, repMax: 12)]),
+    ])
+    let history = [workout(2, [(bench, [(60, 8), (62.5, 6)])])]
+
+    let exercises = WorkoutLog.exercises(for: day, history: history)
+
+    #expect(exercises.map(\.restSeconds) == [180, 90])
+    #expect(exercises[0].sets.map(\.weightKg) == [60, 62.5, 62.5])
+    #expect(exercises[0].sets.map(\.reps) == [8, 6, 6])
+    #expect(exercises[1].sets.map(\.reps) == [10])
+    #expect(exercises[1].sets[0].weightKg == nil)
+    #expect(exercises.allSatisfy { $0.sets.allSatisfy { !$0.isCompleted } })
+}
+
+@Test func aWorkoutBecomesATemplateOfItsDoneSets() {
+    var done = workout(1, [(bench, [(60, 8), (60, 7)]), (curl, [])], rest: 150)
+    done.exercises[0].sets.append(WorkoutSet(reps: 8, weightKg: 60))
+
+    let template = WorkoutLog.template(from: done, name: "My push")
+
+    #expect(template.isCustom)
+    #expect(template.days.count == 1)
+    #expect(template.days[0].exercises.map(\.exerciseId) == [bench.id])
+    #expect(template.days[0].exercises[0].sets.map(\.repMax) == [8, 7])
+    #expect(template.days[0].exercises[0].restSeconds == 150)
+}

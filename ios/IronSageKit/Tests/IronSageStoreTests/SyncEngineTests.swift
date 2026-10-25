@@ -282,6 +282,23 @@ private func pushDay(completed: Bool = true) -> Workout {
 }
 
 @MainActor
+@Test func builtInTemplatesComeWithTheCatalog() async throws {
+    let harness = try Harness()
+
+    await harness.sync.sync()
+
+    let template = try #require(harness.store.templates.first)
+    #expect(template.id == UUID(uuidString: FakeServer.templateID))
+    #expect(!template.isCustom)
+    #expect(template.days[0].name(chinese: true) == "推")
+    #expect(template.days[0].exercises[0].sets[0].repMax == 8)
+    #expect(harness.store.pendingChanges().isEmpty)
+
+    harness.store.replaceBuiltInTemplates([])
+    #expect(harness.store.templates.isEmpty)
+}
+
+@MainActor
 @Test func customExercisesAndProfilesAreUploaded() async throws {
     let harness = try Harness()
     let machine = Exercise(

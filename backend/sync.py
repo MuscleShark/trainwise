@@ -13,8 +13,8 @@ from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from models import Exercise, Template, User
-from schemas import ExerciseRead, TemplateRead
+from models import Exercise, Template, TemplateDay, TemplateExercise, TemplateSet, User
+from schemas import ExerciseRead, TemplateRead, TemplateWrite
 
 
 def next_change_seq(db: Session, user: User) -> int:
@@ -82,3 +82,30 @@ def template_read(template: Template) -> TemplateRead:
             "is_custom": template.owner_user_id is not None,
         }
     )
+
+
+def template_days(template_data: TemplateWrite) -> list[TemplateDay]:
+    """The rows for a template's days, exercises and sets, in the order given."""
+    return [
+        TemplateDay(
+            id=day.id,
+            position=day_position,
+            name=day.name,
+            name_zh=day.name_zh,
+            exercises=[
+                TemplateExercise(
+                    id=exercise.id,
+                    exercise_id=exercise.exercise_id,
+                    position=position,
+                    rest_seconds=exercise.rest_seconds,
+                    superset_group=exercise.superset_group,
+                    sets=[
+                        TemplateSet(position=set_position, **template_set.model_dump())
+                        for set_position, template_set in enumerate(exercise.sets)
+                    ],
+                )
+                for position, exercise in enumerate(day.exercises)
+            ],
+        )
+        for day_position, day in enumerate(template_data.days)
+    ]

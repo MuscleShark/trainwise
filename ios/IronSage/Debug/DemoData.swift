@@ -16,6 +16,15 @@ enum DemoData {
         let curl = exercise("Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
         let raise = exercise("Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
         store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise])
+        store.replaceBuiltInTemplates([Template(
+            nameEn: "Push / pull / legs", nameZh: "推拉腿", level: .intermediate, daysPerWeek: 6,
+            days: [
+                day("Push", "推", [(bench, 4, 5, 8, 180), (press, 3, 6, 10, 180), (raise, 3, 12, 20, 90)]),
+                day("Pull", "拉", [(row, 4, 6, 10, 180), (pulldown, 3, 8, 12, 180), (curl, 3, 10, 12, 90)]),
+                day("Legs", "腿", [(squat, 4, 5, 8, 180), (rdl, 3, 8, 10, 180)]),
+            ],
+            isCustom: false
+        )])
 
         store.save(workout("Push", daysAgo: 4, [(bench, 180, [(60, 8), (60, 8), (60, 7)]), (press, 150, [(40, 8), (40, 7)]), (raise, 90, [(8, 12), (8, 12)])]))
         store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 8), (80, 8)])]))
@@ -24,6 +33,16 @@ enum DemoData {
 
     private static func exercise(_ en: String, _ zh: String, _ equipment: Equipment, _ load: LoadType, _ primary: [Muscle], _ secondary: [Muscle], _ aliases: [String]) -> Exercise {
         Exercise(nameEn: en, nameZh: zh, equipment: equipment, loadType: load, primaryMuscles: primary, secondaryMuscles: secondary, aliases: aliases, isCustom: false)
+    }
+
+    private static func day(_ en: String, _ zh: String, _ items: [(Exercise, Int, Int, Int, Int)]) -> TemplateDay {
+        TemplateDay(name: en, nameZh: zh, exercises: items.map { exercise, sets, low, high, rest in
+            TemplateExercise(
+                exerciseId: exercise.id,
+                restSeconds: rest,
+                sets: (0..<sets).map { _ in TemplateSet(repMin: low, repMax: high, targetRir: rest > 90 ? 2 : 1) }
+            )
+        })
     }
 
     private static func workout(_ title: String, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {

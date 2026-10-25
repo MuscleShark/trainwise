@@ -1037,6 +1037,15 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "name_zh": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -1068,6 +1077,15 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "name_zh": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [

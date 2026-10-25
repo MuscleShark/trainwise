@@ -159,7 +159,7 @@ workout_exercises     workout, exercise, position, notes, superset group, rest s
 sets                  position, type (warm-up, working, drop, failure), reps, weight_kg (3 decimals),
                       rir, duration_seconds, completed_at (null = planned)
 templates             name_en, name_zh, level, days_per_week, owner (null = built-in)
-template_days         template, position, name
+template_days         template, position, name, name_zh (built-in days, migration 0005)
 template_exercises    day, exercise, position, rest seconds, superset group
 template_sets         position, type, rep_min, rep_max, target_rir
 body_measurements     measured_at, kind (weight, body_fat, waist, ...), value, source, healthkit_sample_id
@@ -178,6 +178,7 @@ Notes:
 - **History instead of snapshots**: weight, body fat and sleep live in dated tables, so trends can be charted.
 - **Derived values are not stored**: personal records, estimated one-rep max and weekly sets are computed from sets.
 - **Exercise catalog**: 145 exercises written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
+- **Built-in templates**: the four programs from [coaching.md](coaching.md) in `backend/template_catalog.py`, synced the same way after the exercises.
 
 ## AI coach
 

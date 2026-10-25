@@ -208,11 +208,16 @@ private struct ExerciseHeader: View {
                     .font(.headline)
                     .foregroundStyle(Color.primary)
                     .textCase(nil)
-                if let rest = item.restSeconds {
-                    Text("Rest \(Duration.clock(TimeInterval(rest)))")
-                        .font(.caption)
-                        .textCase(nil)
+                Group {
+                    if let target {
+                        Text("Target \(target)")
+                    }
+                    if let rest = item.restSeconds {
+                        Text("Rest \(Duration.clock(TimeInterval(rest)))")
+                    }
                 }
+                .font(.caption)
+                .textCase(nil)
             }
             Spacer()
             Menu {
@@ -241,6 +246,18 @@ private struct ExerciseHeader: View {
             guard let e = workout.exercises.firstIndex(where: { $0.id == item.id }) else { return }
             change(&workout.exercises[e])
         }
+    }
+
+    /// The template's sets and reps for this exercise, when the workout follows one.
+    private var target: String? {
+        guard let templateID = session.workout.templateId,
+              let template = store.templates.first(where: { $0.id == templateID })
+        else { return nil }
+        // A template can use an exercise on several days; prefer the day in the title.
+        let titled = template.days.first { session.workout.title.contains($0.name(chinese: AppLanguage.isChinese)) }
+        let days = (titled.map { [$0] } ?? []) + template.days
+        return days.lazy.flatMap(\.exercises).first { $0.exerciseId == item.exerciseId }
+            .map { TemplateTarget(item: $0).summary }
     }
 }
 

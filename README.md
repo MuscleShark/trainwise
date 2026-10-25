@@ -15,7 +15,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 - Sign-in with Clerk: email verification code, Google or Apple (no passwords); the API verifies Clerk session tokens
 - Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
 - Built-in exercise catalog (145 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
-- Training templates with rep ranges and target RIR
+- Training templates with rep ranges and target RIR, including four built-in programs (`backend/template_catalog.py`)
 - Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate)
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
 - Account deletion: removes all of the user's data and the Clerk user
@@ -30,6 +30,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
+- Templates: four built-in programs (English and Chinese) and the user's own, saved from a finished workout; starting a template day fills in its exercises, sets and targets
 - API client generated from `api/openapi.json`
 
 ## Tech Stack
@@ -66,6 +67,7 @@ trainwise/
 │   ├── scripts/build_lambda.sh   # builds the Lambda package
 │   ├── tests/
 │   ├── catalog.py                # built-in exercise catalog
+│   ├── template_catalog.py       # built-in training templates
 │   ├── database.py
 │   ├── lambda_handler.py         # AWS Lambda entry point
 │   ├── migrate_handler.py        # Lambda that runs migrations during deploys
@@ -169,7 +171,7 @@ How the iPhone app uses the API:
 - `GET /v1/sync?since=N` returns everything that changed after `N`, deletions included, plus the new `change_seq` to send next time.
 - Times must include a time zone and are returned in UTC; a workout also stores its local `time_zone`.
 
-Load the built-in exercise catalog into a local database with `python catalog.py` (deploys do this automatically).
+Load the built-in exercise catalog and templates into a local database with `python catalog.py` and then `python template_catalog.py` (deploys do this automatically).
 
 ### API contract
 

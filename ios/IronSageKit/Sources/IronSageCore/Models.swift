@@ -244,12 +244,19 @@ public struct TemplateExercise: Identifiable, Hashable, Codable, Sendable {
 public struct TemplateDay: Identifiable, Hashable, Codable, Sendable {
     public var id: UUID
     public var name: String
+    /// Only built-in templates have one.
+    public var nameZh: String?
     public var exercises: [TemplateExercise]
 
-    public init(id: UUID = UUID(), name: String, exercises: [TemplateExercise] = []) {
+    public init(id: UUID = UUID(), name: String, nameZh: String? = nil, exercises: [TemplateExercise] = []) {
         self.id = id
         self.name = name
+        self.nameZh = nameZh
         self.exercises = exercises
+    }
+
+    public func name(chinese: Bool) -> String {
+        chinese ? (nameZh ?? name) : name
     }
 }
 

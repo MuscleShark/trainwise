@@ -20,6 +20,7 @@ import security
 from catalog import sync_builtin_exercises
 from database import Base, get_db
 from main import app
+from template_catalog import sync_builtin_templates
 
 test_engine = create_engine(
     "sqlite://",
@@ -106,6 +107,7 @@ def client():
     Base.metadata.create_all(bind=test_engine)
     with TestingSessionLocal() as db:
         sync_builtin_exercises(db)
+        sync_builtin_templates(db)
 
     with TestClient(app) as test_client:
         yield test_client

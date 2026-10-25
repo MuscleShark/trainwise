@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld days a week": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每周 %lld 天"
+          }
+        }
+      }
+    },
     "+15 s": {
       "localizations": {
         "zh-Hans": {
@@ -27,6 +37,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "多 15 秒"
+          }
+        }
+      }
+    },
+    "A workout is in progress": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有一次训练正在进行"
           }
         }
       }
@@ -111,6 +131,16 @@
         }
       }
     },
+    "Advanced": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高级"
+          }
+        }
+      }
+    },
     "All exercises": {
       "localizations": {
         "zh-Hans": {
@@ -177,6 +207,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "杠铃"
+          }
+        }
+      }
+    },
+    "Beginner": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新手"
           }
         }
       }
@@ -361,6 +401,26 @@
         }
       }
     },
+    "Delete template": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除模板"
+          }
+        }
+      }
+    },
+    "Delete this template?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这个模板？"
+          }
+        }
+      }
+    },
     "Delete this workout?": {
       "localizations": {
         "zh-Hans": {
@@ -437,6 +497,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "时长"
+          }
+        }
+      }
+    },
+    "Each muscle is trained at least twice a week: heavy compound lifts at lower reps, accessories at higher reps, most sets one to three reps short of failure.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每块肌肉每周至少练两次：复合动作大重量、低次数，辅助动作较高次数，多数组离力竭还差 1 到 3 次。"
           }
         }
       }
@@ -537,6 +607,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "结束"
+          }
+        }
+      }
+    },
+    "Finish or discard it on the Today tab first.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先在“今天”里结束或放弃它。"
           }
         }
       }
@@ -671,12 +751,32 @@
         }
       }
     },
+    "Intermediate": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中级"
+          }
+        }
+      }
+    },
     "IronSage isn't set up": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "IronSage 尚未配置"
+          }
+        }
+      }
+    },
+    "IronSage programs": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IronSage 训练计划"
           }
         }
       }
@@ -841,6 +941,16 @@
         }
       }
     },
+    "My templates": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我的模板"
+          }
+        }
+      }
+    },
     "Name": {
       "localizations": {
         "zh-Hans": {
@@ -961,6 +1071,16 @@
         }
       }
     },
+    "OK": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好"
+          }
+        }
+      }
+    },
     "Obliques": {
       "localizations": {
         "zh-Hans": {
@@ -1071,6 +1191,26 @@
         }
       }
     },
+    "Rename": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名"
+          }
+        }
+      }
+    },
+    "Rename template": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名模板"
+          }
+        }
+      }
+    },
     "Reps": {
       "localizations": {
         "zh-Hans": {
@@ -1157,6 +1297,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "保存"
+          }
+        }
+      }
+    },
+    "Save a finished workout as a template from its page in History.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在“历史”里打开一次训练，可以把它存成模板。"
+          }
+        }
+      }
+    },
+    "Save as template": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "存为模板"
           }
         }
       }
@@ -1291,12 +1451,42 @@
         }
       }
     },
+    "Start from a template": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从模板开始"
+          }
+        }
+      }
+    },
+    "Start this workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始这次训练"
+          }
+        }
+      }
+    },
     "Started %@ ago": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "%@前开始"
+          }
+        }
+      }
+    },
+    "Starts with the same exercises and sets. It appears under My templates.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会包含相同的动作和组数，并出现在“我的模板”里。"
           }
         }
       }
@@ -1341,6 +1531,26 @@
         }
       }
     },
+    "Target %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标 %@"
+          }
+        }
+      }
+    },
+    "Template deleted": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模板已删除"
+          }
+        }
+      }
+    },
     "Templates": {
       "localizations": {
         "zh-Hans": {
@@ -1357,6 +1567,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "IronSage 第一次联网时会下载动作列表。"
+          }
+        }
+      }
+    },
+    "The programs download the first time IronSage connects.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IronSage 第一次联网时会下载训练计划。"
           }
         }
       }
@@ -1567,6 +1787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "训练名称"
+          }
+        }
+      }
+    },
+    "Workouts you did with it stay in History.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用它完成的训练会保留在历史里。"
           }
         }
       }
