@@ -1,14 +1,12 @@
 # TrainWise
 
-TrainWise is a full-stack fitness tracking application designed to help users record their training, manage personal fitness data, and eventually receive personalized, explainable AI coaching.
+TrainWise is an iOS-first strength-training log with Apple Health integration and, next, a paid AI coach that explains its suggestions. The product ships as **IronSage** ([ironsage.app](https://ironsage.app)); the repository and AWS resources keep the `trainwise` name.
 
-The project is currently in active development. Its first milestone focuses on building a reliable full-stack foundation before adding analytics and AI-powered features.
-
-TrainWise is becoming an iOS-first strength-training log with a paid AI coach. See [docs/architecture.md](docs/architecture.md) for the target design, decisions and roadmap.
+See [docs/architecture.md](docs/architecture.md) for the design, decisions and roadmap.
 
 ## Current Features
 
-The product ships as **IronSage**. The iPhone app covers milestone M1 (workout logging) and goes to TestFlight once there is an Apple Developer account; the backend is ready for it.
+The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and progress). It goes to TestFlight once there is an Apple Developer account; the backend is ready for it.
 
 **API** (`/v1`, built for an offline-first iPhone app)
 
@@ -26,12 +24,15 @@ The product ships as **IronSage**. The iPhone app covers milestone M1 (workout l
 
 **iPhone app** (`ios/`)
 
-- Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
+- Clerk sign-in, five tabs (Today, History, Progress, Templates, Settings), English and Chinese
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
 - Templates: four built-in programs (English and Chinese) and the user's own, saved from a finished workout; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; account deletion in Settings
+- Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate and body weight (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
+- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current; typed weights are written back to Apple Health), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
+- Today shows last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average
 - API client generated from `api/openapi.json`
 
 ## Tech Stack
@@ -54,6 +55,7 @@ The product ships as **IronSage**. The iPhone app covers milestone M1 (workout l
 ### iPhone app
 
 - SwiftUI, iOS 18 or newer
+- SwiftData (local store), Swift Charts, HealthKit
 - Clerk iOS SDK
 - swift-openapi-generator
 
@@ -220,7 +222,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator and run. The first build asks you to trust the OpenAPIGenerator plugin; it generates the API client.
 
-To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises and workouts in memory, no sign-in and no network.
+To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises, workouts and Apple Health data in memory, no sign-in and no network.
 
 The app calls the production API and the Clerk development instance; both values are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project. Both are public: the publishable key also ships in the web app.
 
@@ -288,39 +290,19 @@ The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via
 
 ## Roadmap
 
-### Phase 1 — Full-Stack Foundation
+The iPhone app's version 1 ships in three milestones ([details](docs/architecture.md#milestones)):
 
-- [x] User authentication
-- [x] Fitness profiles
-- [x] Workout API
-- [x] Registration and login UI (Clerk)
-- [x] Protected dashboard foundation
-- [x] Profile management UI
-- [x] Workout management UI
-- [x] Versioned API (`/v1`) and account deletion
-- [ ] Nutrition tracking
-- [ ] Body-weight tracking
-- [ ] Sleep tracking
-- [ ] Progress dashboard and charts
+- [x] Backend foundation: Clerk sign-in, `/v1` API with offline sync, exercise catalog, templates, account deletion, privacy and support pages
+- [x] **M1 Logging**: profile, workout logging that works offline, history, templates
+- [x] **M2 Health and progress**: Apple Health import and workout export, progress charts, personal records, readiness card
+- [ ] TestFlight and real-device testing (needs an Apple Developer account)
+- [ ] **M3 AI coach**: next-session suggestion with its reason, weekly summary, StoreKit 2 subscription; then App Store submission
 
-### Phase 2 — AI Features
-
-- [ ] Personalized workout recommendations
-- [ ] Explainable recommendations
-- [ ] AI fitness chat
-- [ ] Weekly progress reports
-- [ ] Recovery scoring
-- [ ] Goal progress predictions
-
-### Phase 3 — Fitness Coach Agent
-
-- [ ] Connect workout, nutrition, sleep, progress, and goal tools
-- [ ] Allow the coach to select and call tools based on each request
-- [ ] Generate and adjust personalized fitness plans over time
+Version 2: nutrition logging, and a coach that can chat and adjust plans with tools.
 
 ## Project Status
 
-TrainWise is currently completing Phase 1. The authentication flow and core backend APIs are in place. The next development milestone is connecting profile and workout management to the frontend dashboard.
+M1 and M2 are merged. Next are TestFlight, once there is an Apple Developer account, and the design of M3, the AI coach.
 
 ## License
 
