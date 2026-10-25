@@ -392,3 +392,21 @@ extension Profile {
         )
     }
 }
+
+extension Profile {
+    private static func birthdayFormat() -> Date.ISO8601FormatStyle {
+        Date.ISO8601FormatStyle(timeZone: TimeZone(identifier: "UTC")!).year().month().day()
+    }
+
+    /// `birthday` as a date (midnight UTC), for date pickers.
+    public var birthdayDate: Date? {
+        get { birthday.flatMap { try? Self.birthdayFormat().parse($0) } }
+        set { birthday = newValue.map { Self.birthdayFormat().format($0) } }
+    }
+
+    /// Height in inches for people who use pounds.
+    public var heightInches: Double? {
+        get { heightCm.map { ($0 / 2.54 * 10).rounded() / 10 } }
+        set { heightCm = newValue.map { ($0 * 2.54 * 10).rounded() / 10 } }
+    }
+}

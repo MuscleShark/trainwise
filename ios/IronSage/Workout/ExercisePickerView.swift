@@ -107,9 +107,10 @@ struct ExercisePickerView: View {
                 Group {
                     if let matched = result.matched {
                         Text(matched)
+                    } else if let muscle = result.exercise.primaryMuscles.first {
+                        Text(result.exercise.equipment.label) + Text(verbatim: " · ") + Text(muscle.label)
                     } else {
-                        Text(result.exercise.equipment.label) + Text(verbatim: " · ")
-                            + Text(result.exercise.primaryMuscles.first?.label ?? "")
+                        Text(result.exercise.equipment.label)
                     }
                 }
                 .font(.caption)
