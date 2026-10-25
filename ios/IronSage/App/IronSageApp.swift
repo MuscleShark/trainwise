@@ -37,6 +37,8 @@ final class AppServices {
     let api: APIClient
     let store: LocalStore
     let sync: SyncEngine
+    /// Debug builds launched with `-demo`: sample data in memory, no sign-in, no network.
+    let isDemo: Bool
 
     private static let ownerKey = "IronSage.store.owner"
 
@@ -44,8 +46,18 @@ final class AppServices {
         let config = try AppConfig.fromMainBundle()
         Clerk.configure(publishableKey: config.clerkPublishableKey)
         api = APIClient.ironSage(serverURL: config.apiBaseURL, token: sessionToken)
-        store = try LocalStore()
+        #if DEBUG
+        isDemo = ProcessInfo.processInfo.arguments.contains("-demo")
+        #else
+        isDemo = false
+        #endif
+        store = try LocalStore(inMemory: isDemo)
         sync = SyncEngine(store: store, api: api)
+        #if DEBUG
+        if isDemo {
+            DemoData.fill(store)
+        }
+        #endif
     }
 
     /// Keeps only this user's data on the phone: another user's is removed first.

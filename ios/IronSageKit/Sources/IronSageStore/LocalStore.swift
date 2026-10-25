@@ -200,7 +200,7 @@ public final class LocalStore {
 
     /// Makes the built-in exercises match the catalog. Exercises that left the catalog
     /// stay, marked removed, because past workouts may use them.
-    func replaceBuiltInExercises(_ catalog: [Exercise]) {
+    public func replaceBuiltInExercises(_ catalog: [Exercise]) {
         let current = Dictionary(
             uniqueKeysWithValues: builtInRecords(.exercise).map { ($0.recordID, $0) }
         )

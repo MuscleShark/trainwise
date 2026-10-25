@@ -1,0 +1,136 @@
+import Foundation
+import Testing
+
+@testable import IronSageCore
+
+private let bench = Exercise(
+    nameEn: "Barbell bench press", equipment: .barbell, loadType: .total,
+    primaryMuscles: [.chest], secondaryMuscles: [.frontDelts, .triceps], isCustom: false
+)
+private let curl = Exercise(
+    nameEn: "Dumbbell curl", equipment: .dumbbell, loadType: .perSide,
+    primaryMuscles: [.biceps], secondaryMuscles: [.forearms], isCustom: false
+)
+private let hackSquat = Exercise(
+    nameEn: "Hack squat", equipment: .machine, loadType: .total,
+    primaryMuscles: [.quads], secondaryMuscles: [.glutes], isCustom: false
+)
+private let exercises = [bench.id: bench, curl.id: curl]
+
+private func day(_ daysAgo: Int) -> Date {
+    Date(timeIntervalSince1970: 1_792_800_000 - Double(daysAgo) * 86_400)
+}
+
+private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], finished: Bool = true, rest: Int? = nil) -> Workout {
+    Workout(
+        title: "Workout",
+        startedAt: day(daysAgo),
+        endedAt: finished ? day(daysAgo).addingTimeInterval(3600) : nil,
+        exercises: items.map { exercise, sets in
+            WorkoutExercise(
+                exerciseId: exercise.id,
+                restSeconds: rest,
+                sets: sets.map { WorkoutSet(reps: $0.1, weightKg: $0.0, completedAt: day(daysAgo)) }
+            )
+        }
+    )
+}
+
+@Test func restDefaultsDependOnTheKindOfLift() {
+    #expect(bench.isCompound)
+    #expect(hackSquat.isCompound)
+    #expect(!curl.isCompound)
+    #expect(bench.defaultRestSeconds == 180)
+    #expect(curl.defaultRestSeconds == 90)
+}
+
+@Test func newExercisesStartFromLastTime() {
+    let history = [
+        workout(7, [(bench, [(57.5, 8)])]),
+        workout(3, [(bench, [(60, 8), (60, 7)])], rest: 150),
+        workout(0, [(bench, [(70, 5)])], finished: false),
+    ]
+
+    let added = WorkoutLog.adding(bench, history: history)
+
+    #expect(added.sets.map(\.weightKg) == [60, 60])
+    #expect(added.sets.map(\.reps) == [8, 7])
+    #expect(added.sets.allSatisfy { !$0.isCompleted })
+    #expect(added.restSeconds == 150)
+}
+
+@Test func aFirstTimeExerciseStartsWithOneEmptySet() {
+    let added = WorkoutLog.adding(curl, history: [])
+    #expect(added.sets.count == 1)
+    #expect(added.sets[0].weightKg == nil)
+    #expect(added.restSeconds == 90)
+}
+
+@Test func volumeCountsWorkingSetsAndBothDumbbells() {
+    var session = workout(0, [(bench, [(60, 8)]), (curl, [(12.5, 10)])])
+    session.exercises[0].sets.append(WorkoutSet(setType: .warmup, reps: 10, weightKg: 40, completedAt: day(0)))
+    session.exercises[0].sets.append(WorkoutSet(reps: 8, weightKg: 60))
+
+    let expected: Double = 60 * 8 + 12.5 * 10 * 2
+    #expect(WorkoutLog.volumeKg(of: session, exercises: exercises) == expected)
+}
+
+@Test func recordsNeedSomethingToBeat() {
+    let history = [workout(3, [(bench, [(60, 8)])])]
+
+    let heavier = workout(0, [(bench, [(62.5, 5)]), (curl, [(15, 8)])])
+    let records = WorkoutLog.personalRecords(in: heavier, history: history + [heavier], exercises: exercises)
+    #expect(records == [.init(exerciseID: bench.id, kind: .heaviestWeight, kilograms: 62.5, previousKilograms: 60)])
+
+    let moreReps = workout(0, [(bench, [(60, 10)])])
+    let e1rm = WorkoutLog.personalRecords(in: moreReps, history: history, exercises: exercises)
+    #expect(e1rm.map(\.kind) == [.estimatedOneRepMax])
+
+    let same = workout(0, [(bench, [(60, 8)])])
+    #expect(WorkoutLog.personalRecords(in: same, history: history, exercises: exercises).isEmpty)
+}
+
+@Test func oneRepMaxIsOnlyEstimatedForUpToTwelveReps() throws {
+    #expect(WorkoutLog.estimatedOneRepMax(weightKg: 100, reps: 1) == 100)
+    let threeReps = try #require(WorkoutLog.estimatedOneRepMax(weightKg: 100, reps: 3))
+    #expect(abs(threeReps - 110) < 0.000_001)
+    #expect(WorkoutLog.estimatedOneRepMax(weightKg: 100, reps: 15) == nil)
+    #expect(WorkoutLog.estimatedOneRepMax(weightKg: 0, reps: 5) == nil)
+}
+
+@Test func restTimerCountsDownAndCanBeExtended() {
+    let start = Date(timeIntervalSince1970: 0)
+    var timer = RestTimer(exerciseName: "Bench", seconds: 90, from: start)
+    #expect(timer.remaining(at: start.addingTimeInterval(30)) == 60)
+
+    timer.extend(by: 15, at: start.addingTimeInterval(30))
+    #expect(timer.remaining(at: start.addingTimeInterval(30)) == 75)
+    timer.extend(by: -120, at: start.addingTimeInterval(30))
+    #expect(timer.isFinished(at: start.addingTimeInterval(30)))
+}
+
+@Test func poundsRoundTripThroughKilograms() {
+    let stored = WeightUnit.lb.kilograms(from: 135)
+    #expect(stored == 61.235)
+    #expect(WeightUnit.lb.format(kilograms: stored, locale: Locale(identifier: "en_US")) == "135")
+    #expect(WeightUnit.kg.format(kilograms: 61.25, locale: Locale(identifier: "en_US")) == "61.25")
+    #expect(WeightUnit.kg.format(kilograms: 60, locale: Locale(identifier: "en_US")) == "60")
+    #expect(WeightUnit.lb.format(kilograms: 60, locale: Locale(identifier: "en_US")) == "132.3")
+}
+
+@Test func stepsLandOnPlateIncrements() {
+    #expect(WeightUnit.kg.step(kilograms: 61, by: 1, loadType: .total) == 62.5)
+    #expect(WeightUnit.kg.step(kilograms: 61, by: -1, loadType: .total) == 60)
+    #expect(WeightUnit.kg.step(kilograms: 60, by: 1, loadType: .total) == 62.5)
+    #expect(WeightUnit.kg.step(kilograms: 10, by: 1, loadType: .perSide) == 11.25)
+    #expect(WeightUnit.kg.step(kilograms: 0, by: -1, loadType: .total) == 0)
+    let pounds = WeightUnit.lb
+    let next = pounds.step(kilograms: pounds.kilograms(from: 135), by: 1, loadType: .total)
+    #expect(pounds.value(fromKilograms: next).rounded() == 140)
+}
+
+@Test func theDefaultUnitFollowsTheRegion() {
+    #expect(WeightUnit.default(for: Locale(identifier: "en_US")) == .lb)
+    #expect(WeightUnit.default(for: Locale(identifier: "zh_Hans_CN")) == .kg)
+    #expect(WeightUnit.default(for: Locale(identifier: "de_DE")) == .kg)
+}

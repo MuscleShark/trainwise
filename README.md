@@ -28,6 +28,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 
 - Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
+- Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
 - API client generated from `api/openapi.json`
 
 ## Tech Stack
@@ -213,6 +214,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ### 4. Run the iPhone app
 
 Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator and run. The first build asks you to trust the OpenAPIGenerator plugin; it generates the API client.
+
+To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises and workouts in memory, no sign-in and no network.
 
 The app calls the production API and the Clerk development instance; both values are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project. Both are public: the publishable key also ships in the web app.
 
