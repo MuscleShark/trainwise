@@ -1,13 +1,14 @@
 import Link from "next/link";
 
 import type { Lang, Page } from "./legal-content";
+import Logo from "./Logo";
 
 export default function LegalPage({ page, lang }: { page: Page; lang: Lang }) {
   return (
     <div lang={lang === "zh" ? "zh-Hans" : "en"} className="flex flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-6 sm:px-8">
-        <Link href="/" className="type-stamp text-xl">
-          IronSage
+        <Link href="/" aria-label="IronSage home">
+          <Logo height={52} />
         </Link>
         <Link
           href={page.otherLanguage.href}
