@@ -42,6 +42,7 @@ struct WorkoutSummaryView: View {
                     }
                 }
             }
+            .brandBackground()
             .navigationTitle(workout.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -98,6 +98,7 @@ struct SettingsView: View {
                     Text("Deletes your account and all your training data from IronSage. This can't be undone.")
                 }
             }
+            .brandBackground()
             .navigationTitle("Settings")
             .task { await loadAccount() }
             .refreshable {

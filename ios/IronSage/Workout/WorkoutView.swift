@@ -53,6 +53,7 @@ struct WorkoutView: View {
                     }
                 }
             }
+            .brandBackground()
             .listSectionSpacing(.compact)
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle(session.isEditing ? "Edit workout" : "Workout")

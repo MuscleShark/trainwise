@@ -41,6 +41,7 @@ struct TodayView: View {
                     }
                 }
             }
+            .brandBackground()
             .navigationTitle("Today")
             .navigationDestination(for: WorkoutRoute.self) { route in
                 WorkoutDetailView(workoutID: route.id)
