@@ -88,6 +88,8 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
         workouts: [String] = [],
         templates: [String] = [],
         exercises: [String] = [],
+        bodyMeasurements: [String] = [],
+        readiness: [String] = [],
         profile: String = "null"
     ) -> String {
         """
@@ -95,7 +97,8 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
          "exercises": [\(exercises.joined(separator: ","))],
          "workouts": [\(workouts.joined(separator: ","))],
          "templates": [\(templates.joined(separator: ","))],
-         "body_measurements": [], "readiness": []}
+         "body_measurements": [\(bodyMeasurements.joined(separator: ","))],
+         "readiness": [\(readiness.joined(separator: ","))]}
         """
     }
 

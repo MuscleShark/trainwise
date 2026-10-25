@@ -51,6 +51,7 @@ public final class SyncEngine {
             return
         }
         let run = generation
+        upgradeCursorIfNeeded()
         repeat {
             runAgain = false
             state = .syncing
@@ -82,6 +83,18 @@ public final class SyncEngine {
         }
         lastSyncedAt = nil
         state = .idle
+    }
+
+    /// Version 2 added body measurements and readiness. The server sent them before, but
+    /// older versions of the app skipped them, so the first sync after the update starts
+    /// again from 0 to pick them up. Records with unsent edits still win.
+    static let cursorVersion = 2
+
+    private func upgradeCursorIfNeeded() {
+        if defaults.integer(forKey: Keys.cursorVersion) < Self.cursorVersion {
+            defaults.removeObject(forKey: Keys.changeSeq)
+            defaults.set(Self.cursorVersion, forKey: Keys.cursorVersion)
+        }
     }
 
     /// Each reset starts a new generation; a sync from an older one must stop.
@@ -148,6 +161,22 @@ public final class SyncEngine {
             return try await .from(api.putProfile(body: .json(body))) {
                 try $0.ok.body.json.changeSeq
             }
+        case (.bodyMeasurement, .save):
+            let body = try Wire.api(store.payload(of: change, as: BodyMeasurement.self), as: Components.Schemas.BodyMeasurementWrite.self)
+            return try await .from(api.putBodyMeasurement(path: .init(measurementId: id), body: .json(body))) {
+                try $0.ok.body.json.changeSeq
+            }
+        case (.bodyMeasurement, .delete):
+            return try await .deleted(api.deleteBodyMeasurement(path: .init(measurementId: id)))
+        case (.readiness, .save):
+            let day = try store.payload(of: change, as: Readiness.self)
+            let body = try Wire.api(day, as: Components.Schemas.ReadinessWrite.self)
+            return try await .from(api.putReadiness(path: .init(day: day.date), body: .json(body))) {
+                try $0.ok.body.json.changeSeq
+            }
+        case (.readiness, .delete):
+            // The API keeps one record per day and has no delete; a day is only replaced.
+            return .accepted(changeSeq: nil)
         }
     }
 
@@ -186,8 +215,14 @@ public final class SyncEngine {
                 let value = try Wire.app(template, as: Template.self)
                 store.applyRemote(.template(value), id: value.id, changeSeq: template.changeSeq, deleted: template.deletedAt != nil)
             }
-            // Body measurements and readiness arrive with Apple Health in M2; that
-            // release has to sync again from 0 to pick up earlier ones.
+            for measurement in page.bodyMeasurements {
+                let value = try Wire.app(measurement, as: BodyMeasurement.self)
+                store.applyRemote(.bodyMeasurement(value), id: value.id, changeSeq: measurement.changeSeq, deleted: measurement.deletedAt != nil)
+            }
+            for day in page.readiness {
+                let value = try Wire.app(day, as: Readiness.self)
+                store.applyRemote(.readiness(value), id: LocalStore.readinessID(value.date), changeSeq: day.changeSeq, deleted: day.deletedAt != nil)
+            }
 
             since = page.changeSeq
             defaults.set(since, forKey: Keys.changeSeq)
@@ -230,6 +265,7 @@ public final class SyncEngine {
         static let changeSeq = "IronSage.sync.changeSeq"
         static let catalogFetchedAt = "IronSage.sync.catalogFetchedAt"
         static let lastSyncedAt = "IronSage.sync.lastSyncedAt"
+        static let cursorVersion = "IronSage.sync.cursorVersion"
     }
 
     enum SyncError: Error {
@@ -346,6 +382,36 @@ extension Operations.DeleteTemplate.Output: SyncOutput {
 }
 
 extension Operations.PutProfile.Output: SyncOutput {
+    var statusCode: Int? {
+        switch self {
+        case .ok: nil
+        case .unprocessableContent: 422
+        case .undocumented(let status, _): status
+        }
+    }
+}
+
+extension Operations.PutBodyMeasurement.Output: SyncOutput {
+    var statusCode: Int? {
+        switch self {
+        case .ok: nil
+        case .unprocessableContent: 422
+        case .undocumented(let status, _): status
+        }
+    }
+}
+
+extension Operations.DeleteBodyMeasurement.Output: SyncOutput {
+    var statusCode: Int? {
+        switch self {
+        case .noContent: nil
+        case .unprocessableContent: 422
+        case .undocumented(let status, _): status
+        }
+    }
+}
+
+extension Operations.PutReadiness.Output: SyncOutput {
     var statusCode: Int? {
         switch self {
         case .ok: nil

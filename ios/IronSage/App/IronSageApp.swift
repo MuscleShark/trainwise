@@ -17,6 +17,7 @@ struct IronSageApp: App {
                     .environment(\.api, services.api)
                     .environment(services.store)
                     .environment(services.sync)
+                    .environment(services.health)
                     .environment(\.services, services)
             case .failure(let error):
                 // Only reachable with a broken build configuration or a broken disk.
@@ -30,13 +31,14 @@ struct IronSageApp: App {
     }
 }
 
-/// What the app is built from: configuration, the API client, and the phone's copy of
-/// the signed-in user's data with its sync.
+/// What the app is built from: configuration, the API client, the phone's copy of the
+/// signed-in user's data with its sync, and Apple Health.
 @MainActor
 final class AppServices {
     let api: APIClient
     let store: LocalStore
     let sync: SyncEngine
+    let health: HealthService
     /// Debug builds launched with `-demo`: sample data in memory, no sign-in, no network.
     let isDemo: Bool
 
@@ -53,6 +55,7 @@ final class AppServices {
         #endif
         store = try LocalStore(inMemory: isDemo)
         sync = SyncEngine(store: store, api: api)
+        health = HealthService(store: store, enabled: !isDemo)
         #if DEBUG
         if isDemo {
             DemoData.fill(store)
@@ -72,6 +75,7 @@ final class AppServices {
     func removeLocalData() {
         store.removeAll()
         sync.reset()
+        health.reset()
         UserDefaults.standard.removeObject(forKey: Self.ownerKey)
     }
 }

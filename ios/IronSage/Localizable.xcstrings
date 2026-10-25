@@ -2090,6 +2090,136 @@
           }
         }
       }
+    },
+    "Sleep, by stage" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "睡眠（含各阶段）"
+          }
+        }
+      }
+    },
+    "Heart rate variability and resting heart rate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "心率变异性和静息心率"
+          }
+        }
+      }
+    },
+    "Heart rate and active energy during workouts" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练时的心率和活动能量"
+          }
+        }
+      }
+    },
+    "Body weight" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体重"
+          }
+        }
+      }
+    },
+    "Connect Apple Health" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接 Apple 健康"
+          }
+        }
+      }
+    },
+    "IronSage reads these to show your progress and to compare each day with your usual:" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 会读取这些数据，用来展示你的进步，并把每天的状态和你平时的水平对比："
+          }
+        }
+      }
+    },
+    "It saves your workouts, and the weights you enter, to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练和你填写的体重会保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Your health data is kept in your IronSage account and is never used for ads. You can change what IronSage may read at any time in the Health settings on your iPhone." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的健康数据保存在你的 IronSage 账户中，绝不会用于广告。你可以随时在 iPhone 的健康设置里更改 IronSage 能读取的内容。"
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以后再说"
+          }
+        }
+      }
+    },
+    "Apple Health isn't available on this device." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这台设备不支持 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Apple Health" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 健康"
+          }
+        }
+      }
+    },
+    "Connected" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已连接"
+          }
+        }
+      }
+    },
+    "To change what IronSage can read or write, open Settings on your iPhone, then Health, Data Access & Devices, IronSage." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要更改 IronSage 能读取或写入的内容，请打开 iPhone 的“设置”，依次进入“健康”>“数据访问与设备”> IronSage。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

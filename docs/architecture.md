@@ -86,6 +86,24 @@ Agreed before M1 started:
 
 M1 ships as six pull requests: project skeleton (sign-in, generated API client, tabs, CI); local store, sync and catalog; workout logging; history; templates; settings, profile and localization.
 
+### M2 decisions
+
+Agreed before M2 started:
+
+| Topic | Decision |
+|---|---|
+| Navigation | A fifth tab, Progress |
+| Without Apple Health | Everything works without a Watch and without Health access: charts and records come from logged workouts, and body weight can be typed in |
+| Asking for access | An explanation page once the profile exists, then Apple's permission sheet. "Not now" keeps it in Settings |
+| First import | The last 90 days, then what changed since the last import (the last two days are always read again) |
+| Body weight | The latest weight from Apple Health is shown with its date and the question whether it is current. If it isn't, or there is none, the user types it in. Typed weights are written back to Apple Health |
+| Readiness | Last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average. No combined score |
+| Workouts to Apple Health | Written when the workout is finished, as traditional strength training. When a Watch recorded it, active energy and average and maximum heart rate for the workout's time are added |
+| Weekly sets | Per muscle: a primary muscle counts 1, a secondary one 0.5. A light reference band of 10 to 20 sets |
+| Personal records | Heaviest weight, best estimated one-rep max, and most reps at a weight |
+
+M2 ships as five pull requests: Apple Health groundwork (permission, import, sync of readiness and body weight); workouts written to Apple Health; exercise detail; the Progress tab; the readiness card on Today.
+
 ### Languages
 
 - English and Chinese (Simplified). iOS picks the language from the phone's language list, not from the App Store region.

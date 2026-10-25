@@ -1,0 +1,28 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSHealthShareUsageDescription" : {
+      "comment" : "Why IronSage reads Apple Health data.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 读取你的睡眠、心率变异性、静息心率、训练时的心率和活动能量，以及体重，用来展示你的进步并建议下一次怎么练。"
+          }
+        }
+      }
+    },
+    "NSHealthUpdateUsageDescription" : {
+      "comment" : "Why IronSage writes to Apple Health.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 会把你的力量训练和你记录的体重保存到 Apple 健康。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

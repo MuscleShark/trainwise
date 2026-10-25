@@ -29,6 +29,32 @@ enum DemoData {
         store.save(workout("Push", daysAgo: 4, [(bench, 180, [(60, 8), (60, 8), (60, 7)]), (press, 150, [(40, 8), (40, 7)]), (raise, 90, [(8, 12), (8, 12)])]))
         store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 8), (80, 8)])]))
         store.save(workout("Pull", daysAgo: 1, [(row, 150, [(70, 8), (70, 8)]), (pulldown, 120, [(55, 10), (55, 10)]), (curl, 90, [(12, 10), (12, 9)])]))
+
+        fillHealth(store)
+    }
+
+    /// Five weeks of nights and morning weights, with a little day-to-day noise.
+    private static func fillHealth(_ store: LocalStore) {
+        let calendar = Calendar.current
+        for daysAgo in 0..<35 {
+            let date = calendar.date(byAdding: .day, value: -daysAgo, to: .now)!
+            let wobble = Double((daysAgo * 37) % 11 - 5)  // -5...5, repeatable
+            let sleep = 420 + Int(wobble * 6)
+            store.save(Readiness(
+                date: HealthDays.key(date, calendar: calendar),
+                sleepMinutes: sleep,
+                deepMinutes: sleep / 7,
+                remMinutes: sleep / 5,
+                coreMinutes: sleep - sleep / 7 - sleep / 5,
+                awakeMinutes: 20,
+                hrvSdnnMs: 52 + wobble * 1.5,
+                restingHrBpm: 56 - wobble / 2
+            ))
+            if daysAgo % 3 == 0 {
+                let morning = calendar.date(bySettingHour: 7, minute: 30, second: 0, of: date)!
+                store.save(BodyMeasurement(measuredAt: morning, value: 80 - Double(35 - daysAgo) * 0.04 + wobble * 0.1, source: .healthkit))
+            }
+        }
     }
 
     private static func exercise(_ en: String, _ zh: String, _ equipment: Equipment, _ load: LoadType, _ primary: [Muscle], _ secondary: [Muscle], _ aliases: [String]) -> Exercise {

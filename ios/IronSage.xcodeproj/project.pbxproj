@@ -173,6 +173,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
 				INFOPLIST_FILE = IronSage/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -234,6 +235,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
 				INFOPLIST_FILE = IronSage/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
