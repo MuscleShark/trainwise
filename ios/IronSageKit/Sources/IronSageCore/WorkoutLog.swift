@@ -20,10 +20,11 @@ extension Exercise {
 }
 
 public enum WorkoutLog {
-    /// The sets of `exerciseID` from the most recent finished workout that has it.
-    public static func lastSets(of exerciseID: UUID, in history: [Workout], excluding workoutID: UUID? = nil) -> [WorkoutSet]? {
+    /// The sets of `exerciseID` from the most recent finished workout that has it,
+    /// counting only workouts that started before `date`.
+    public static func lastSets(of exerciseID: UUID, in history: [Workout], before date: Date = .distantFuture) -> [WorkoutSet]? {
         let previous = history
-            .filter { !$0.isInProgress && $0.id != workoutID }
+            .filter { !$0.isInProgress && $0.startedAt < date }
             .sorted { $0.startedAt > $1.startedAt }
         for workout in previous {
             let sets = workout.exercises
@@ -157,5 +158,31 @@ public struct RestTimer: Equatable, Sendable {
         let remaining = remaining(at: date) + TimeInterval(seconds)
         endsAt = date.addingTimeInterval(max(0, remaining))
         totalSeconds = max(0, totalSeconds + seconds)
+    }
+}
+
+public enum WorkoutHistory {
+    public struct Week: Identifiable, Hashable, Sendable {
+        /// The first day of the week, at midnight, in the calendar used to group.
+        public let start: Date
+        /// Newest first.
+        public let workouts: [Workout]
+        public var id: Date { start }
+
+        public var setCount: Int {
+            workouts.reduce(0) { $0 + $1.exercises.reduce(0) { $0 + $1.sets.count } }
+        }
+    }
+
+    /// Finished workouts by week, newest week first. Weeks start on the calendar's first
+    /// weekday (Monday or Sunday, depending on the region).
+    public static func weeks(_ workouts: [Workout], calendar: Calendar = .current) -> [Week] {
+        let finished = workouts.filter { !$0.isInProgress }
+        let grouped = Dictionary(grouping: finished) { workout in
+            calendar.dateInterval(of: .weekOfYear, for: workout.startedAt)?.start ?? calendar.startOfDay(for: workout.startedAt)
+        }
+        return grouped
+            .map { Week(start: $0.key, workouts: $0.value.sorted { $0.startedAt > $1.startedAt }) }
+            .sorted { $0.start > $1.start }
     }
 }

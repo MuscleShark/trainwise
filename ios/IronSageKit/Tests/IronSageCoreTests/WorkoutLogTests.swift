@@ -57,6 +57,8 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(added.sets.map(\.reps) == [8, 7])
     #expect(added.sets.allSatisfy { !$0.isCompleted })
     #expect(added.restSeconds == 150)
+    // Editing the older workout shows what came before it, not after.
+    #expect(WorkoutLog.lastSets(of: bench.id, in: history, before: day(3))?.map(\.weightKg) == [57.5])
 }
 
 @Test func aFirstTimeExerciseStartsWithOneEmptySet() {
@@ -133,4 +135,24 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(WeightUnit.default(for: Locale(identifier: "en_US")) == .lb)
     #expect(WeightUnit.default(for: Locale(identifier: "zh_Hans_CN")) == .kg)
     #expect(WeightUnit.default(for: Locale(identifier: "de_DE")) == .kg)
+}
+
+@Test func historyGroupsFinishedWorkoutsByWeek() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try #require(TimeZone(identifier: "Europe/Berlin"))
+    calendar.firstWeekday = 2 // Monday
+    func date(_ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: 2026, month: 10, day: day, hour: 18))!
+    }
+    func session(_ day: Int, finished: Bool = true) -> Workout {
+        Workout(title: "\(day)", startedAt: date(day), endedAt: finished ? date(day).addingTimeInterval(3600) : nil,
+                exercises: [WorkoutExercise(exerciseId: bench.id, sets: [WorkoutSet(reps: 5, weightKg: 60, completedAt: date(day))])])
+    }
+
+    // Monday 19 to Sunday 25 October is one week; Sunday 18 belongs to the week before.
+    let weeks = WorkoutHistory.weeks([session(18), session(19), session(25), session(22), session(24, finished: false)], calendar: calendar)
+
+    #expect(weeks.map { $0.workouts.map(\.title) } == [["25", "22", "19"], ["18"]])
+    #expect(weeks[0].start == calendar.date(from: DateComponents(year: 2026, month: 10, day: 19)))
+    #expect(weeks[0].setCount == 3)
 }
