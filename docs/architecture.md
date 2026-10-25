@@ -49,6 +49,8 @@ Each milestone goes to TestFlight and is used in real workouts before the next o
 | **M2 Health and progress** | Read sleep, HRV, resting HR and workout heart rate; write workouts to Apple Health; charts; personal records | Each exercise shows its progress, and workouts appear in Apple Fitness |
 | **M3 AI coach** | Next-session suggestion with its reason, weekly summary, StoreKit 2 subscription | A subscriber gets suggestions end to end. **Then submit to the App Store** |
 
+Status (2026-10-25): the code for M1 and M2 is merged. TestFlight and testing on a real iPhone wait for the Apple Developer account. M3 is next.
+
 ### Screens
 
 1. **Onboarding**: Clerk sign-in (email code, Google, Apple); short profile (kg or lb, experience, goal; height and birthday optional); an explanation page, then the HealthKit permission prompt.
