@@ -2390,6 +2390,176 @@
           }
         }
       }
+    },
+    "Progress" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进步"
+          }
+        }
+      }
+    },
+    "Apple Health has %@ from %@. Is that still your weight?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 健康里记录的是 %1$@（%2$@）。这还是你现在的体重吗？"
+          }
+        }
+      }
+    },
+    "Yes, still current" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "是的，没变"
+          }
+        }
+      }
+    },
+    "Enter my weight" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填写体重"
+          }
+        }
+      }
+    },
+    "All weights" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部体重记录"
+          }
+        }
+      }
+    },
+    "Apple Health has no weight for you yet." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 健康里还没有你的体重。"
+          }
+        }
+      }
+    },
+    "No weight yet." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有体重记录。"
+          }
+        }
+      }
+    },
+    "Body weight over the last 90 days, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 90 天的体重，单位 %@"
+          }
+        }
+      }
+    },
+    "Entered" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手动填写"
+          }
+        }
+      }
+    },
+    "Week" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "周"
+          }
+        }
+      }
+    },
+    "No sets this week yet." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本周还没有训练组。"
+          }
+        }
+      }
+    },
+    "Sets per muscle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个肌群的组数"
+          }
+        }
+      }
+    },
+    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。阴影区间（每周 10 到 20 组）是大多数人增长效果最好的范围。"
+          }
+        }
+      }
+    },
+    "Finish a workout to see your weekly volume." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成一次训练后，这里会显示每周训练量。"
+          }
+        }
+      }
+    },
+    "Volume per week, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周训练量，单位 %@"
+          }
+        }
+      }
+    },
+    "Weekly volume" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周训练量"
+          }
+        }
+      }
+    },
+    "Weight × reps of the working sets, per week." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周正式组的重量 × 次数。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

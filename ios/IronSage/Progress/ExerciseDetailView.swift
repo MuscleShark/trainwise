@@ -39,7 +39,7 @@ struct ExerciseDetailView: View {
                     ForEach(sessions) { session in
                         NavigationLink(value: WorkoutRoute(id: session.workoutID)) {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(session.date, format: .dateTime.weekday(.abbreviated).month().day().year())
+                                Text(session.date.shortDayWithWeekday)
                                     .font(.subheadline.weight(.semibold))
                                 Text(session.sets.map(unit.formatSet).joined(separator: ", "))
                                     .font(.subheadline)
