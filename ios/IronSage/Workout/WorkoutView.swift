@@ -23,9 +23,15 @@ struct WorkoutView: View {
                         set: { title in session.update { $0.title = String(title.prefix(120)) } }
                     ))
                     .font(.title3.weight(.semibold))
-                    LabeledContent("Duration") {
-                        Text(session.workout.startedAt, style: .timer)
-                            .monospacedDigit()
+                    if session.isEditing {
+                        LabeledContent("Date") {
+                            Text(session.workout.startedAt, format: .dateTime.weekday().month().day().hour().minute())
+                        }
+                    } else {
+                        LabeledContent("Duration") {
+                            Text(session.workout.startedAt, style: .timer)
+                                .monospacedDigit()
+                        }
                     }
                 }
 
@@ -39,15 +45,17 @@ struct WorkoutView: View {
                     }
                 }
 
-                Section {
-                    Button("Discard workout", role: .destructive) {
-                        isConfirmingDiscard = true
+                if !session.isEditing {
+                    Section {
+                        Button("Discard workout", role: .destructive) {
+                            isConfirmingDiscard = true
+                        }
                     }
                 }
             }
             .listSectionSpacing(.compact)
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Workout")
+            .navigationTitle(session.isEditing ? "Edit workout" : "Workout")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 if let timer = session.restTimer {
@@ -55,15 +63,32 @@ struct WorkoutView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Hide", systemImage: "chevron.down") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Finish") {
-                        focus = nil
-                        isConfirmingFinish = true
+                if session.isEditing {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            session.revertEdits()
+                            dismiss()
+                        }
                     }
-                    .disabled(!session.hasCompletedSets)
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            focus = nil
+                            session.saveEdits()
+                            Task { await sync.sync() }
+                            dismiss()
+                        }
+                    }
+                } else {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Hide", systemImage: "chevron.down") { dismiss() }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Finish") {
+                            focus = nil
+                            isConfirmingFinish = true
+                        }
+                        .disabled(!session.hasCompletedSets)
+                    }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     if case .weight(let setID, let exerciseID) = focus {
@@ -134,7 +159,7 @@ private struct ExerciseSection: View {
 
     var body: some View {
         let unit = store.weightUnit
-        let last = WorkoutLog.lastSets(of: item.exerciseId, in: store.finishedWorkouts, excluding: session.workout.id)
+        let last = WorkoutLog.lastSets(of: item.exerciseId, in: store.finishedWorkouts, before: session.workout.startedAt)
         Section {
             SetHeader(unit: unit)
             ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in

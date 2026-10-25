@@ -12,12 +12,18 @@ final class WorkoutSession: Identifiable {
     private(set) var restTimer: RestTimer?
 
     @ObservationIgnored private let store: LocalStore
+    /// The workout before editing started; only set when editing a finished workout.
+    @ObservationIgnored private let original: Workout?
 
     var id: UUID { workout.id }
+
+    /// Editing a finished workout from History rather than logging one.
+    var isEditing: Bool { original != nil }
 
     init(workout: Workout, store: LocalStore) {
         self.workout = workout
         self.store = store
+        original = workout.isInProgress ? nil : workout
     }
 
     /// Starts and saves a new workout.
@@ -47,8 +53,9 @@ final class WorkoutSession: Identifiable {
               let s = workout.exercises[e].sets.firstIndex(where: { $0.id == setID })
         else { return }
         let completing = !workout.exercises[e].sets[s].isCompleted
-        update { $0.exercises[e].sets[s].completedAt = completing ? .now : nil }
-        if completing {
+        let completedAt = isEditing ? workout.endedAt : .now
+        update { $0.exercises[e].sets[s].completedAt = completing ? completedAt : nil }
+        if completing && !isEditing {
             let item = workout.exercises[e]
             let exercise = store.exercises[item.exerciseId]
             let seconds = item.restSeconds ?? exercise?.defaultRestSeconds ?? 120
@@ -98,6 +105,30 @@ final class WorkoutSession: Identifiable {
             }
             workout.exercises.removeAll { $0.sets.isEmpty }
         }
+    }
+
+    /// Ends editing a finished workout: sets with reps count as done, empty ones go.
+    func saveEdits() {
+        update { workout in
+            let endedAt = workout.endedAt
+            for e in workout.exercises.indices {
+                workout.exercises[e].sets = workout.exercises[e].sets.compactMap { set in
+                    if set.isCompleted { return set }
+                    guard set.reps != nil else { return nil }
+                    var done = set
+                    done.completedAt = endedAt
+                    return done
+                }
+            }
+            workout.exercises.removeAll { $0.sets.isEmpty }
+        }
+    }
+
+    /// Undoes everything since editing started.
+    func revertEdits() {
+        guard let original else { return }
+        workout = original
+        store.save(original)
     }
 
     func discard() {

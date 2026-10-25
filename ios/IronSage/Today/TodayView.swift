@@ -32,11 +32,16 @@ struct TodayView: View {
 
                 if let last = store.finishedWorkouts.first {
                     Section("Last workout") {
-                        WorkoutRow(workout: last)
+                        NavigationLink(value: last.id) {
+                            WorkoutRow(workout: last)
+                        }
                     }
                 }
             }
             .navigationTitle("Today")
+            .navigationDestination(for: UUID.self) { id in
+                WorkoutDetailView(workoutID: id)
+            }
             .fullScreenCover(item: $session) { session in
                 WorkoutView(session: session)
             }

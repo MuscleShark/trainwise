@@ -341,6 +341,46 @@
         }
       }
     },
+    "Date": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除"
+          }
+        }
+      }
+    },
+    "Delete this workout?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这次训练？"
+          }
+        }
+      }
+    },
+    "Delete workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除训练"
+          }
+        }
+      }
+    },
     "Discard this workout?": {
       "localizations": {
         "zh-Hans": {
@@ -397,6 +437,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "时长"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑"
+          }
+        }
+      }
+    },
+    "Edit workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑训练"
           }
         }
       }
@@ -661,6 +721,16 @@
         }
       }
     },
+    "Last week": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上周"
+          }
+        }
+      }
+    },
     "Last workout": {
       "localizations": {
         "zh-Hans": {
@@ -871,6 +941,16 @@
         }
       }
     },
+    "Notes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备注"
+          }
+        }
+      }
+    },
     "Nothing from it will be saved.": {
       "localizations": {
         "zh-Hans": {
@@ -887,6 +967,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "腹斜肌"
+          }
+        }
+      }
+    },
+    "Options": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选项"
           }
         }
       }
@@ -937,6 +1027,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "RIR"
+          }
+        }
+      }
+    },
+    "RIR %lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR %lld"
           }
         }
       }
@@ -1047,6 +1147,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "继续"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
           }
         }
       }
@@ -1251,6 +1361,16 @@
         }
       }
     },
+    "This week": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周"
+          }
+        }
+      }
+    },
     "To failure": {
       "localizations": {
         "zh-Hans": {
@@ -1421,6 +1541,16 @@
         }
       }
     },
+    "Workout deleted": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "训练已删除"
+          }
+        }
+      }
+    },
     "Workout logging arrives in the next update.": {
       "localizations": {
         "zh-Hans": {
@@ -1441,6 +1571,16 @@
         }
       }
     },
+    "^[%lld workout](inflect: true)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 次训练"
+          }
+        }
+      }
+    },
     "kg": {
       "localizations": {
         "zh-Hans": {
@@ -1457,6 +1597,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "lb"
+          }
+        }
+      }
+    },
+    "“%@” will be removed from all your devices.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”会从你所有的设备上删除。"
           }
         }
       }

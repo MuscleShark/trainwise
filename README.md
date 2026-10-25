@@ -29,6 +29,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 - Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
+- History by week: each workout's sets, editing and deleting
 - API client generated from `api/openapi.json`
 
 ## Tech Stack
