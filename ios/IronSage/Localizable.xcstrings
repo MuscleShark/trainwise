@@ -2240,6 +2240,156 @@
           }
         }
       }
+    },
+    "No sessions yet" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有训练记录"
+          }
+        }
+      }
+    },
+    "Finish a workout with this exercise to see its progress here." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成一次包含这个动作的训练后，这里会显示它的进步。"
+          }
+        }
+      }
+    },
+    "Estimated 1RM" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算 1RM"
+          }
+        }
+      }
+    },
+    "The best set of each session, from sets of 1 to 12 reps: weight × (1 + reps ÷ 30)." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取每次训练中最好的一组（1 到 12 次的组）：重量 ×（1 + 次数 ÷ 30）。"
+          }
+        }
+      }
+    },
+    "Sessions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练记录"
+          }
+        }
+      }
+    },
+    "The chart appears after two sessions with sets of 1 to 12 reps." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有两次包含 1 到 12 次组的训练后，就会显示图表。"
+          }
+        }
+      }
+    },
+    "Estimated 1RM by session, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次训练的估算 1RM，单位 %@"
+          }
+        }
+      }
+    },
+    "Records" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "个人纪录"
+          }
+        }
+      }
+    },
+    "Heaviest set" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大重量"
+          }
+        }
+      }
+    },
+    "Best estimated 1RM" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最佳估算 1RM"
+          }
+        }
+      }
+    },
+    "Most reps at each assistance" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个助力重量下的最多次数"
+          }
+        }
+      }
+    },
+    "Most reps at each weight" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个重量下的最多次数"
+          }
+        }
+      }
+    },
+    "%lld reps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 次"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@，%2$@"
+          }
+        }
+      }
+    },
+    "Shows this exercise's progress and records" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示这个动作的进步和纪录"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

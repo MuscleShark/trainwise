@@ -33,6 +33,13 @@ extension WeightUnit {
         "\(format(kilograms: kilograms)) \(String(localized: symbol))"
     }
 
+    /// "60 kg × 8", or "× 12" for a set without weight.
+    func formatSet(_ set: WorkoutSet) -> String {
+        let reps = set.reps.map(String.init) ?? "–"
+        guard let weight = set.weightKg, weight > 0 else { return "× \(reps)" }
+        return "\(formatWithUnit(kilograms: weight)) × \(reps)"
+    }
+
     /// Totals such as volume, in whole units: "4,820 kg".
     func formatTotal(kilograms: Double) -> String {
         "\(value(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(0)))) \(String(localized: symbol))"
@@ -119,5 +126,14 @@ extension Duration {
         Duration.seconds(Int(seconds.rounded())).formatted(
             .time(pattern: seconds >= 3600 ? .hourMinuteSecond : .minuteSecond)
         )
+    }
+}
+
+extension Date {
+    /// "Oct 21", with the year only when it isn't this year: "Oct 21, 2025".
+    var shortDay: String {
+        Calendar.current.isDate(self, equalTo: .now, toGranularity: .year)
+            ? formatted(.dateTime.month().day())
+            : formatted(.dateTime.month().day().year())
     }
 }

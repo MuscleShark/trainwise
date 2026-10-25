@@ -44,6 +44,9 @@ struct HistoryView: View {
             .navigationDestination(for: WorkoutRoute.self) { route in
                 WorkoutDetailView(workoutID: route.id)
             }
+            .navigationDestination(for: ExerciseRoute.self) { route in
+                ExerciseDetailView(exerciseID: route.id)
+            }
             .refreshable { await sync.sync() }
             .confirmationDialog(
                 "Delete this workout?",
@@ -127,7 +130,7 @@ struct WorkoutDetailView: View {
             }
 
             ForEach(workout.exercises) { item in
-                Section(store.exerciseName(item.exerciseId)) {
+                Section {
                     ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in
                         HStack {
                             Group {
@@ -140,7 +143,7 @@ struct WorkoutDetailView: View {
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 28, alignment: .leading)
-                            Text(setText(set, unit: unit))
+                            Text(unit.formatSet(set))
                                 .monospacedDigit()
                             Spacer()
                             if let rir = set.rir {
@@ -150,6 +153,17 @@ struct WorkoutDetailView: View {
                             }
                         }
                     }
+                } header: {
+                    // Opens the exercise's progress: every session, the chart and records.
+                    NavigationLink(value: ExerciseRoute(id: item.exerciseId)) {
+                        HStack(spacing: 4) {
+                            Text(store.exerciseName(item.exerciseId))
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    .accessibilityHint(Text("Shows this exercise's progress and records"))
                 }
             }
 
@@ -205,11 +219,5 @@ struct WorkoutDetailView: View {
         } message: {
             Text("“\(workout.title)” will be removed from all your devices.")
         }
-    }
-
-    private func setText(_ set: WorkoutSet, unit: WeightUnit) -> String {
-        let reps = set.reps.map(String.init) ?? "–"
-        guard let weight = set.weightKg, weight > 0 else { return "× \(reps)" }
-        return "\(unit.formatWithUnit(kilograms: weight)) × \(reps)"
     }
 }

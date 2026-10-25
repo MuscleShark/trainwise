@@ -46,6 +46,9 @@ struct TodayView: View {
             .navigationDestination(for: WorkoutRoute.self) { route in
                 WorkoutDetailView(workoutID: route.id)
             }
+            .navigationDestination(for: ExerciseRoute.self) { route in
+                ExerciseDetailView(exerciseID: route.id)
+            }
             .navigationDestination(for: TemplateListRoute.self) { _ in
                 TemplateList()
                     .navigationTitle("Templates")
