@@ -83,11 +83,7 @@ class User(Base):
         String(255),
         nullable=True,
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        nullable=False,
-    )
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
     # Last change_seq handed out for this user's records (see sync.py).
     change_seq: Mapped[int] = mapped_column(
         BigInteger,

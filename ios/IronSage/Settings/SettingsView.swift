@@ -1,6 +1,9 @@
 import ClerkKit
 import IronSageAPI
+import OSLog
 import SwiftUI
+
+private let log = Logger(subsystem: "app.ironsage.IronSage", category: "settings")
 
 struct SettingsView: View {
     @Environment(Clerk.self) private var clerk
@@ -66,6 +69,7 @@ struct SettingsView: View {
             let me = try await api.getMe().ok.body.json
             account = .signedIn(email: me.email)
         } catch {
+            log.error("Loading the account failed: \(String(describing: error), privacy: .public)")
             account = .unavailable
         }
     }
