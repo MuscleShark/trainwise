@@ -71,6 +71,8 @@ struct SettingsView: View {
                     }
                 }
 
+                HealthSettingsSection()
+
                 Section("App") {
                     Button("Language") {
                         // iOS keeps a per-app language setting on the app's page in Settings.

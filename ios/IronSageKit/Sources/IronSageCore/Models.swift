@@ -410,3 +410,102 @@ extension Profile {
         set { heightCm = newValue.map { ($0 * 2.54 * 10).rounded() / 10 } }
     }
 }
+
+// MARK: Health (M2)
+
+public enum MeasurementKind: String, Codable, CaseIterable, Hashable, Sendable {
+    case weight
+    case bodyFat = "body_fat"
+    case waist, chest, arm, thigh, hips, neck
+}
+
+/// Where a record came from: typed in the app, or read from Apple Health.
+public enum DataSource: String, Codable, CaseIterable, Hashable, Sendable {
+    case manual, healthkit
+}
+
+/// One dated body measurement: kilograms for weight, percent for body fat, centimeters
+/// for girths.
+public struct BodyMeasurement: Identifiable, Hashable, Codable, Sendable {
+    public var id: UUID
+    public var measuredAt: Date
+    public var kind: MeasurementKind
+    public var value: Double
+    public var source: DataSource
+    public var healthkitSampleId: String?
+
+    public init(
+        id: UUID = UUID(),
+        measuredAt: Date,
+        kind: MeasurementKind = .weight,
+        value: Double,
+        source: DataSource,
+        healthkitSampleId: String? = nil
+    ) {
+        self.id = id
+        self.measuredAt = measuredAt
+        self.kind = kind
+        self.value = value
+        self.source = source
+        self.healthkitSampleId = healthkitSampleId
+    }
+}
+
+/// One day's recovery data: last night's sleep (by stage), HRV and resting heart rate.
+public struct Readiness: Identifiable, Hashable, Codable, Sendable {
+    /// Local calendar date, "2026-10-25": the day the sleep ended on.
+    public var date: String
+    public var sleepMinutes: Int?
+    public var deepMinutes: Int?
+    public var remMinutes: Int?
+    public var coreMinutes: Int?
+    public var awakeMinutes: Int?
+    /// Average HRV (SDNN) that day, in milliseconds.
+    public var hrvSdnnMs: Double?
+    public var restingHrBpm: Double?
+    public var source: DataSource
+
+    public var id: String { date }
+
+    public init(
+        date: String,
+        sleepMinutes: Int? = nil,
+        deepMinutes: Int? = nil,
+        remMinutes: Int? = nil,
+        coreMinutes: Int? = nil,
+        awakeMinutes: Int? = nil,
+        hrvSdnnMs: Double? = nil,
+        restingHrBpm: Double? = nil,
+        source: DataSource = .healthkit
+    ) {
+        self.date = date
+        self.sleepMinutes = sleepMinutes
+        self.deepMinutes = deepMinutes
+        self.remMinutes = remMinutes
+        self.coreMinutes = coreMinutes
+        self.awakeMinutes = awakeMinutes
+        self.hrvSdnnMs = hrvSdnnMs
+        self.restingHrBpm = restingHrBpm
+        self.source = source
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            date: c.decode(String.self, forKey: .date),
+            sleepMinutes: c.decodeIfPresent(Int.self, forKey: .sleepMinutes),
+            deepMinutes: c.decodeIfPresent(Int.self, forKey: .deepMinutes),
+            remMinutes: c.decodeIfPresent(Int.self, forKey: .remMinutes),
+            coreMinutes: c.decodeIfPresent(Int.self, forKey: .coreMinutes),
+            awakeMinutes: c.decodeIfPresent(Int.self, forKey: .awakeMinutes),
+            hrvSdnnMs: c.decodeIfPresent(Double.self, forKey: .hrvSdnnMs),
+            restingHrBpm: c.decodeIfPresent(Double.self, forKey: .restingHrBpm),
+            source: c.decodeIfPresent(DataSource.self, forKey: .source) ?? .healthkit
+        )
+    }
+
+    /// True when no value is set, so there is nothing worth saving.
+    public var isEmpty: Bool {
+        sleepMinutes == nil && hrvSdnnMs == nil && restingHrBpm == nil
+    }
+}

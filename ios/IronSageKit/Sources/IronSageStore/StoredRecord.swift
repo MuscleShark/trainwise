@@ -3,6 +3,8 @@ import SwiftData
 
 enum RecordKind: String, Sendable {
     case exercise, workout, template, profile
+    case bodyMeasurement = "body_measurement"
+    case readiness
 
     /// Records that others refer to go up first.
     var uploadOrder: Int {
@@ -11,6 +13,8 @@ enum RecordKind: String, Sendable {
         case .exercise: 1
         case .template: 2
         case .workout: 3
+        case .bodyMeasurement: 4
+        case .readiness: 5
         }
     }
 }

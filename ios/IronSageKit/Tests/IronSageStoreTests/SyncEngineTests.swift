@@ -361,3 +361,78 @@ private func pushDay(completed: Bool = true) -> Workout {
     #expect(harness.store.workouts.first?.exercises[0].sets[0].setType == .working)
     #expect(harness.store.profile?.unitSystem == .metric)
 }
+
+@MainActor
+@Test func bodyMeasurementsAndReadinessGoUpInTheAPIsShape() async throws {
+    let harness = try Harness { request in
+        if request.method == .put, request.path.hasPrefix("/v1/readiness/") {
+            let date = String(request.path.split(separator: "/").last ?? "")
+            return (200, #"{"id": "\#(UUID().uuidString.lowercased())", "date": "\#(date)", "sleep_minutes": 432, "source": "healthkit", "updated_at": "2026-11-25T08:00:00Z", "deleted_at": null, "change_seq": 4}"#)
+        }
+        return try FakeServer.standard(request)
+    }
+    let weight = BodyMeasurement(measuredAt: Date(timeIntervalSince1970: 1_795_000_000), value: 81.4, source: .manual)
+    harness.store.save(weight)
+    harness.store.save(Readiness(date: "2026-11-25", sleepMinutes: 432, deepMinutes: 61, hrvSdnnMs: 42.8, restingHrBpm: 58))
+
+    await harness.sync.sync()
+
+    #expect(harness.sync.state == .idle)
+    let weightPut = try #require(harness.server.requests.first { $0.path.hasPrefix("/v1/body-measurements/") })
+    #expect(weightPut.path == "/v1/body-measurements/\(weight.id.uuidString.lowercased())")
+    #expect(weightPut.json["kind"] as? String == "weight")
+    #expect(weightPut.json["value"] as? Double == 81.4)
+    #expect(weightPut.json["source"] as? String == "manual")
+    let dayPut = try #require(harness.server.requests.first { $0.path.hasPrefix("/v1/readiness/") })
+    #expect(dayPut.path == "/v1/readiness/2026-11-25")
+    #expect(dayPut.json["sleep_minutes"] as? Int == 432)
+    #expect(dayPut.json["hrv_sdnn_ms"] as? Double == 42.8)
+    #expect(harness.store.pendingChanges().isEmpty)
+}
+
+@MainActor
+@Test func pulledHealthRecordsAreKeptAndDeletionsApplied() async throws {
+    let kept = UUID().uuidString.lowercased(), gone = UUID().uuidString.lowercased()
+    func weight(_ id: String, _ value: Double, deleted: Bool) -> String {
+        #"{"id": "\#(id)", "measured_at": "2026-11-20T07:00:00Z", "kind": "weight", "value": \#(value), "source": "healthkit", "healthkit_sample_id": "ABC", "updated_at": "2026-11-20T07:00:00Z", "deleted_at": \#(deleted ? #""2026-11-21T07:00:00Z""# : "null"), "change_seq": 3}"#
+    }
+    let measurements = [weight(kept, 80.2, deleted: false), weight(gone, 79, deleted: true)]
+    let harness = try Harness { request in
+        guard request.path.hasPrefix("/v1/sync") else { return try FakeServer.standard(request) }
+        return (200, FakeServer.syncPage(
+            changeSeq: 6,
+            bodyMeasurements: measurements,
+            readiness: [#"{"id": "\#(UUID().uuidString.lowercased())", "date": "2026-11-20", "sleep_minutes": 400, "hrv_sdnn_ms": 39.5, "resting_hr_bpm": 60, "source": "healthkit", "updated_at": "2026-11-20T08:00:00Z", "deleted_at": null, "change_seq": 5}"#]
+        ))
+    }
+    harness.store.applyRemote(.bodyMeasurement(BodyMeasurement(id: UUID(uuidString: gone)!, measuredAt: .now, value: 79, source: .healthkit)), id: UUID(uuidString: gone)!, changeSeq: 1, deleted: false)
+
+    await harness.sync.sync()
+
+    #expect(harness.store.bodyMeasurements.map(\.value) == [80.2])
+    #expect(harness.store.bodyMeasurements.first?.healthkitSampleId == "ABC")
+    #expect(harness.store.readiness["2026-11-20"]?.hrvSdnnMs == 39.5)
+    #expect(harness.store.readiness["2026-11-20"]?.sleepMinutes == 400)
+}
+
+@MainActor
+@Test func theFirstSyncAfterTheUpdateStartsAgainFromZero() async throws {
+    let harness = try Harness()
+    // An install from before M2: a cursor, but no cursor version.
+    harness.defaults.set(41, forKey: SyncEngine.Keys.changeSeq)
+
+    await harness.sync.sync()
+    await harness.sync.sync()
+
+    let syncs = harness.server.requests.filter { $0.path.hasPrefix("/v1/sync") }.map(\.path)
+    #expect(syncs.first?.contains("since=0") == true)
+    #expect(harness.defaults.integer(forKey: SyncEngine.Keys.cursorVersion) == SyncEngine.cursorVersion)
+    // The server's cursor (0 in this fake) is kept from then on, not reset again.
+    #expect(syncs.count == 2)
+}
+
+@MainActor
+@Test func eachDayHasOneStableLocalID() {
+    #expect(LocalStore.readinessID("2026-11-25") == LocalStore.readinessID("2026-11-25"))
+    #expect(LocalStore.readinessID("2026-11-25") != LocalStore.readinessID("2026-11-26"))
+}

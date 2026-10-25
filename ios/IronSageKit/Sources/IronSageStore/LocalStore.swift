@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import IronSageCore
 import OSLog
@@ -20,6 +21,10 @@ public final class LocalStore {
     public private(set) var workouts: [Workout] = []
     public private(set) var templates: [Template] = []
     public private(set) var profile: Profile?
+    /// Newest first.
+    public private(set) var bodyMeasurements: [BodyMeasurement] = []
+    /// By date, "2026-10-25".
+    public private(set) var readiness: [String: Readiness] = [:]
 
     @ObservationIgnored private let context: ModelContext
 
@@ -95,6 +100,29 @@ public final class LocalStore {
         templates.removeAll { $0.id == id }
     }
 
+    public func save(_ measurement: BodyMeasurement) {
+        write(.bodyMeasurement, measurement.id, measurement)
+        cacheMeasurement(measurement)
+    }
+
+    public func deleteBodyMeasurement(id: UUID) {
+        markDeleted(.bodyMeasurement, id)
+        bodyMeasurements.removeAll { $0.id == id }
+    }
+
+    /// Saves a day's recovery data, replacing what that day had.
+    public func save(_ day: Readiness) {
+        write(.readiness, Self.readinessID(day.date), day)
+        readiness[day.date] = day
+    }
+
+    /// The local id of a day's readiness record: the API keys readiness by date.
+    nonisolated static func readinessID(_ date: String) -> UUID {
+        let digest = Array(Insecure.MD5.hash(data: Data("readiness:\(date)".utf8)))
+        return UUID(uuid: (digest[0], digest[1], digest[2], digest[3], digest[4], digest[5], digest[6], digest[7],
+                           digest[8], digest[9], digest[10], digest[11], digest[12], digest[13], digest[14], digest[15]))
+    }
+
     public func save(_ profile: Profile) {
         write(.profile, Self.profileID, profile)
         self.profile = profile
@@ -113,6 +141,8 @@ public final class LocalStore {
         workouts = []
         templates = []
         profile = nil
+        bodyMeasurements = []
+        readiness = [:]
     }
 
     // MARK: Sync
@@ -172,6 +202,8 @@ public final class LocalStore {
         case workout(Workout)
         case template(Template)
         case profile(Profile)
+        case bodyMeasurement(BodyMeasurement)
+        case readiness(Readiness)
     }
 
     /// Applies a change from the server. Local edits not yet uploaded win: they go up on
@@ -249,6 +281,8 @@ public final class LocalStore {
         workouts = []
         templates = []
         profile = nil
+        bodyMeasurements = []
+        readiness = [:]
         let records = (try? context.fetch(FetchDescriptor<StoredRecord>())) ?? []
         for record in records {
             guard let kind = RecordKind(rawValue: record.kind) else { continue }
@@ -269,12 +303,18 @@ public final class LocalStore {
                     templates.append(try Wire.decode(Template.self, from: record.payload))
                 case .profile:
                     profile = try Wire.decode(Profile.self, from: record.payload)
+                case .bodyMeasurement:
+                    bodyMeasurements.append(try Wire.decode(BodyMeasurement.self, from: record.payload))
+                case .readiness:
+                    let day = try Wire.decode(Readiness.self, from: record.payload)
+                    readiness[day.date] = day
                 }
             } catch {
                 log.error("Skipping unreadable \(kind.rawValue, privacy: .public) \(record.recordID, privacy: .public): \(error, privacy: .public)")
             }
         }
         workouts.sort { $0.startedAt > $1.startedAt }
+        bodyMeasurements.sort { $0.measuredAt > $1.measuredAt }
         sortTemplates()
     }
 
@@ -346,6 +386,10 @@ public final class LocalStore {
             cacheTemplate(template)
         case .profile(let profile):
             self.profile = profile
+        case .bodyMeasurement(let measurement):
+            cacheMeasurement(measurement)
+        case .readiness(let day):
+            readiness[day.date] = day
         }
     }
 
@@ -355,6 +399,8 @@ public final class LocalStore {
         case .workout: workouts.removeAll { $0.id == id }
         case .template: templates.removeAll { $0.id == id }
         case .profile: profile = nil
+        case .bodyMeasurement: bodyMeasurements.removeAll { $0.id == id }
+        case .readiness: readiness = readiness.filter { Self.readinessID($0.key) != id }
         }
     }
 
@@ -362,6 +408,12 @@ public final class LocalStore {
         workouts.removeAll { $0.id == workout.id }
         let index = workouts.firstIndex { $0.startedAt < workout.startedAt } ?? workouts.endIndex
         workouts.insert(workout, at: index)
+    }
+
+    private func cacheMeasurement(_ measurement: BodyMeasurement) {
+        bodyMeasurements.removeAll { $0.id == measurement.id }
+        let index = bodyMeasurements.firstIndex { $0.measuredAt < measurement.measuredAt } ?? bodyMeasurements.endIndex
+        bodyMeasurements.insert(measurement, at: index)
     }
 
     private func cacheTemplate(_ template: Template) {
@@ -382,6 +434,8 @@ extension LocalStore.RemoteValue {
         case .workout: .workout
         case .template: .template
         case .profile: .profile
+        case .bodyMeasurement: .bodyMeasurement
+        case .readiness: .readiness
         }
     }
 
@@ -391,6 +445,8 @@ extension LocalStore.RemoteValue {
         case .workout(let value): value
         case .template(let value): value
         case .profile(let value): value
+        case .bodyMeasurement(let value): value
+        case .readiness(let value): value
         }
     }
 }
