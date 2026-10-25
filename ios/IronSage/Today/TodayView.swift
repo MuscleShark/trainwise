@@ -33,6 +33,8 @@ struct TodayView: View {
                     }
                 }
 
+                ReadinessCard()
+
                 if let last = store.finishedWorkouts.first {
                     Section("Last workout") {
                         NavigationLink(value: WorkoutRoute(id: last.id)) {
