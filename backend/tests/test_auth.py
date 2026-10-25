@@ -16,6 +16,8 @@ def test_me_creates_user_on_first_sign_in(client):
 
     assert response.status_code == 200
     assert response.json()["email"] == "new.user@example.com"
+    # A date-time needs an offset; the iPhone app rejects one without.
+    assert response.json()["created_at"].endswith("Z")
     with TestingSessionLocal() as db:
         user = db.query(User).one()
         assert user.clerk_user_id == "user_new"

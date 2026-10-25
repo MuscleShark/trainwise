@@ -72,3 +72,18 @@ private let server = URL(string: "https://api.example.com")!
     #expect(decoded.reps == 8)
     #expect(decoded.rir == nil)
 }
+
+@Test(arguments: [
+    "2026-10-24T22:59:10.038062Z",  // the backend adds microseconds when there are any
+    "2026-10-24T22:59:10Z",
+    "2026-10-24T22:59:10.038+00:00",
+])
+func decodesTimestampsWithAndWithoutFractionalSeconds(createdAt: String) async throws {
+    let transport = StubTransport(
+        json: #"{"id": 7, "email": "a@example.com", "created_at": "\#(createdAt)"}"#)
+    let client = Client.ironSage(serverURL: server, token: { "token" }, transport: transport)
+
+    let me = try await client.getMe().ok.body.json
+
+    #expect(Int(me.createdAt.timeIntervalSince1970) == 1_792_882_750)
+}
