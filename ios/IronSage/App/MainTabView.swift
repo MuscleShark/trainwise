@@ -9,6 +9,9 @@ struct MainTabView: View {
             Tab("History", systemImage: "calendar") {
                 HistoryView()
             }
+            Tab("Progress", systemImage: "chart.line.uptrend.xyaxis") {
+                ProgressTabView()
+            }
             Tab("Templates", systemImage: "list.bullet.rectangle") {
                 TemplatesView()
             }

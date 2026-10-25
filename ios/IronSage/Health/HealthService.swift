@@ -166,6 +166,47 @@ final class HealthService {
         }
     }
 
+    // MARK: Writing body weight
+
+    /// Saves a weight the user typed in to Apple Health and keeps the sample's id with it,
+    /// so it can be removed again and isn't imported back.
+    func saveToHealth(_ weight: BodyMeasurement) async {
+        guard isAvailable, hasAsked, weight.kind == .weight, weight.healthkitSampleId == nil,
+              healthStore.authorizationStatus(for: HKQuantityType(.bodyMass)) == .sharingAuthorized
+        else { return }
+        let sample = HKQuantitySample(
+            type: HKQuantityType(.bodyMass),
+            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weight.value),
+            start: weight.measuredAt,
+            end: weight.measuredAt,
+            metadata: [HKMetadataKeyExternalUUID: weight.id.uuidString]
+        )
+        do {
+            try await healthStore.save(sample)
+            guard var latest = store.bodyMeasurements.first(where: { $0.id == weight.id }) else {
+                // Deleted while Apple Health was saving it.
+                try await healthStore.delete(sample)
+                return
+            }
+            latest.healthkitSampleId = sample.uuid.uuidString
+            store.save(latest)
+        } catch {
+            log.error("Saving a weight to Apple Health failed: \(error, privacy: .public)")
+        }
+    }
+
+    /// Removes a weight IronSage wrote to Apple Health. It is found by IronSage's own id,
+    /// so this works from another iPhone too.
+    func removeFromHealth(_ weight: BodyMeasurement) async {
+        guard isAvailable, weight.source == .manual else { return }
+        do {
+            let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyExternalUUID, allowedValues: [weight.id.uuidString])
+            try await healthStore.deleteObjects(of: HKQuantityType(.bodyMass), predicate: predicate)
+        } catch {
+            log.error("Removing a weight from Apple Health failed: \(error, privacy: .public)")
+        }
+    }
+
     // MARK: Writing workouts
 
     /// Saves a finished workout to Apple Health, with the active energy and heart rate a

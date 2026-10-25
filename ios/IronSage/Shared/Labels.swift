@@ -136,4 +136,11 @@ extension Date {
             ? formatted(.dateTime.month().day())
             : formatted(.dateTime.month().day().year())
     }
+
+    /// "Sat, Oct 24", with the year only when it isn't this year.
+    var shortDayWithWeekday: String {
+        Calendar.current.isDate(self, equalTo: .now, toGranularity: .year)
+            ? formatted(.dateTime.weekday(.abbreviated).month().day())
+            : formatted(.dateTime.weekday(.abbreviated).month().day().year())
+    }
 }
