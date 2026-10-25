@@ -2560,6 +2560,136 @@
           }
         }
       }
+    },
+    "Sleep" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "睡眠"
+          }
+        }
+      }
+    },
+    "HRV" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "心率变异性"
+          }
+        }
+      }
+    },
+    "Resting heart rate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静息心率"
+          }
+        }
+      }
+    },
+    "Last night" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昨晚"
+          }
+        }
+      }
+    },
+    "Your usual appears after a week of nights." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录满一周后，会显示你平时的水平。"
+          }
+        }
+      }
+    },
+    "Compared with your average over the 28 days before." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与你之前 28 天的平均值相比。"
+          }
+        }
+      }
+    },
+    "No sleep or heart data for last night yet. With an Apple Watch worn overnight, it appears here in the morning." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有昨晚的睡眠或心率数据。如果夜里戴着 Apple Watch，早上就会显示在这里。"
+          }
+        }
+      }
+    },
+    "Connect Apple Health to see last night's sleep and heart rate next to your usual." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接 Apple 健康，就能看到昨晚的睡眠和心率与你平时水平的对比。"
+          }
+        }
+      }
+    },
+    "Lower than your usual %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低于你平时的 %@"
+          }
+        }
+      }
+    },
+    "About your usual %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和你平时的 %@ 差不多"
+          }
+        }
+      }
+    },
+    "Higher than your usual %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高于你平时的 %@"
+          }
+        }
+      }
+    },
+    "%lld ms" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 毫秒"
+          }
+        }
+      }
+    },
+    "%lld bpm" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 次/分"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

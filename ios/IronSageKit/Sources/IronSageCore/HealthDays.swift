@@ -38,6 +38,14 @@ public enum HealthDays {
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 
+    /// Midday of the day a key names, in `calendar`'s time zone; nil for a malformed key.
+    /// Midday keeps adding and subtracting days clear of daylight-saving changes.
+    public static func date(_ key: String, calendar: Calendar = .current) -> Date? {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        return calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2], hour: 12))
+    }
+
     /// Sleep counts for the day it ended on (the morning you wake up). Overlapping
     /// samples, such as the same night from a watch and a phone, are merged so time is
     /// not counted twice. HRV and resting heart rate are averaged per day.
