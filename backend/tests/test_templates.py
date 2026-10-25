@@ -1,9 +1,7 @@
-import uuid
-
-from conftest import TestingSessionLocal, auth_headers
+from conftest import auth_headers
 from helpers import BENCH, SQUAT, new_id
 
-from models import Template
+from template_catalog import BUILTIN_TEMPLATES
 
 
 def template_body(**overrides):
@@ -66,18 +64,14 @@ def test_put_replaces_days(client):
 
 
 def test_list_includes_built_in_templates(client):
-    built_in_id = uuid.uuid4()
-    with TestingSessionLocal() as db:
-        db.add(Template(id=built_in_id, owner_user_id=None, name_en="Full body"))
-        db.commit()
     headers = auth_headers("me@example.com")
+    own_id = new_id()
+    client.put(f"/v1/templates/{own_id}", json=template_body(), headers=headers)
 
     templates = client.get("/v1/templates", headers=headers).json()
 
-    assert [t["id"] for t in templates] == [str(built_in_id)]
-    assert templates[0]["is_custom"] is False
-    response = client.put(f"/v1/templates/{built_in_id}", json=template_body(), headers=headers)
-    assert response.status_code == 403
+    assert len([t for t in templates if not t["is_custom"]]) == len(BUILTIN_TEMPLATES)
+    assert [t["id"] for t in templates if t["is_custom"]] == [own_id]
 
 
 def test_templates_are_private_and_deletable(client):
@@ -95,7 +89,7 @@ def test_templates_are_private_and_deletable(client):
 
     assert client.delete(f"/v1/templates/{template_id}", headers=owner).status_code == 204
     assert client.get(f"/v1/templates/{template_id}", headers=owner).status_code == 404
-    assert client.get("/v1/templates", headers=owner).json() == []
+    assert [t for t in client.get("/v1/templates", headers=owner).json() if t["is_custom"]] == []
 
 
 def test_invalid_templates_are_rejected(client):

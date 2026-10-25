@@ -240,6 +240,8 @@ class TemplateDay(Base):
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
+    # Chinese name of a built-in template's day; users' own days only have `name`.
+    name_zh: Mapped[str | None] = mapped_column(String(120))
 
     template: Mapped[Template] = relationship(back_populates="days")
     exercises: Mapped[list["TemplateExercise"]] = relationship(

@@ -13,6 +13,7 @@ from models import (
     Workout,
     WorkoutSet,
 )
+from template_catalog import BUILTIN_TEMPLATES
 
 MACHINE = {
     "name_en": "My machine",
@@ -67,13 +68,13 @@ def test_delete_account_removes_user_and_all_their_data(client):
             Profile,
             Workout,
             WorkoutSet,
-            Template,
             BodyMeasurement,
             DailyReadiness,
         ):
             assert count(db, model) == 0, model.__name__
-        # Only the built-in catalog is left.
+        # Only the built-in exercises and templates are left.
         assert count(db, Exercise) == len(BUILTIN_EXERCISES)
+        assert count(db, Template) == len(BUILTIN_TEMPLATES)
 
 
 def test_delete_account_keeps_other_users_data(client):

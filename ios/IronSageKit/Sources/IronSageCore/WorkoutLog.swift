@@ -186,3 +186,36 @@ public enum WorkoutHistory {
             .sorted { $0.start > $1.start }
     }
 }
+
+extension WorkoutLog {
+    /// The exercises of a workout that follows a template day: the template's sets,
+    /// with last time's weights and reps, or the bottom of the rep range the first time.
+    public static func exercises(for day: TemplateDay, history: [Workout]) -> [WorkoutExercise] {
+        day.exercises.map { item in
+            let last = lastSets(of: item.exerciseId, in: history)?.filter { $0.setType != .warmup } ?? []
+            let sets = item.sets.enumerated().map { index, target in
+                let previous = last.isEmpty ? nil : last[min(index, last.count - 1)]
+                return WorkoutSet(setType: target.setType, reps: previous?.reps ?? target.repMin, weightKg: previous?.weightKg)
+            }
+            return WorkoutExercise(
+                exerciseId: item.exerciseId,
+                supersetGroup: item.supersetGroup,
+                restSeconds: item.restSeconds,
+                sets: sets
+            )
+        }
+    }
+
+    /// A one-day template of the user's own from a finished workout: the same exercises
+    /// and sets, each aiming for the reps done.
+    public static func template(from workout: Workout, name: String) -> Template {
+        let exercises = workout.exercises.compactMap { item -> TemplateExercise? in
+            let sets = item.sets.filter(\.isCompleted).map {
+                TemplateSet(setType: $0.setType, repMin: $0.reps, repMax: $0.reps, targetRir: $0.rir)
+            }
+            guard !sets.isEmpty else { return nil }
+            return TemplateExercise(exerciseId: item.exerciseId, restSeconds: item.restSeconds, supersetGroup: item.supersetGroup, sets: sets)
+        }
+        return Template(nameEn: name, days: [TemplateDay(name: name, exercises: exercises)], isCustom: true)
+    }
+}

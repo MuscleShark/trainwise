@@ -1,6 +1,7 @@
 """Lambda that applies database migrations (function handler: "migrate_handler.handler").
 
-After the migrations it updates the built-in exercise catalog (see catalog.py).
+After the migrations it updates the built-in exercise catalog (see catalog.py) and the
+built-in templates (template_catalog.py), in that order: templates use the exercises.
 
 CDK runs it as a trigger during each deploy, before the API function is updated. If a
 migration fails, the deploy fails and the API keeps running the previous code.
@@ -33,9 +34,11 @@ def handler(event, context):
     # Imported only now: catalog imports models, which imports database.py, and that
     # module needs DATABASE_URL, which is only set above (from SSM).
     from catalog import sync_builtin_exercises
+    from template_catalog import sync_builtin_templates
 
     engine = create_engine(os.environ["DATABASE_URL"], poolclass=NullPool)
     with Session(engine) as db:
         catalog = sync_builtin_exercises(db)
+        templates = sync_builtin_templates(db)
     engine.dispose()
-    return {"status": "migrated", "catalog": catalog}
+    return {"status": "migrated", "catalog": catalog, "templates": templates}

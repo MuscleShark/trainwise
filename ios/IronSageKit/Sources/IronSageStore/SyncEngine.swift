@@ -9,8 +9,8 @@ private let log = Logger(subsystem: "app.ironsage.IronSage", category: "sync")
 /// Sends local edits to the API and brings in changes from other devices.
 ///
 /// One sync: upload pending edits (each record as a whole, so retries are safe), then
-/// read `GET /v1/sync` from the saved cursor, then refresh the built-in catalog once a
-/// day. Run it when the app starts or comes to the foreground and after a workout.
+/// read `GET /v1/sync` from the saved cursor, then refresh the built-in exercises and
+/// templates once a day. Run it when the app starts or comes to the foreground and after a workout.
 @MainActor
 @Observable
 public final class SyncEngine {
@@ -210,6 +210,14 @@ public final class SyncEngine {
         case .ok(let ok):
             let builtIn = try ok.body.json.filter { !$0.isCustom }
             store.replaceBuiltInExercises(try builtIn.map { try Wire.app($0, as: Exercise.self) })
+        case .undocumented(let status, _):
+            throw SyncError.server(status: status)
+        }
+        // Built-in templates refer to catalog exercises, so they come second.
+        switch try await api.listTemplates() {
+        case .ok(let ok):
+            let builtIn = try ok.body.json.filter { !$0.isCustom }
+            store.replaceBuiltInTemplates(try builtIn.map { try Wire.app($0, as: Template.self) })
         case .undocumented(let status, _):
             throw SyncError.server(status: status)
         }

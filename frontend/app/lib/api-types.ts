@@ -686,6 +686,8 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Name Zh */
+            name_zh?: string | null;
         };
         /** TemplateDayWrite */
         TemplateDayWrite: {
@@ -701,6 +703,8 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Name Zh */
+            name_zh?: string | null;
         };
         /** TemplateExerciseRead */
         TemplateExerciseRead: {

@@ -247,6 +247,7 @@ class TemplateExerciseWrite(BaseModel):
 class TemplateDayWrite(BaseModel):
     id: uuid.UUID
     name: Name
+    name_zh: Name | None = None
     exercises: Annotated[list[TemplateExerciseWrite], Field(max_length=30)] = []
 
 

@@ -15,7 +15,7 @@ struct HistoryView: View {
                 ForEach(weeks) { week in
                     Section {
                         ForEach(week.workouts) { workout in
-                            NavigationLink(value: workout.id) {
+                            NavigationLink(value: WorkoutRoute(id: workout.id)) {
                                 WorkoutRow(workout: workout)
                             }
                             .swipeActions {
@@ -39,8 +39,8 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("History")
-            .navigationDestination(for: UUID.self) { id in
-                WorkoutDetailView(workoutID: id)
+            .navigationDestination(for: WorkoutRoute.self) { route in
+                WorkoutDetailView(workoutID: route.id)
             }
             .refreshable { await sync.sync() }
             .confirmationDialog(
@@ -93,6 +93,8 @@ struct WorkoutDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var editing: WorkoutSession?
     @State private var isConfirmingDelete = false
+    @State private var isSavingTemplate = false
+    @State private var templateName = ""
 
     var body: some View {
         if let workout = store.workouts.first(where: { $0.id == workoutID }) {
@@ -155,6 +157,10 @@ struct WorkoutDetailView: View {
                     Button("Edit", systemImage: "pencil") {
                         editing = WorkoutSession(workout: workout, store: store)
                     }
+                    Button("Save as template", systemImage: "square.and.arrow.down") {
+                        templateName = workout.title
+                        isSavingTemplate = true
+                    }
                     Button("Delete", systemImage: "trash", role: .destructive) {
                         isConfirmingDelete = true
                     }
@@ -164,6 +170,18 @@ struct WorkoutDetailView: View {
         .fullScreenCover(item: $editing) { session in
             WorkoutView(session: session)
                 .interactiveDismissDisabled()
+        }
+        .alert("Save as template", isPresented: $isSavingTemplate) {
+            TextField("Name", text: $templateName)
+            Button("Cancel", role: .cancel) {}
+            Button("Save") {
+                let name = String(templateName.trimmingCharacters(in: .whitespaces).prefix(120))
+                guard !name.isEmpty else { return }
+                store.save(WorkoutLog.template(from: workout, name: name))
+                Task { await sync.sync() }
+            }
+        } message: {
+            Text("Starts with the same exercises and sets. It appears under My templates.")
         }
         .confirmationDialog("Delete this workout?", isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             Button("Delete workout", role: .destructive) {

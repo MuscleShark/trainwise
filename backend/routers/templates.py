@@ -5,7 +5,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
-from models import Template, TemplateDay, TemplateExercise, TemplateSet, User, utcnow
+from models import Template, TemplateDay, TemplateExercise, User, utcnow
 from schemas import TemplateRead, TemplateWrite
 from security import get_current_user
 from sync import (
@@ -14,6 +14,7 @@ from sync import (
     id_conflict,
     next_change_seq,
     not_found,
+    template_days,
     template_read,
 )
 
@@ -95,28 +96,7 @@ def put_template(
 
     for field, value in template_data.model_dump(exclude={"days"}).items():
         setattr(template, field, value)
-    template.days = [
-        TemplateDay(
-            id=day.id,
-            position=day_position,
-            name=day.name,
-            exercises=[
-                TemplateExercise(
-                    id=exercise.id,
-                    exercise_id=exercise.exercise_id,
-                    position=position,
-                    rest_seconds=exercise.rest_seconds,
-                    superset_group=exercise.superset_group,
-                    sets=[
-                        TemplateSet(position=set_position, **template_set.model_dump())
-                        for set_position, template_set in enumerate(exercise.sets)
-                    ],
-                )
-                for position, exercise in enumerate(day.exercises)
-            ],
-        )
-        for day_position, day in enumerate(template_data.days)
-    ]
+    template.days = template_days(template_data)
     template.deleted_at = None
     template.change_seq = next_change_seq(db, current_user)
     commit_or_conflict(db)

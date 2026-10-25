@@ -74,6 +74,8 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
                 (200, syncPage(changeSeq: 0))
             } else if request.path == "/v1/exercises" {
                 (200, "[\(benchJSON)]")
+            } else if request.path == "/v1/templates" {
+                (200, "[\(templateJSON)]")
             } else {
                 (404, #"{"detail": "Not Found"}"#)
             }
@@ -105,6 +107,19 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
          "secondary_muscles": ["front_delts", "triceps"], "aliases": ["bench", "卧推"],
          "base_exercise_id": null, "is_custom": false,
          "updated_at": "2026-10-24T12:00:00.123456Z", "deleted_at": null, "change_seq": 0}
+        """
+
+    static let templateID = "5b9e1f9c-7d2a-5c43-8e61-3f0a2b4c6d88"
+
+    static let templateJSON = """
+        {"id": "\(templateID)", "name_en": "Push / pull / legs", "name_zh": "推拉腿",
+         "level": "intermediate", "days_per_week": 6, "notes": null, "is_custom": false,
+         "days": [{"id": "6c0f2a1d-8e3b-5d54-9f72-4a1b3c5d7e99", "name": "Push", "name_zh": "推",
+           "exercises": [{"id": "7d1a3b2e-9f4c-5e65-8a83-5b2c4d6e8fa0", "exercise_id": "\(benchID)",
+             "rest_seconds": 180, "superset_group": null,
+             "sets": [{"id": "8e2b4c3f-0a5d-5f76-9b94-6c3d5e7f9ab1", "set_type": "working",
+               "rep_min": 5, "rep_max": 8, "target_rir": 2}]}]}],
+         "updated_at": "2026-10-24T12:00:00Z", "deleted_at": null, "change_seq": 0}
         """
 
     static func workoutJSON(id: String, title: String, changeSeq: Int, deleted: Bool = false) -> String {

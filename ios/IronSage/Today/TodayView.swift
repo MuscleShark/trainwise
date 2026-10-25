@@ -25,6 +25,9 @@ struct TodayView: View {
                             session = WorkoutSession.start(store: store)
                         }
                         .font(.headline)
+                        NavigationLink(value: TemplateListRoute()) {
+                            Label("Start from a template", systemImage: "list.bullet.rectangle")
+                        }
                     } footer: {
                         Text("Add exercises as you go. Each set starts from what you did last time.")
                     }
@@ -32,15 +35,19 @@ struct TodayView: View {
 
                 if let last = store.finishedWorkouts.first {
                     Section("Last workout") {
-                        NavigationLink(value: last.id) {
+                        NavigationLink(value: WorkoutRoute(id: last.id)) {
                             WorkoutRow(workout: last)
                         }
                     }
                 }
             }
             .navigationTitle("Today")
-            .navigationDestination(for: UUID.self) { id in
-                WorkoutDetailView(workoutID: id)
+            .navigationDestination(for: WorkoutRoute.self) { route in
+                WorkoutDetailView(workoutID: route.id)
+            }
+            .navigationDestination(for: TemplateListRoute.self) { _ in
+                TemplateList()
+                    .navigationTitle("Templates")
             }
             .fullScreenCover(item: $session) { session in
                 WorkoutView(session: session)

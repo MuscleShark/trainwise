@@ -10,3 +10,4 @@ select = ["E", "F", "I"]
 [lint.per-file-ignores]
 # The exercise catalog is a data table with one exercise per line.
 "catalog.py" = ["E501"]
+"template_catalog.py" = ["E501"]

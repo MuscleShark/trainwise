@@ -220,6 +220,25 @@ public final class LocalStore {
         persist()
     }
 
+    /// Makes the built-in templates match the catalog.
+    public func replaceBuiltInTemplates(_ catalog: [Template]) {
+        let current = Dictionary(
+            uniqueKeysWithValues: builtInRecords(.template).map { ($0.recordID, $0) }
+        )
+        for template in catalog {
+            guard let payload = try? Wire.encode(template) else { continue }
+            let record = current[template.id] ?? insert(.template, template.id, payload: payload, isBuiltIn: true)
+            record.payload = payload
+            cacheTemplate(template)
+        }
+        let catalogIDs = Set(catalog.map(\.id))
+        for (id, record) in current where !catalogIDs.contains(id) {
+            context.delete(record)
+            templates.removeAll { $0.id == id }
+        }
+        persist()
+    }
+
     // MARK: Storage
 
     static let profileID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
