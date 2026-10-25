@@ -27,6 +27,19 @@ Each rule says how strong its evidence is, so explanations to users stay honest.
 - **Stall:** no e1RM progress across three sessions of an exercise. Suggest changing the rep range or swapping the exercise; repeated stalls across exercises trigger a deload suggestion.
 - **Safety limits:** never suggest more than about a 10% load jump in one step, and never raise load after a session marked as painful.
 
+### How the app applies them
+
+The iPhone app computes these suggestions itself (`ios/IronSageKit/Sources/IronSageCore/NextSession.swift`), so they work offline and cost nothing. New sets start from the suggestion, the workout screen says why under each exercise, and Today shows the next day of the template followed most recently.
+
+- **Which rule:** a template with fixed reps (for example 3 × 5) uses linear progression; a rep range uses double progression. Each template set keeps its own target, so a template saved from a workout of 8, 7 and 6 reps progresses each set from its own reps. Without a template, compound lifts use 3–6 reps when the goal is strength and 6–10 otherwise, isolation work 10–15. Someone who trains outside that range keeps their own reps, as a range of two from the fewest reps done.
+- **Steps:** one plate step (2.5 kg or 5 lb; 1.25 kg or 2.5 lb for one dumbbell). Linear progression on lower-body lifts takes two steps. The 10% limit applies, but one step is always allowed. Assisted exercises progress with less assistance.
+- **Missed the range:** fixed reps missed → the same weight next time. Every set below the bottom of a range → one step lighter.
+- **RIR:** a logged RIR below the target means the top of the range doesn't count yet. Sets without RIR are judged on reps alone.
+- **Body weight:** at the top of the range without added weight, the app suggests adding weight or a harder variation.
+- **Short night:** under 6 hours of sleep, or at least an hour below the user's 28-day average. No weight goes up that day.
+- **Stall:** the best e1RM of the last three sessions is no better than the best before them. The app shows a note; changing the plan is left to the user and, later, the AI coach.
+- **Not yet:** "painful" sessions can't be marked yet, and lighter-week (deload) suggestions come with the weekly summary.
+
 ## Built-in templates
 
 IronSage writes its own templates from these principles. Programs such as 5/3/1, Starting Strength and StrongLifts are trademarks or copyrighted works, so their names and exact programs are not used.

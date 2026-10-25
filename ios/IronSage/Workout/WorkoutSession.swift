@@ -12,6 +12,9 @@ final class WorkoutSession: Identifiable {
     private(set) var restTimer: RestTimer?
 
     @ObservationIgnored private let store: LocalStore
+    /// Each exercise's suggestion, worked out once: it explains how the sets were
+    /// planned, so it shouldn't change while they are logged.
+    @ObservationIgnored private var suggestions: [UUID: NextSession.Suggestion] = [:]
     /// The workout before editing started; only set when editing a finished workout.
     @ObservationIgnored private let original: Workout?
 
@@ -33,6 +36,30 @@ final class WorkoutSession: Identifiable {
         return WorkoutSession(workout: workout, store: store)
     }
 
+    /// Why an exercise's sets were planned as they are; nil when editing a finished
+    /// workout or when the exercise was removed from the catalog.
+    func suggestion(for item: WorkoutExercise, template: TemplateExercise?) -> NextSession.Suggestion? {
+        guard !isEditing else { return nil }
+        if let cached = suggestions[item.id] { return cached }
+        let context = store.nextSessionContext(at: workout.startedAt, before: workout.startedAt)
+        let suggestion = store.suggestion(for: item.exerciseId, template: template, context: context)
+        suggestions[item.id] = suggestion
+        return suggestion
+    }
+
+    /// Starts a workout that follows a template day, with the suggested sets.
+    static func start(_ day: TemplateDay, of template: Template, store: LocalStore) -> WorkoutSession {
+        let title = template.days.count > 1
+            ? "\(template.name(chinese: AppLanguage.isChinese)) · \(day.name(chinese: AppLanguage.isChinese))"
+            : template.name(chinese: AppLanguage.isChinese)
+        return start(
+            title: String(title.prefix(120)),
+            exercises: WorkoutLog.exercises(for: day, exercises: store.exercises, context: store.nextSessionContext()),
+            templateID: template.id,
+            store: store
+        )
+    }
+
     func update(_ change: (inout Workout) -> Void) {
         change(&workout)
         // The title field may be empty while someone types; the API needs a name.
@@ -44,7 +71,8 @@ final class WorkoutSession: Identifiable {
     }
 
     func add(_ exercise: Exercise) {
-        update { $0.exercises.append(WorkoutLog.adding(exercise, history: store.finishedWorkouts)) }
+        let context = store.nextSessionContext(at: workout.startedAt, before: workout.startedAt)
+        update { $0.exercises.append(WorkoutLog.adding(exercise, context: context)) }
     }
 
     /// Marks a set done (or not done), starting the rest timer when it is done.

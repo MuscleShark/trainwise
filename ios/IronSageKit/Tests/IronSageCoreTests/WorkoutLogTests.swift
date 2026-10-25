@@ -44,17 +44,18 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(curl.defaultRestSeconds == 90)
 }
 
-@Test func newExercisesStartFromLastTime() {
+@Test func newExercisesStartFromTheSuggestion() {
     let history = [
         workout(7, [(bench, [(57.5, 8)])]),
         workout(3, [(bench, [(60, 8), (60, 7)])], rest: 150),
         workout(0, [(bench, [(70, 5)])], finished: false),
     ]
 
-    let added = WorkoutLog.adding(bench, history: history)
+    let added = WorkoutLog.adding(bench, context: .init(history: history))
 
+    // Below the top of the 6–10 range: the same weight, one more rep.
     #expect(added.sets.map(\.weightKg) == [60, 60])
-    #expect(added.sets.map(\.reps) == [8, 7])
+    #expect(added.sets.map(\.reps) == [9, 8])
     #expect(added.sets.allSatisfy { !$0.isCompleted })
     #expect(added.restSeconds == 150)
     // Editing the older workout shows what came before it, not after.
@@ -62,7 +63,7 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
 }
 
 @Test func aFirstTimeExerciseStartsWithOneEmptySet() {
-    let added = WorkoutLog.adding(curl, history: [])
+    let added = WorkoutLog.adding(curl, context: .init(history: []))
     #expect(added.sets.count == 1)
     #expect(added.sets[0].weightKg == nil)
     #expect(added.restSeconds == 90)
@@ -157,7 +158,7 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(weeks[0].setCount == 3)
 }
 
-@Test func templateDaysStartFromLastTimeOrTheBottomOfTheRange() {
+@Test func templateDaysStartFromTheSuggestionOrTheBottomOfTheRange() {
     let day = TemplateDay(name: "Push", exercises: [
         TemplateExercise(exerciseId: bench.id, restSeconds: 180, sets: [
             TemplateSet(repMin: 5, repMax: 8, targetRir: 2),
@@ -168,11 +169,11 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     ])
     let history = [workout(2, [(bench, [(60, 8), (62.5, 6)])])]
 
-    let exercises = WorkoutLog.exercises(for: day, history: history)
+    let exercises = WorkoutLog.exercises(for: day, exercises: exercises, context: .init(history: history))
 
     #expect(exercises.map(\.restSeconds) == [180, 90])
     #expect(exercises[0].sets.map(\.weightKg) == [60, 62.5, 62.5])
-    #expect(exercises[0].sets.map(\.reps) == [8, 6, 6])
+    #expect(exercises[0].sets.map(\.reps) == [8, 7, 7])
     #expect(exercises[1].sets.map(\.reps) == [10])
     #expect(exercises[1].sets[0].weightKg == nil)
     #expect(exercises.allSatisfy { $0.sets.allSatisfy { !$0.isCompleted } })
