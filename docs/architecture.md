@@ -67,6 +67,25 @@ Each milestone goes to TestFlight and is used in real workouts before the next o
 
 Not in version 1: Apple Watch app, Live Activities and widgets, iPad layout, social features, nutrition, coach chat and plan generation.
 
+### M1 decisions
+
+Agreed before M1 started:
+
+| Topic | Decision |
+|---|---|
+| Navigation | Four tabs: Today, History, Templates, Settings |
+| Account | Sign-in is required. After sign-in the app works offline |
+| Exercise search | Fuzzy, on the phone: typos, English and Chinese names, aliases (RDL, OHP, 卧推) and pinyin (`wotui`, `wt`). Results show the catalog name, with the alias that matched. The last row always offers "Create exercise" with the typed name. Aliases live in the backend catalog |
+| Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked |
+| Supersets | In the data model, not in the M1 interface |
+| Built-in templates | The four in [coaching.md](coaching.md), in English and Chinese |
+| Progression | None in M1: sets are prefilled with last time's load and reps. Suggestions come with the coach in M3 |
+| Units | Stored in kg. Shown in lb when chosen, rounded to 2.5 or 5 lb; kg rounded to 1.25 or 2.5 kg |
+| Hardware | The simulator during development; Apple Developer Program and TestFlight at the end of M1 for a real gym session |
+| CI | A macOS runner builds the app and runs the Swift tests on every pull request |
+
+M1 ships as six pull requests: project skeleton (sign-in, generated API client, tabs, CI); local store, sync and catalog; workout logging; history; templates; settings, profile and localization.
+
 ### Languages
 
 - English and Chinese (Simplified). iOS picks the language from the phone's language list, not from the App Store region.
@@ -81,7 +100,7 @@ Not in version 1: Apple Watch app, Live Activities and widgets, iPad layout, soc
 - Adaptive layouts (size classes, no fixed sizes) so the folded and unfolded **iPhone Duo** both work. Side-by-side layouts for the unfolded screen can come later.
 - Offline first: SwiftData on the phone, synced with the API when online.
 - Clerk iOS SDK; API client generated from the OpenAPI document (swift-openapi-generator).
-- Code lives in `ios/`. CI builds and tests on a macOS runner (CI change to be agreed first).
+- Code lives in `ios/`: the app (`IronSage/`) and a Swift package (`IronSageKit/`) with the generated API client and the logic that `swift test` covers without a simulator. CI builds and tests it on a macOS runner.
 - Needs an Apple Developer Program membership (99 USD a year) from TestFlight onwards.
 
 ## Target architecture

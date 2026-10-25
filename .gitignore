@@ -18,3 +18,9 @@ backend/.env
 backend/.coverage
 backend/htmlcov/
 backend/build/
+
+# Xcode and Swift Package Manager
+ios/**/.build/
+ios/**/xcuserdata/
+ios/**/.swiftpm/
+DerivedData/

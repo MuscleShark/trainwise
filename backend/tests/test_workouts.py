@@ -1,7 +1,9 @@
 from decimal import Decimal
 
-from conftest import auth_headers
+from conftest import TestingSessionLocal, auth_headers
 from helpers import BENCH, SQUAT, new_id, workout_body
+
+from models import WorkoutSet
 
 
 def test_put_creates_a_workout_with_exercises_and_sets(client):
@@ -59,7 +61,22 @@ def test_pounds_round_trip_exactly(client):
     weight = client.get(f"/v1/workouts/{workout_id}", headers=headers).json()["exercises"][0][
         "sets"
     ][0]["weight_kg"]
-    assert Decimal(weight) == Decimal("20.412")
+    assert weight == 20.412
+
+
+def test_weights_sent_as_json_numbers_are_stored_exactly(client):
+    # The iPhone app sends weights as doubles.
+    headers = auth_headers("numbers@example.com")
+    workout_id = new_id()
+    response = client.put(
+        f"/v1/workouts/{workout_id}", json=workout_body(weight=61.235), headers=headers
+    )
+    assert response.status_code == 200, response.text
+
+    with TestingSessionLocal() as db:
+        stored = {row.weight_kg for row in db.query(WorkoutSet)}
+    assert stored == {Decimal("61.235")}
+    assert response.json()["exercises"][0]["sets"][0]["weight_kg"] == 61.235
 
 
 def test_unknown_exercise_is_rejected(client):

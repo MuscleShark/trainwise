@@ -304,7 +304,10 @@ export interface components {
         BodyMeasurementRead: {
             /** Change Seq */
             change_seq: number;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * Format: date-time
+             */
             deleted_at: string | null;
             /** Healthkit Sample Id */
             healthkit_sample_id?: string | null;
@@ -335,7 +338,7 @@ export interface components {
              */
             updated_at: string;
             /** Value */
-            value: string;
+            value: number;
         };
         /** BodyMeasurementWrite */
         BodyMeasurementWrite: {
@@ -358,15 +361,21 @@ export interface components {
              */
             source: "manual" | "healthkit";
             /** Value */
-            value: number | string;
+            value: number;
         };
         /** ExerciseRead */
         ExerciseRead: {
-            /** Base Exercise Id */
+            /**
+             * Base Exercise Id
+             * Format: uuid
+             */
             base_exercise_id?: string | null;
             /** Change Seq */
             change_seq: number;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * Format: date-time
+             */
             deleted_at: string | null;
             /**
              * Equipment
@@ -404,7 +413,10 @@ export interface components {
         };
         /** ExerciseWrite */
         ExerciseWrite: {
-            /** Base Exercise Id */
+            /**
+             * Base Exercise Id
+             * Format: uuid
+             */
             base_exercise_id?: string | null;
             /**
              * Equipment
@@ -435,22 +447,34 @@ export interface components {
         };
         /** ProfileRead */
         ProfileRead: {
-            /** Birthday */
+            /**
+             * Birthday
+             * Format: date
+             */
             birthday?: string | null;
             /** Change Seq */
             change_seq: number;
-            /** Experience Level */
-            experience_level?: ("beginner" | "intermediate" | "advanced") | null;
+            /**
+             * Experience Level
+             * @enum {string|null}
+             */
+            experience_level?: "beginner" | "intermediate" | "advanced" | null;
             /** Gender */
             gender?: string | null;
-            /** Goal */
-            goal?: ("strength" | "hypertrophy" | "general") | null;
+            /**
+             * Goal
+             * @enum {string|null}
+             */
+            goal?: "strength" | "hypertrophy" | "general" | null;
             /** Height Cm */
             height_cm?: number | null;
             /** Training Days Per Week */
             training_days_per_week?: number | null;
-            /** Training Location */
-            training_location?: ("gym" | "home" | "mixed") | null;
+            /**
+             * Training Location
+             * @enum {string|null}
+             */
+            training_location?: "gym" | "home" | "mixed" | null;
             /**
              * Unit System
              * @default metric
@@ -465,20 +489,32 @@ export interface components {
         };
         /** ProfileWrite */
         ProfileWrite: {
-            /** Birthday */
+            /**
+             * Birthday
+             * Format: date
+             */
             birthday?: string | null;
-            /** Experience Level */
-            experience_level?: ("beginner" | "intermediate" | "advanced") | null;
+            /**
+             * Experience Level
+             * @enum {string|null}
+             */
+            experience_level?: "beginner" | "intermediate" | "advanced" | null;
             /** Gender */
             gender?: string | null;
-            /** Goal */
-            goal?: ("strength" | "hypertrophy" | "general") | null;
+            /**
+             * Goal
+             * @enum {string|null}
+             */
+            goal?: "strength" | "hypertrophy" | "general" | null;
             /** Height Cm */
             height_cm?: number | null;
             /** Training Days Per Week */
             training_days_per_week?: number | null;
-            /** Training Location */
-            training_location?: ("gym" | "home" | "mixed") | null;
+            /**
+             * Training Location
+             * @enum {string|null}
+             */
+            training_location?: "gym" | "home" | "mixed" | null;
             /**
              * Unit System
              * @default metric
@@ -501,7 +537,10 @@ export interface components {
             date: string;
             /** Deep Minutes */
             deep_minutes?: number | null;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * Format: date-time
+             */
             deleted_at: string | null;
             /** Hrv Sdnn Ms */
             hrv_sdnn_ms?: number | null;
@@ -553,7 +592,10 @@ export interface components {
         };
         /** SetRead */
         SetRead: {
-            /** Completed At */
+            /**
+             * Completed At
+             * Format: date-time
+             */
             completed_at?: string | null;
             /** Duration Seconds */
             duration_seconds?: number | null;
@@ -573,11 +615,14 @@ export interface components {
              */
             set_type: "warmup" | "working" | "drop" | "failure";
             /** Weight Kg */
-            weight_kg?: string | null;
+            weight_kg?: number | null;
         };
         /** SetWrite */
         SetWrite: {
-            /** Completed At */
+            /**
+             * Completed At
+             * Format: date-time
+             */
             completed_at?: string | null;
             /** Duration Seconds */
             duration_seconds?: number | null;
@@ -597,7 +642,7 @@ export interface components {
              */
             set_type: "warmup" | "working" | "drop" | "failure";
             /** Weight Kg */
-            weight_kg?: number | string | null;
+            weight_kg?: number | null;
         };
         /**
          * SyncResponse
@@ -612,7 +657,7 @@ export interface components {
             exercises: components["schemas"]["ExerciseRead"][];
             /** Has More */
             has_more: boolean;
-            profile: components["schemas"]["ProfileRead"] | null;
+            profile?: components["schemas"]["ProfileRead"];
             /** Readiness */
             readiness: components["schemas"]["ReadinessRead"][];
             /** Templates */
@@ -696,7 +741,10 @@ export interface components {
             days: components["schemas"]["TemplateDayRead"][];
             /** Days Per Week */
             days_per_week?: number | null;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * Format: date-time
+             */
             deleted_at: string | null;
             /**
              * Id
@@ -705,8 +753,11 @@ export interface components {
             id: string;
             /** Is Custom */
             is_custom: boolean;
-            /** Level */
-            level?: ("beginner" | "intermediate" | "advanced") | null;
+            /**
+             * Level
+             * @enum {string|null}
+             */
+            level?: "beginner" | "intermediate" | "advanced" | null;
             /** Name En */
             name_en: string;
             /** Name Zh */
@@ -765,8 +816,11 @@ export interface components {
             days: components["schemas"]["TemplateDayWrite"][];
             /** Days Per Week */
             days_per_week?: number | null;
-            /** Level */
-            level?: ("beginner" | "intermediate" | "advanced") | null;
+            /**
+             * Level
+             * @enum {string|null}
+             */
+            level?: "beginner" | "intermediate" | "advanced" | null;
             /** Name En */
             name_en: string;
             /** Name Zh */
@@ -848,7 +902,10 @@ export interface components {
         WorkoutPage: {
             /** Items */
             items: components["schemas"]["WorkoutRead"][];
-            /** Next Before */
+            /**
+             * Next Before
+             * Format: date-time
+             */
             next_before: string | null;
         };
         /** WorkoutRead */
@@ -857,9 +914,15 @@ export interface components {
             avg_heart_rate?: number | null;
             /** Change Seq */
             change_seq: number;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * Format: date-time
+             */
             deleted_at: string | null;
-            /** Ended At */
+            /**
+             * Ended At
+             * Format: date-time
+             */
             ended_at?: string | null;
             /** Exercises */
             exercises: components["schemas"]["WorkoutExerciseRead"][];
@@ -879,7 +942,10 @@ export interface components {
              * Format: date-time
              */
             started_at: string;
-            /** Template Id */
+            /**
+             * Template Id
+             * Format: uuid
+             */
             template_id?: string | null;
             /** Time Zone */
             time_zone: string;
@@ -895,7 +961,10 @@ export interface components {
         WorkoutWrite: {
             /** Avg Heart Rate */
             avg_heart_rate?: number | null;
-            /** Ended At */
+            /**
+             * Ended At
+             * Format: date-time
+             */
             ended_at?: string | null;
             /**
              * Exercises
@@ -913,7 +982,10 @@ export interface components {
              * Format: date-time
              */
             started_at: string;
-            /** Template Id */
+            /**
+             * Template Id
+             * Format: uuid
+             */
             template_id?: string | null;
             /** Time Zone */
             time_zone: string;

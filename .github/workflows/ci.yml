@@ -117,6 +117,48 @@ jobs:
         working-directory: infra
         run: npx --yes aws-cdk@2.1146.1 synth --quiet
 
+  ios:
+    name: iOS build and tests
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: ios
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/IronSageKit/.build
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ios/**/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      # The API client is generated from api/openapi.json here, so a contract change
+      # that breaks the app fails this step.
+      - name: Test IronSageKit
+        working-directory: ios/IronSageKit
+        run: swift test
+
+      # The OpenAPI generator runs as a package build plugin; CI has no one to
+      # click "Trust & Enable", hence -skipPackagePluginValidation.
+      - name: Build app for the simulator
+        run: >-
+          xcodebuild build
+          -project IronSage.xcodeproj
+          -scheme IronSage
+          -destination 'generic/platform=iOS Simulator'
+          -skipPackagePluginValidation
+          CODE_SIGNING_ALLOWED=NO
+
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest

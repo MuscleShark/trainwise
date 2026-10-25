@@ -8,7 +8,7 @@ TrainWise is becoming an iOS-first strength-training log with a paid AI coach. S
 
 ## Current Features
 
-The product ships as **IronSage**. The iPhone app is next; the backend is ready for it.
+The product ships as **IronSage**. The iPhone app is in progress (milestone M1, workout logging); the backend is ready for it.
 
 **API** (`/v1`, built for an offline-first iPhone app)
 
@@ -23,6 +23,11 @@ The product ships as **IronSage**. The iPhone app is next; the backend is ready 
 **Web**
 
 - Landing page, Clerk sign-in, and an account page (sign out, delete account)
+
+**iPhone app** (`ios/`, early)
+
+- Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
+- API client generated from `api/openapi.json`
 
 ## Tech Stack
 
@@ -40,6 +45,12 @@ The product ships as **IronSage**. The iPhone app is next; the backend is ready 
 - PostgreSQL
 - Clerk session token verification (JWKS)
 - Pydantic
+
+### iPhone app
+
+- SwiftUI, iOS 18 or newer
+- Clerk iOS SDK
+- swift-openapi-generator
 
 ## Project Structure
 
@@ -70,6 +81,10 @@ trainwise/
 │   │   └── page.tsx
 │   ├── e2e/                      # Playwright tests
 │   └── package.json
+├── ios/
+│   ├── IronSage.xcodeproj
+│   ├── IronSage/                 # SwiftUI app (screens, Info.plist, strings)
+│   └── IronSageKit/              # Swift package: generated API client, app logic and tests
 ├── api/openapi.json              # API contract; clients generate their code from it
 ├── infra/                        # AWS CDK app (Lambda, Function URL, IAM)
 └── docs/deployment.md
@@ -156,7 +171,9 @@ Load the built-in exercise catalog into a local database with `python catalog.py
 [`api/openapi.json`](api/openapi.json) is the API's contract, generated from the FastAPI code. Clients generate their code from it instead of writing requests by hand:
 
 - Web: `npm run api:types` (in `frontend/`) regenerates `app/lib/api-types.ts`.
-- iPhone app: Apple's swift-openapi-generator reads the same file when the app builds.
+- iPhone app: Apple's swift-openapi-generator reads the same file when the app builds (`ios/IronSageKit/Sources/IronSageAPI/openapi.json` is a symlink to it).
+
+The export rewrites FastAPI's optional fields (`anyOf [X, null]`) as `type: [X, "null"]`, because the Swift generator drops fields written the first way. Decimal values such as `weight_kg` are sent as JSON numbers.
 
 After changing an endpoint or schema, regenerate and commit both files:
 
@@ -190,6 +207,19 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 `CLERK_ISSUER` in `backend/.env` is the instance's Frontend API URL, shown in Clerk dashboard → **API keys**. It is also the publishable key's base64 part decoded, without the trailing `$`.
 
+### 4. Run the iPhone app
+
+Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator and run. The first build asks you to trust the OpenAPIGenerator plugin; it generates the API client.
+
+The app calls the production API and the Clerk development instance; both values are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project. Both are public: the publishable key also ships in the web app.
+
+From the command line:
+
+```bash
+cd ios/IronSageKit && swift test
+cd .. && xcodebuild build -project IronSage.xcodeproj -scheme IronSage -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation
+```
+
 ## Authentication Flow
 
 ```text
@@ -216,6 +246,7 @@ GitHub Actions runs the following checks for every pull request and every push t
 - Backend Python syntax compilation
 - Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
+- iOS (macOS runner): `swift test` for IronSageKit, then a simulator build of the app
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 

@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
 from mangum import Mangum
 from sqlalchemy import text
@@ -21,11 +22,61 @@ def operation_id(route: APIRoute) -> str:
     return first + "".join(word.title() for word in rest)
 
 
+NULL = {"type": "null"}
+
+
+def nullable_as_type_list(node):
+    """Rewrites FastAPI's optional fields so swift-openapi-generator keeps them.
+
+    FastAPI writes `X | None` as anyOf [X, {"type": "null"}]. The Swift generator
+    skips the null branch and drops the field with it, so a plain type becomes
+    type [X, "null"] (which openapi-typescript also reads as `X | null`). An optional
+    reference becomes the reference itself and is no longer required, which Swift
+    decodes as nil when the value is null.
+    """
+    if isinstance(node, list):
+        for item in node:
+            nullable_as_type_list(item)
+        return
+    if not isinstance(node, dict):
+        return
+    for value in node.values():
+        nullable_as_type_list(value)
+
+    branches = node.get("anyOf", [])
+    others = [branch for branch in branches if branch != NULL]
+    if len(branches) == 2 and len(others) == 1:
+        (other,) = others
+        if isinstance(other.get("type"), str):
+            del node["anyOf"]
+            node.update(other, type=[other["type"], "null"])
+            if "enum" in node:
+                node["enum"] = [*node["enum"], None]
+        elif "$ref" in other:
+            del node["anyOf"]
+            node.update(other, nullable_reference=True)
+
+    for name, prop in node.get("properties", {}).items():
+        if prop.pop("nullable_reference", False) and name in node.get("required", []):
+            node["required"].remove(name)
+
+
 app = FastAPI(
     title="IronSage API",
     version="1.0.0",
     generate_unique_id_function=operation_id,
 )
+
+
+def openapi_document():
+    if app.openapi_schema is None:
+        schema = get_openapi(title=app.title, version=app.version, routes=app.routes)
+        nullable_as_type_list(schema)
+        app.openapi_schema = schema
+    return app.openapi_schema
+
+
+app.openapi = openapi_document
 
 # Comma-separated, e.g. "https://trainwise.vercel.app,http://localhost:3000".
 frontend_urls = [
