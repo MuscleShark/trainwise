@@ -76,11 +76,11 @@ Agreed before M1 started:
 | Navigation | Four tabs: Today, History, Templates, Settings |
 | Account | Sign-in is required. After sign-in the app works offline |
 | Exercise search | Fuzzy, on the phone: typos, English and Chinese names, aliases (RDL, OHP, 卧推) and pinyin (`wotui`, `wt`). Results show the catalog name, with the alias that matched. The last row always offers "Create exercise" with the typed name. Aliases live in the backend catalog |
-| Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked |
+| Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked. Without a field for it in the catalog, an exercise counts as compound when it trains three or more muscles, two primary ones, or the quads with the glutes |
 | Supersets | In the data model, not in the M1 interface |
 | Built-in templates | The four in [coaching.md](coaching.md), in English and Chinese |
 | Progression | None in M1: sets are prefilled with last time's load and reps. Suggestions come with the coach in M3 |
-| Units | Stored in kg. Shown in lb when chosen, rounded to 2.5 or 5 lb; kg rounded to 1.25 or 2.5 kg |
+| Units | Stored in kg. Shown in lb when chosen. The + and − buttons move by 2.5 kg or 5 lb (1.25 kg or 2.5 lb per dumbbell or side); typed weights are kept as typed |
 | Hardware | The simulator during development; Apple Developer Program and TestFlight at the end of M1 for a real gym session |
 | CI | A macOS runner builds the app and runs the Swift tests on every pull request |
 

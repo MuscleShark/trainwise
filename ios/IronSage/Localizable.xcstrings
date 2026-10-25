@@ -1,12 +1,142 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "+15 s": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+15 秒"
+          }
+        }
+      }
+    },
+    "15 seconds less": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "少 15 秒"
+          }
+        }
+      }
+    },
+    "15 seconds more": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "多 15 秒"
+          }
+        }
+      }
+    },
+    "Abductors": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外展肌"
+          }
+        }
+      }
+    },
+    "Abs": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "腹肌"
+          }
+        }
+      }
+    },
     "Account": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "账号"
+          }
+        }
+      }
+    },
+    "Add exercise": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加动作"
+          }
+        }
+      }
+    },
+    "Add exercises as you go. Each set starts from what you did last time.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "边练边添加动作。每组会自动填上你上次的重量和次数。"
+          }
+        }
+      }
+    },
+    "Add set": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加一组"
+          }
+        }
+      }
+    },
+    "Added to bodyweight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自重外加重"
+          }
+        }
+      }
+    },
+    "Adductors": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内收肌"
+          }
+        }
+      }
+    },
+    "All exercises": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部动作"
+          }
+        }
+      }
+    },
+    "Any equipment": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部器械"
+          }
+        }
+      }
+    },
+    "Any muscle": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部肌肉"
           }
         }
       }
@@ -21,6 +151,56 @@
         }
       }
     },
+    "Assistance": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助力"
+          }
+        }
+      }
+    },
+    "Band": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "弹力带"
+          }
+        }
+      }
+    },
+    "Barbell": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "杠铃"
+          }
+        }
+      }
+    },
+    "Biceps": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "肱二头肌"
+          }
+        }
+      }
+    },
+    "Bodyweight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自重"
+          }
+        }
+      }
+    },
     "Built-in programs and your own templates will be listed here.": {
       "localizations": {
         "zh-Hans": {
@@ -31,12 +211,62 @@
         }
       }
     },
+    "Cable": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "绳索"
+          }
+        }
+      }
+    },
+    "Calves": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "小腿"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        }
+      }
+    },
     "Check your connection and try again. Your data is still on this iPhone.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "请检查网络后重试。你的数据还在这台 iPhone 上。"
+          }
+        }
+      }
+    },
+    "Chest": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "胸"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
           }
         }
       }
@@ -71,12 +301,202 @@
         }
       }
     },
+    "Create": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建"
+          }
+        }
+      }
+    },
+    "Create exercise": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建动作"
+          }
+        }
+      }
+    },
+    "Create “%@”": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建“%@”"
+          }
+        }
+      }
+    },
+    "D": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "递"
+          }
+        }
+      }
+    },
+    "Discard this workout?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃这次训练？"
+          }
+        }
+      }
+    },
+    "Discard workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃训练"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
+    "Drop set": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "递减组"
+          }
+        }
+      }
+    },
+    "Dumbbell": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "哑铃"
+          }
+        }
+      }
+    },
+    "Duration": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时长"
+          }
+        }
+      }
+    },
     "Email": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "邮箱"
+          }
+        }
+      }
+    },
+    "Equipment": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "器械类型"
+          }
+        }
+      }
+    },
+    "Estimated 1RM: %@, up from %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "估算 1RM：%1$@，之前是 %2$@"
+          }
+        }
+      }
+    },
+    "Exercise options": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "动作选项"
+          }
+        }
+      }
+    },
+    "Exercises": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "动作"
+          }
+        }
+      }
+    },
+    "F": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "竭"
+          }
+        }
+      }
+    },
+    "Filter": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选"
+          }
+        }
+      }
+    },
+    "Finish": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结束"
+          }
+        }
+      }
+    },
+    "Finish this workout?": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结束这次训练？"
+          }
+        }
+      }
+    },
+    "Finish workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结束训练"
           }
         }
       }
@@ -91,6 +511,86 @@
         }
       }
     },
+    "For a machine or variation that isn't listed.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "适用于列表里没有的器械或变式。"
+          }
+        }
+      }
+    },
+    "For one dumbbell, cable handle or machine arm, log the weight per side.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "单个哑铃、单个绳索把手或单侧器械臂，记录单侧重量。"
+          }
+        }
+      }
+    },
+    "Forearms": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前臂"
+          }
+        }
+      }
+    },
+    "Front delts": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前束三角肌"
+          }
+        }
+      }
+    },
+    "Glutes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "臀肌"
+          }
+        }
+      }
+    },
+    "Hamstrings": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "腘绳肌"
+          }
+        }
+      }
+    },
+    "Heaviest set: %@, up from %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最重一组：%1$@，之前是 %2$@"
+          }
+        }
+      }
+    },
+    "Hide": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收起"
+          }
+        }
+      }
+    },
     "History": {
       "localizations": {
         "zh-Hans": {
@@ -101,12 +601,32 @@
         }
       }
     },
+    "In progress": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "进行中"
+          }
+        }
+      }
+    },
     "IronSage isn't set up": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "IronSage 尚未配置"
+          }
+        }
+      }
+    },
+    "Kettlebell": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "壶铃"
           }
         }
       }
@@ -131,12 +651,182 @@
         }
       }
     },
+    "Last time": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次"
+          }
+        }
+      }
+    },
+    "Last workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次训练"
+          }
+        }
+      }
+    },
+    "Lats": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背阔肌"
+          }
+        }
+      }
+    },
+    "Less weight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "减重"
+          }
+        }
+      }
+    },
     "Log every set, even without signal. Your training syncs to your account.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "每一组都能记下来，没有信号也可以。训练记录会同步到你的账号。"
+          }
+        }
+      }
+    },
+    "Lower back": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下背"
+          }
+        }
+      }
+    },
+    "Machine": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "器械"
+          }
+        }
+      }
+    },
+    "Main muscles": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主要肌群"
+          }
+        }
+      }
+    },
+    "Mark done": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标记完成"
+          }
+        }
+      }
+    },
+    "Mark not done": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消完成"
+          }
+        }
+      }
+    },
+    "More weight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加重"
+          }
+        }
+      }
+    },
+    "Muscle": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "肌肉"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称"
+          }
+        }
+      }
+    },
+    "Name, alias or pinyin": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称、别名或拼音"
+          }
+        }
+      }
+    },
+    "New exercise": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建动作"
+          }
+        }
+      }
+    },
+    "New records": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新纪录"
+          }
+        }
+      }
+    },
+    "Next set: %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一组：%@"
+          }
+        }
+      }
+    },
+    "No exercises yet": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "还没有动作"
           }
         }
       }
@@ -181,6 +871,46 @@
         }
       }
     },
+    "Nothing from it will be saved.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这次训练的内容都不会保存。"
+          }
+        }
+      }
+    },
+    "Obliques": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "腹斜肌"
+          }
+        }
+      }
+    },
+    "Other": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他"
+          }
+        }
+      }
+    },
+    "Per dumbbell or side": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "单个哑铃或单侧"
+          }
+        }
+      }
+    },
     "Privacy policy": {
       "localizations": {
         "zh-Hans": {
@@ -191,12 +921,192 @@
         }
       }
     },
+    "Quads": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "股四头肌"
+          }
+        }
+      }
+    },
+    "RIR": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR"
+          }
+        }
+      }
+    },
+    "Rear delts": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "后束三角肌"
+          }
+        }
+      }
+    },
+    "Recent": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近"
+          }
+        }
+      }
+    },
+    "Remove exercise": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除动作"
+          }
+        }
+      }
+    },
+    "Reps": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次数"
+          }
+        }
+      }
+    },
+    "Reps in reserve": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留次数（RIR）"
+          }
+        }
+      }
+    },
+    "Rest": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休息"
+          }
+        }
+      }
+    },
+    "Rest %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休息 %@"
+          }
+        }
+      }
+    },
+    "Rest between sets": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "组间休息"
+          }
+        }
+      }
+    },
+    "Rest is over": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "休息结束"
+          }
+        }
+      }
+    },
+    "Results": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结果"
+          }
+        }
+      }
+    },
+    "Resume": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续"
+          }
+        }
+      }
+    },
+    "Set": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "组"
+          }
+        }
+      }
+    },
+    "Set type": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "组类型"
+          }
+        }
+      }
+    },
+    "Sets": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "组数"
+          }
+        }
+      }
+    },
+    "Sets you haven't checked off will be removed.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有勾选完成的组会被删除。"
+          }
+        }
+      }
+    },
     "Settings": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "设置"
+          }
+        }
+      }
+    },
+    "Side delts": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中束三角肌"
           }
         }
       }
@@ -231,12 +1141,52 @@
         }
       }
     },
+    "Skip": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过"
+          }
+        }
+      }
+    },
+    "Smith machine": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "史密斯机"
+          }
+        }
+      }
+    },
     "Some changes haven't synced yet and will be removed from this iPhone.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "有些改动还没同步，退出后会从这台 iPhone 上删除。"
+          }
+        }
+      }
+    },
+    "Start an empty workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始空白训练"
+          }
+        }
+      }
+    },
+    "Started %@ ago": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@前开始"
           }
         }
       }
@@ -291,12 +1241,82 @@
         }
       }
     },
+    "The exercise list downloads the first time IronSage connects.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IronSage 第一次联网时会下载动作列表。"
+          }
+        }
+      }
+    },
+    "To failure": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "力竭组"
+          }
+        }
+      }
+    },
     "Today": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "今天"
+          }
+        }
+      }
+    },
+    "Total weight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "总重量"
+          }
+        }
+      }
+    },
+    "Traps": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "斜方肌"
+          }
+        }
+      }
+    },
+    "Triceps": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "肱三头肌"
+          }
+        }
+      }
+    },
+    "Unknown exercise": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知动作"
+          }
+        }
+      }
+    },
+    "Upper back": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上背"
           }
         }
       }
@@ -311,6 +1331,36 @@
         }
       }
     },
+    "Volume": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "训练量"
+          }
+        }
+      }
+    },
+    "Volume is weight × reps of the working sets; one dumbbell per side counts twice.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "训练量是正式组的重量 × 次数；单侧重量（如单个哑铃）按两倍计算。"
+          }
+        }
+      }
+    },
+    "W": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "热"
+          }
+        }
+      }
+    },
     "Waiting for a connection": {
       "localizations": {
         "zh-Hans": {
@@ -321,12 +1371,102 @@
         }
       }
     },
+    "Warm-up": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "热身组"
+          }
+        }
+      }
+    },
+    "Weight": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重量"
+          }
+        }
+      }
+    },
+    "Weight logged as": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重量记录方式"
+          }
+        }
+      }
+    },
+    "Working set": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正式组"
+          }
+        }
+      }
+    },
+    "Workout": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "训练"
+          }
+        }
+      }
+    },
     "Workout logging arrives in the next update.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "下个版本就能记录训练。"
+          }
+        }
+      }
+    },
+    "Workout name": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "训练名称"
+          }
+        }
+      }
+    },
+    "kg": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kg"
+          }
+        }
+      }
+    },
+    "lb": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lb"
+          }
+        }
+      }
+    },
+    "−15 s": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "−15 秒"
           }
         }
       }

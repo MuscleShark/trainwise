@@ -13,7 +13,9 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if !clerk.isLoaded {
+            if services?.isDemo == true {
+                MainTabView()
+            } else if !clerk.isLoaded {
                 ProgressView()
             } else if clerk.user == nil {
                 WelcomeView()
@@ -22,12 +24,12 @@ struct RootView: View {
             }
         }
         .task(id: clerk.user?.id) {
-            guard let userID = clerk.user?.id else { return }
+            guard let userID = clerk.user?.id, services?.isDemo != true else { return }
             services?.prepare(forUser: userID)
             await sync.sync()
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active, clerk.user != nil {
+            if phase == .active, clerk.user != nil, services?.isDemo != true {
                 Task { await sync.sync() }
             }
         }
