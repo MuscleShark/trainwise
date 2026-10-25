@@ -140,6 +140,10 @@ class Exercise(SyncedMixin, Base):
     load_type: Mapped[str] = mapped_column(String(20), nullable=False)
     primary_muscles: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     secondary_muscles: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    # Other names to search by ("RDL", "卧推"); see catalog.ALIASES.
+    aliases: Mapped[list[str]] = mapped_column(
+        JSON, default=list, server_default="[]", nullable=False
+    )
     # The built-in exercise a custom one is a variant of, e.g. a specific machine.
     base_exercise_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("exercises.id"))
 

@@ -14,7 +14,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 
 - Sign-in with Clerk: email verification code, Google or Apple (no passwords); the API verifies Clerk session tokens
 - Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
-- Built-in exercise catalog (145 exercises, English and Chinese) plus users' own exercises, such as a specific machine
+- Built-in exercise catalog (145 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
 - Training templates with rep ranges and target RIR
 - Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate)
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
@@ -27,6 +27,7 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 **iPhone app** (`ios/`, early)
 
 - Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
+- Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - API client generated from `api/openapi.json`
 
 ## Tech Stack
@@ -84,7 +85,9 @@ trainwise/
 ├── ios/
 │   ├── IronSage.xcodeproj
 │   ├── IronSage/                 # SwiftUI app (screens, Info.plist, strings)
-│   └── IronSageKit/              # Swift package: generated API client, app logic and tests
+│   └── IronSageKit/              # Swift package: generated API client (IronSageAPI),
+│                                 #   app logic (IronSageCore), local data and sync
+│                                 #   (IronSageStore), and their tests
 ├── api/openapi.json              # API contract; clients generate their code from it
 ├── infra/                        # AWS CDK app (Lambda, Function URL, IAM)
 └── docs/deployment.md

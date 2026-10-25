@@ -225,6 +225,70 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
 )  # fmt: skip
 
 
+# Other names people search for: abbreviations, gym slang and common Chinese names.
+# The app also matches pinyin and typos on its own, so these are only names it could
+# not derive from name_en or name_zh.
+ALIASES: dict[str, tuple[str, ...]] = {
+    "barbell_bench_press": ("bench", "bench press", "BP", "卧推", "平板卧推"),
+    "incline_barbell_bench_press": ("incline bench", "上斜卧推"),
+    "close_grip_bench_press": ("CGBP", "窄卧"),
+    "dumbbell_bench_press": ("DB bench", "DB press"),
+    "incline_dumbbell_bench_press": ("incline DB press", "上斜哑铃推"),
+    "dumbbell_fly": ("DB fly", "飞鸟"),
+    "machine_chest_press": ("chest press", "坐姿推胸"),
+    "pec_deck": ("pec fly", "machine fly", "夹胸", "蝴蝶机"),
+    "cable_fly": ("cable crossover", "绳索夹胸"),
+    "push_up": ("pushup", "press-up"),
+    "chest_dip": ("dips", "双杠"),
+    "deadlift": ("DL", "conventional deadlift", "传统硬拉"),
+    "sumo_deadlift": ("sumo",),
+    "trap_bar_deadlift": ("hex bar deadlift",),
+    "romanian_deadlift": ("RDL", "罗马硬拉"),
+    "stiff_leg_deadlift": ("SLDL",),
+    "barbell_row": ("bent-over row", "BOR", "俯身划船", "俯身杠铃划船"),
+    "t_bar_row": ("T杠划船",),
+    "dumbbell_row": ("DB row", "单臂划船"),
+    "seated_cable_row": ("cable row", "坐姿划船"),
+    "lat_pulldown": ("pulldown", "下拉"),
+    "pull_up": ("pullup", "引体"),
+    "chin_up": ("chinup", "反手引体"),
+    "back_extension": ("hyperextension", "背屈伸"),
+    "face_pull": ("绳索面拉",),
+    "overhead_press": ("OHP", "military press", "推举", "杠铃推举"),
+    "dumbbell_shoulder_press": ("DB shoulder press", "哑铃推举"),
+    "lateral_raise": ("side raise", "lat raise", "侧平举"),
+    "rear_delt_fly": ("reverse fly", "反向飞鸟"),
+    "reverse_pec_deck": ("rear delt machine", "反飞鸟"),
+    "barbell_curl": ("curl", "弯举", "二头弯举"),
+    "ez_bar_curl": ("EZ curl",),
+    "skull_crusher": ("lying triceps extension", "LTE"),
+    "tricep_pushdown": ("pushdown", "三头下压"),
+    "tricep_dip": ("dips",),
+    "back_squat": ("squat", "深蹲", "后蹲"),
+    "front_squat": ("前蹲",),
+    "goblet_squat": ("杯式深蹲",),
+    "smith_squat": ("史密斯蹲",),
+    "hack_squat": ("哈克",),
+    "leg_press": ("倒蹬",),
+    "bulgarian_split_squat": ("BSS", "保加利亚蹲", "分腿蹲"),
+    "walking_lunge": ("lunge", "箭步蹲"),
+    "leg_extension": ("quad extension", "腿伸展"),
+    "lying_leg_curl": ("leg curl", "腿弯举"),
+    "seated_leg_curl": ("leg curl",),
+    "hip_thrust": ("臀推",),
+    "glute_bridge": ("臀桥",),
+    "hip_abduction": ("abductor machine", "外展"),
+    "hip_adduction": ("adductor machine", "内收"),
+    "standing_calf_raise": ("calf raise", "提踵"),
+    "plank": ("平板",),
+    "hanging_leg_raise": ("HLR",),
+    "ab_wheel_rollout": ("ab roller", "腹轮"),
+    "kettlebell_swing": ("KB swing",),
+    "power_clean": ("clean",),
+    "farmers_carry": ("farmer's walk", "农夫走"),
+}
+
+
 def exercise_id(slug: str) -> uuid.UUID:
     return uuid.uuid5(CATALOG_NAMESPACE, f"exercise:{slug}")
 
@@ -244,6 +308,7 @@ def sync_builtin_exercises(db: Session) -> dict[str, int]:
             "load_type": entry.load_type,
             "primary_muscles": list(entry.primary),
             "secondary_muscles": list(entry.secondary),
+            "aliases": list(ALIASES.get(entry.slug, ())),
             "deleted_at": None,
         }
         row = existing.pop(exercise_id(entry.slug), None)

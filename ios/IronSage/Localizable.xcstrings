@@ -31,12 +31,42 @@
         }
       }
     },
+    "Check your connection and try again. Your data is still on this iPhone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查网络后重试。你的数据还在这台 iPhone 上。"
+          }
+        }
+      }
+    },
     "Couldn't load your account. Check your connection, then pull down to try again.": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "无法加载账号信息。请检查网络，然后下拉重试。"
+          }
+        }
+      }
+    },
+    "Couldn't sign out": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法退出登录"
+          }
+        }
+      }
+    },
+    "Couldn't sync": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步失败"
           }
         }
       }
@@ -141,6 +171,16 @@
         }
       }
     },
+    "Not synced yet": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未同步"
+          }
+        }
+      }
+    },
     "Privacy policy": {
       "localizations": {
         "zh-Hans": {
@@ -191,12 +231,52 @@
         }
       }
     },
+    "Some changes haven't synced yet and will be removed from this iPhone.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有些改动还没同步，退出后会从这台 iPhone 上删除。"
+          }
+        }
+      }
+    },
     "Support": {
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "客服支持"
+          }
+        }
+      }
+    },
+    "Sync": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步"
+          }
+        }
+      }
+    },
+    "Synced %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@同步"
+          }
+        }
+      }
+    },
+    "Syncing…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在同步…"
           }
         }
       }
@@ -227,6 +307,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "版本"
+          }
+        }
+      }
+    },
+    "Waiting for a connection": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待网络连接"
           }
         }
       }

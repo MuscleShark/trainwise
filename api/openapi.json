@@ -135,6 +135,17 @@
       },
       "ExerciseRead": {
         "properties": {
+          "aliases": {
+            "default": [],
+            "items": {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Aliases",
+            "type": "array"
+          },
           "base_exercise_id": {
             "format": "uuid",
             "title": "Base Exercise Id",
@@ -286,6 +297,17 @@
       },
       "ExerciseWrite": {
         "properties": {
+          "aliases": {
+            "default": [],
+            "items": {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Aliases",
+            "type": "array"
+          },
           "base_exercise_id": {
             "format": "uuid",
             "title": "Base Exercise Id",

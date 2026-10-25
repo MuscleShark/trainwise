@@ -366,6 +366,11 @@ export interface components {
         /** ExerciseRead */
         ExerciseRead: {
             /**
+             * Aliases
+             * @default []
+             */
+            aliases: string[];
+            /**
              * Base Exercise Id
              * Format: uuid
              */
@@ -413,6 +418,11 @@ export interface components {
         };
         /** ExerciseWrite */
         ExerciseWrite: {
+            /**
+             * Aliases
+             * @default []
+             */
+            aliases: string[];
             /**
              * Base Exercise Id
              * Format: uuid
