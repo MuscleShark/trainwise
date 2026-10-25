@@ -2220,6 +2220,26 @@
           }
         }
       }
+    },
+    "Heart rate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "心率"
+          }
+        }
+      }
+    },
+    "%lld avg, %lld max" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均 %lld，最高 %lld"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
