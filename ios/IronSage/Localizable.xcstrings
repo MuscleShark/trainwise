@@ -141,12 +141,12 @@
         }
       }
     },
-    "Add exercises as you go. Each set starts from what you did last time." : {
+    "Add exercises as you go. Sets start from what you did last time, with the next step suggested." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "边练边添加动作。每组会自动填上你上次的重量和次数。"
+            "value" : "边练边添加动作。每组会按你上次的成绩填好，并建议下一步。"
           }
         }
       }
@@ -701,6 +701,26 @@
         }
       }
     },
+    "Every set reached %lld reps, so %@ this time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每组都做到了 %1$lld 次，这次用 %2$@。"
+          }
+        }
+      }
+    },
+    "Every set was under %lld reps, so %@ this time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每组都不到 %1$lld 次，这次减到 %2$@。"
+          }
+        }
+      }
+    },
     "Exercise options" : {
       "localizations" : {
         "zh-Hans" : {
@@ -797,6 +817,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成的训练会按周列在这里。"
+          }
+        }
+      }
+    },
+    "First time: choose a weight that leaves 1–3 reps in reserve." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一次做：选一个做完还能再做 1–3 次的重量。"
           }
         }
       }
@@ -1141,6 +1171,16 @@
         }
       }
     },
+    "Missed %lld reps two sessions running, so %@ to build back up." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续两次没做到 %1$lld 次，这次减到 %2$@，再慢慢加回来。"
+          }
+        }
+      }
+    },
     "More weight" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1227,6 +1267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有动作"
+          }
+        }
+      }
+    },
+    "No progress in the last %lld sessions. Consider a different rep range or exercise." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 %lld 次训练没有进步，可以考虑换个次数范围或换个动作。"
           }
         }
       }
@@ -1391,6 +1441,16 @@
         }
       }
     },
+    "Ready for more weight, but you slept little last night. Same weight today." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本可以加重，但你昨晚睡得少，今天保持重量。"
+          }
+        }
+      }
+    },
     "Rear delts" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1537,6 +1597,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "RIR %lld"
+          }
+        }
+      }
+    },
+    "Same weight until every set reaches %lld reps." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持这个重量，直到每组都做到 %lld 次。"
+          }
+        }
+      }
+    },
+    "Same weight. Aim for one more rep per set, up to %lld." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重量不变，每组争取多做 1 次，最多 %lld 次。"
           }
         }
       }
@@ -1691,6 +1771,16 @@
         }
       }
     },
+    "Start" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始"
+          }
+        }
+      }
+    },
     "Start an empty workout" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1747,6 +1837,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保持健康"
+          }
+        }
+      }
+    },
+    "Suggested from your last sessions. Each exercise says why once you start." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根据你最近的训练建议。开始后每个动作都会说明原因。"
           }
         }
       }
@@ -1871,6 +1971,16 @@
         }
       }
     },
+    "Top of the range: add weight or try a harder variation." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已经做到次数上限：可以负重或换更难的变式。"
+          }
+        }
+      }
+    },
     "Total weight" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1927,6 +2037,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知动作"
+          }
+        }
+      }
+    },
+    "Up next" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一次训练"
           }
         }
       }
@@ -2077,6 +2197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用它完成的训练会保留在历史里。"
+          }
+        }
+      }
+    },
+    "You slept little last night, so no weight goes up today." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你昨晚睡得少，今天不加重量。"
           }
         }
       }

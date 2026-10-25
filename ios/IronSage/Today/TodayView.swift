@@ -29,7 +29,11 @@ struct TodayView: View {
                             Label("Start from a template", systemImage: "list.bullet.rectangle")
                         }
                     } footer: {
-                        Text("Add exercises as you go. Each set starts from what you did last time.")
+                        Text("Add exercises as you go. Sets start from what you did last time, with the next step suggested.")
+                    }
+
+                    if let upNext {
+                        UpNextSection(template: upNext.template, day: upNext.day, session: $session)
                     }
                 }
 
@@ -58,6 +62,82 @@ struct TodayView: View {
             .fullScreenCover(item: $session) { session in
                 WorkoutView(session: session)
             }
+        }
+    }
+}
+
+extension TodayView {
+    /// The next day of the template followed most recently.
+    private var upNext: (template: Template, day: TemplateDay)? {
+        for workout in store.finishedWorkouts {
+            guard let id = workout.templateId else { continue }
+            // A deleted template: look at the workout before.
+            guard let template = store.templates.first(where: { $0.id == id }),
+                  let day = NextSession.nextDay(of: template, history: store.finishedWorkouts)
+            else { continue }
+            return (template, day)
+        }
+        return nil
+    }
+}
+
+/// The template day due next, with each exercise's suggested top set.
+private struct UpNextSection: View {
+    let template: Template
+    let day: TemplateDay
+    @Binding var session: WorkoutSession?
+    @Environment(LocalStore.self) private var store
+
+    var body: some View {
+        let unit = store.weightUnit
+        let context = store.nextSessionContext()
+        Section {
+            Button {
+                session = WorkoutSession.start(day, of: template, store: store)
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(day.name(chinese: AppLanguage.isChinese))
+                            .font(.headline)
+                            .foregroundStyle(Color.primary)
+                        if template.days.count > 1 {
+                            Text(template.name(chinese: AppLanguage.isChinese))
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                        }
+                    }
+                    Spacer()
+                    Text("Start")
+                        .font(.subheadline.weight(.semibold))
+                }
+            }
+            if context.shortNight {
+                Label("You slept little last night, so no weight goes up today.", systemImage: "moon.zzz")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(day.exercises) { item in
+                if let suggestion = store.suggestion(for: item.exerciseId, template: item, context: context) {
+                    HStack(spacing: 8) {
+                        Text(store.exerciseName(item.exerciseId))
+                            .lineLimit(1)
+                        Spacer()
+                        Text(suggestion.topSet(unit: unit, loadType: store.exercises[item.exerciseId]?.loadType ?? .total) ?? TemplateTarget(item: item).summary)
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                        Image(systemName: suggestion.systemImage)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 16)
+                            .accessibilityHidden(true)
+                    }
+                    .font(.subheadline)
+                }
+            }
+        } header: {
+            Text("Up next")
+        } footer: {
+            Text("Suggested from your last sessions. Each exercise says why once you start.")
         }
     }
 }

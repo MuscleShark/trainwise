@@ -182,15 +182,7 @@ struct TemplateDetailView: View {
             isBlockedByActiveWorkout = true
             return
         }
-        let title = template.days.count > 1
-            ? "\(template.name(chinese: AppLanguage.isChinese)) · \(day.name(chinese: AppLanguage.isChinese))"
-            : template.name(chinese: AppLanguage.isChinese)
-        session = WorkoutSession.start(
-            title: String(title.prefix(120)),
-            exercises: WorkoutLog.exercises(for: day, history: store.finishedWorkouts),
-            templateID: template.id,
-            store: store
-        )
+        session = WorkoutSession.start(day, of: template, store: store)
     }
 }
 

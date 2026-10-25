@@ -215,11 +215,18 @@ private struct ExerciseHeader: View {
                     .foregroundStyle(Color.primary)
                     .textCase(nil)
                 Group {
-                    if let target {
-                        Text("Target \(target)")
+                    if let templateItem {
+                        Text("Target \(TemplateTarget(item: templateItem).summary)")
                     }
                     if let rest = item.restSeconds {
                         Text("Rest \(Duration.clock(TimeInterval(rest)))")
+                    }
+                    if let suggestion {
+                        Label(suggestion.reason(unit: store.weightUnit), systemImage: suggestion.systemImage)
+                            .padding(.top, 2)
+                        if suggestion.isStalled {
+                            Label(NextSession.Suggestion.stallNote, systemImage: "exclamationmark.circle")
+                        }
                     }
                 }
                 .font(.caption)
@@ -254,16 +261,17 @@ private struct ExerciseHeader: View {
         }
     }
 
-    /// The template's sets and reps for this exercise, when the workout follows one.
-    private var target: String? {
+    /// The template's sets and reps for this exercise, when the workout follows a
+    /// template day that has it.
+    private var templateItem: TemplateExercise? {
         guard let templateID = session.workout.templateId,
-              let template = store.templates.first(where: { $0.id == templateID })
+              let day = store.templates.first(where: { $0.id == templateID })?.day(of: session.workout)
         else { return nil }
-        // A template can use an exercise on several days; prefer the day in the title.
-        let titled = template.days.first { session.workout.title.contains($0.name(chinese: AppLanguage.isChinese)) }
-        let days = (titled.map { [$0] } ?? []) + template.days
-        return days.lazy.flatMap(\.exercises).first { $0.exerciseId == item.exerciseId }
-            .map { TemplateTarget(item: $0).summary }
+        return day.exercises.first { $0.exerciseId == item.exerciseId }
+    }
+
+    private var suggestion: NextSession.Suggestion? {
+        session.suggestion(for: item, template: templateItem)
     }
 }
 

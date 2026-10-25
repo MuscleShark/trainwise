@@ -1,7 +1,7 @@
 import Foundation
 
-// Rules for logging a workout. M1 has no progression: new sets start from what the
-// user did last time, and the coach (M3) will suggest changes.
+// Rules for logging a workout. New sets start from the next-session suggestion (see
+// NextSession), which builds on what the user did last time.
 
 extension Exercise {
     /// Multi-joint lifts get the longer rest. Without a field for it in the catalog, an
@@ -38,21 +38,10 @@ public enum WorkoutLog {
         return nil
     }
 
-    /// The sets a new exercise starts with: last time's, not yet done; otherwise one
-    /// empty working set.
-    public static func plannedSets(for exerciseID: UUID, history: [Workout]) -> [WorkoutSet] {
-        guard let last = lastSets(of: exerciseID, in: history) else {
-            return [WorkoutSet()]
-        }
-        return last.map {
-            WorkoutSet(setType: $0.setType, reps: $0.reps, weightKg: $0.weightKg, durationSeconds: $0.durationSeconds)
-        }
-    }
-
     /// The rest the user set for this exercise last time, or the default.
-    public static func restSeconds(for exercise: Exercise, history: [Workout]) -> Int {
+    public static func restSeconds(for exercise: Exercise, history: [Workout], before date: Date = .distantFuture) -> Int {
         let previous = history
-            .filter { !$0.isInProgress }
+            .filter { !$0.isInProgress && $0.startedAt < date }
             .sorted { $0.startedAt > $1.startedAt }
             .lazy
             .flatMap(\.exercises)
@@ -60,12 +49,12 @@ public enum WorkoutLog {
         return previous?.restSeconds ?? exercise.defaultRestSeconds
     }
 
-    /// A new workout exercise with last time's sets and rest.
-    public static func adding(_ exercise: Exercise, history: [Workout]) -> WorkoutExercise {
+    /// A new workout exercise with the suggested sets and last time's rest.
+    public static func adding(_ exercise: Exercise, context: NextSession.Context) -> WorkoutExercise {
         WorkoutExercise(
             exerciseId: exercise.id,
-            restSeconds: restSeconds(for: exercise, history: history),
-            sets: plannedSets(for: exercise.id, history: history)
+            restSeconds: restSeconds(for: exercise, history: context.history, before: context.before),
+            sets: NextSession.suggest(exercise, context: context).sets
         )
     }
 
@@ -188,15 +177,13 @@ public enum WorkoutHistory {
 }
 
 extension WorkoutLog {
-    /// The exercises of a workout that follows a template day: the template's sets,
-    /// with last time's weights and reps, or the bottom of the rep range the first time.
-    public static func exercises(for day: TemplateDay, history: [Workout]) -> [WorkoutExercise] {
+    /// The exercises of a workout that follows a template day, with the suggested sets.
+    /// An exercise missing from `exercises` (removed from the catalog) starts from the
+    /// bottom of its rep range.
+    public static func exercises(for day: TemplateDay, exercises: [UUID: Exercise], context: NextSession.Context) -> [WorkoutExercise] {
         day.exercises.map { item in
-            let last = lastSets(of: item.exerciseId, in: history)?.filter { $0.setType != .warmup } ?? []
-            let sets = item.sets.enumerated().map { index, target in
-                let previous = last.isEmpty ? nil : last[min(index, last.count - 1)]
-                return WorkoutSet(setType: target.setType, reps: previous?.reps ?? target.repMin, weightKg: previous?.weightKg)
-            }
+            let sets = exercises[item.exerciseId].map { NextSession.suggest($0, template: item, context: context).sets }
+                ?? item.sets.map { WorkoutSet(setType: $0.setType, reps: $0.repMin) }
             return WorkoutExercise(
                 exerciseId: item.exerciseId,
                 supersetGroup: item.supersetGroup,

@@ -16,7 +16,7 @@ enum DemoData {
         let curl = exercise("Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
         let raise = exercise("Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
         store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise])
-        store.replaceBuiltInTemplates([Template(
+        let ppl = Template(
             nameEn: "Push / pull / legs", nameZh: "推拉腿", level: .intermediate, daysPerWeek: 6,
             days: [
                 day("Push", "推", [(bench, 4, 5, 8, 180), (press, 3, 6, 10, 180), (raise, 3, 12, 20, 90)]),
@@ -24,10 +24,15 @@ enum DemoData {
                 day("Legs", "腿", [(squat, 4, 5, 8, 180), (rdl, 3, 8, 10, 180)]),
             ],
             isCustom: false
-        )])
+        )
+        store.replaceBuiltInTemplates([ppl])
 
+        // The workouts follow the template, so Today suggests the next day.
+        func workout(_ day: String, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {
+            Self.workout("\(ppl.nameEn) · \(day)", templateID: ppl.id, daysAgo: daysAgo, items)
+        }
         store.save(workout("Push", daysAgo: 4, [(bench, 180, [(60, 8), (60, 8), (60, 7)]), (press, 150, [(40, 8), (40, 7)]), (raise, 90, [(8, 12), (8, 12)])]))
-        store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 8), (80, 8)])]))
+        store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 10), (80, 10)])]))
         store.save(workout("Pull", daysAgo: 1, [(row, 150, [(70, 8), (70, 8)]), (pulldown, 120, [(55, 10), (55, 10)]), (curl, 90, [(12, 10), (12, 9)])]))
 
         // Six earlier weeks, a little lighter each week back.
@@ -77,10 +82,11 @@ enum DemoData {
         })
     }
 
-    private static func workout(_ title: String, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {
+    private static func workout(_ title: String, templateID: UUID?, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {
         let start = Calendar.current.date(byAdding: .day, value: -daysAgo, to: .now)!.addingTimeInterval(-3600)
         return Workout(
             title: title,
+            templateId: templateID,
             startedAt: start,
             endedAt: start.addingTimeInterval(65 * 60),
             exercises: items.map { exercise, rest, sets in
