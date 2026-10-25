@@ -29,6 +29,7 @@ struct HistoryView: View {
                     }
                 }
             }
+            .brandBackground()
             .overlay {
                 if weeks.isEmpty {
                     ContentUnavailableView(
@@ -150,6 +151,7 @@ struct WorkoutDetailView: View {
                 }
             }
         }
+        .brandBackground()
         .navigationTitle(workout.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

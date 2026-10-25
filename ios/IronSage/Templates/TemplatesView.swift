@@ -52,6 +52,7 @@ struct TemplateList: View {
                 }
             }
         }
+        .brandBackground()
         .overlay {
             if store.templates.isEmpty && !store.hasBuiltInExercises {
                 ContentUnavailableView(
@@ -142,6 +143,7 @@ struct TemplateDetailView: View {
                 }
             }
         }
+        .brandBackground()
         .navigationTitle(template.name(chinese: AppLanguage.isChinese))
         .toolbar {
             if template.isCustom {

@@ -52,6 +52,7 @@ struct ExercisePickerView: View {
                     Text("For a machine or variation that isn't listed.")
                 }
             }
+            .brandBackground()
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Name, alias or pinyin"))
             .searchFocused($isSearching)
             .onAppear { isSearching = true }
@@ -199,6 +200,7 @@ struct CreateExerciseView: View {
                     }
                 }
             }
+            .brandBackground()
             .navigationTitle("New exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

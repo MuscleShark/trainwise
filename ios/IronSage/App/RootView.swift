@@ -18,6 +18,8 @@ struct RootView: View {
                 MainTabView()
             } else if !clerk.isLoaded {
                 ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.appBackground)
             } else if clerk.user == nil {
                 WelcomeView()
             } else {

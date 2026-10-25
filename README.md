@@ -94,6 +94,7 @@ trainwise/
 │                                 #   app logic (IronSageCore), local data and sync
 │                                 #   (IronSageStore), and their tests
 ├── api/openapi.json              # API contract; clients generate their code from it
+├── brand/                        # logo, app icon sources and brand colors
 ├── infra/                        # AWS CDK app (Lambda, Function URL, IAM)
 └── docs/deployment.md
 ```

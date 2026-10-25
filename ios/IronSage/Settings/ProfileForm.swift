@@ -98,6 +98,7 @@ struct ProfileSetupView: View {
                 }
                 ProfileForm(profile: $profile)
             }
+            .brandBackground()
             .navigationTitle("About you")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -124,6 +125,7 @@ struct ProfileSettingsView: View {
                 set: { store.save($0) }
             ))
         }
+        .brandBackground()
         .navigationTitle("Profile")
         .onDisappear {
             Task { await sync.sync() }
