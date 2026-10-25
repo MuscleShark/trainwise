@@ -8,7 +8,7 @@ TrainWise is becoming an iOS-first strength-training log with a paid AI coach. S
 
 ## Current Features
 
-The product ships as **IronSage**. The iPhone app is in progress (milestone M1, workout logging); the backend is ready for it.
+The product ships as **IronSage**. The iPhone app covers milestone M1 (workout logging) and goes to TestFlight once there is an Apple Developer account; the backend is ready for it.
 
 **API** (`/v1`, built for an offline-first iPhone app)
 
@@ -24,13 +24,14 @@ The product ships as **IronSage**. The iPhone app is in progress (milestone M1, 
 
 - Landing page, Clerk sign-in, and an account page (sign out, delete account)
 
-**iPhone app** (`ios/`, early)
+**iPhone app** (`ios/`)
 
 - Clerk sign-in, four tabs (Today, History, Templates, Settings), English and Chinese
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
 - Templates: four built-in programs (English and Chinese) and the user's own, saved from a finished workout; starting a template day fills in its exercises, sets and targets
+- Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; account deletion in Settings
 - API client generated from `api/openapi.json`
 
 ## Tech Stack

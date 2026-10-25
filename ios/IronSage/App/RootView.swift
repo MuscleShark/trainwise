@@ -8,6 +8,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(Clerk.self) private var clerk
     @Environment(SyncEngine.self) private var sync
+    @Environment(LocalStore.self) private var store
     @Environment(\.services) private var services
     @Environment(\.scenePhase) private var scenePhase
 
@@ -33,9 +34,17 @@ struct RootView: View {
                 Task { await sync.sync() }
             }
         }
+        .sheet(isPresented: Binding(get: { needsProfile }, set: { _ in })) {
+            ProfileSetupView()
+        }
         .onOpenURL { url in
             // Returns from Google sign-in in the browser.
             Task { try? await clerk.handle(url) }
         }
+    }
+
+    /// Signed in, synced once (so an existing profile has arrived), and still none.
+    private var needsProfile: Bool {
+        clerk.user != nil && services?.isDemo != true && sync.lastSyncedAt != nil && store.profile == nil
     }
 }
