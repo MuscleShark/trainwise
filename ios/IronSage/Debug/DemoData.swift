@@ -30,6 +30,12 @@ enum DemoData {
         store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 8), (80, 8)])]))
         store.save(workout("Pull", daysAgo: 1, [(row, 150, [(70, 8), (70, 8)]), (pulldown, 120, [(55, 10), (55, 10)]), (curl, 90, [(12, 10), (12, 9)])]))
 
+        // Six earlier weeks, a little lighter each week back.
+        for week in 1...6 {
+            let back = Double(week) * 2.5
+            store.save(workout("Push", daysAgo: 4 + 7 * week, [(bench, 180, [(60 - back, 8), (60 - back, 8), (60 - back, 6)]), (press, 150, [(40 - back / 2, 8), (40 - back / 2, 6)])]))
+            store.save(workout("Legs", daysAgo: 2 + 7 * week, [(squat, 180, [(100 - back * 2, 5), (100 - back * 2, 5), (100 - back * 2, 5)]), (rdl, 150, [(80 - back, 8), (80 - back, 8)])]))
+        }
         fillHealth(store)
     }
 

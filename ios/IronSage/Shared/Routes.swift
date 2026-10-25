@@ -12,3 +12,7 @@ struct TemplateRoute: Hashable {
 }
 
 struct TemplateListRoute: Hashable {}
+
+struct ExerciseRoute: Hashable {
+    let id: UUID
+}
