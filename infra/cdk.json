@@ -3,15 +3,35 @@
   "context": {
     "account": "119033255980",
     "region": "us-east-2",
-    "functionName": "trainwise-api-prod",
-    "migrateFunctionName": "trainwise-migrate-prod",
-    "coachFunctionName": "trainwise-coach-prod",
-    "alarmTopicName": "trainwise-alarms-prod",
-    "frontendUrls": [
-      "https://ironsage.app",
-      "https://www.ironsage.app"
-    ],
-    "ssmParameterPrefix": "/trainwise/prod",
-    "clerkIssuer": "https://helping-ladybug-3945.clerk.accounts.dev"
+    "clerkIssuer": "https://helping-ladybug-3945.clerk.accounts.dev",
+    "environments": {
+      "production": {
+        "stackName": "TrainWiseApi",
+        "functionName": "trainwise-api-prod",
+        "migrateFunctionName": "trainwise-migrate-prod",
+        "coachFunctionName": "trainwise-coach-prod",
+        "alarmTopicName": "trainwise-alarms-prod",
+        "metricNamespace": "IronSage/Coach",
+        "monthlyBudget": true,
+        "frontendUrls": [
+          "https://ironsage.app",
+          "https://www.ironsage.app"
+        ],
+        "ssmParameterPrefix": "/trainwise/prod"
+      },
+      "staging": {
+        "stackName": "TrainWiseApi-staging",
+        "functionName": "trainwise-api-staging",
+        "migrateFunctionName": "trainwise-migrate-staging",
+        "coachFunctionName": "trainwise-coach-staging",
+        "alarmTopicName": "trainwise-alarms-staging",
+        "metricNamespace": "IronSage/Coach-staging",
+        "monthlyBudget": false,
+        "frontendUrls": [
+          "http://localhost:3000"
+        ],
+        "ssmParameterPrefix": "/trainwise/staging"
+      }
+    }
   }
 }

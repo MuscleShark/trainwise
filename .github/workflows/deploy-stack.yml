@@ -1,0 +1,173 @@
+name: Deploy stack
+
+# Deploys one backend stack (infra/, AWS CDK) at one commit, then calls /health.
+# Called by deploy-backend.yml (staging) and promote-production.yml (production).
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment with the AWS keys (staging or production).
+        type: string
+        required: true
+      stack:
+        description: CDK stack to deploy.
+        type: string
+        required: true
+      sha:
+        description: Commit to deploy.
+        type: string
+        required: true
+      package-run-id:
+        description: >-
+          Run whose Lambda package to deploy (production deploys exactly what staging
+          ran). Empty: build the package and keep it as an artifact of this run.
+        type: string
+        default: ""
+      require-main-head:
+        description: >-
+          Deploy only if the commit is still main's newest (staging), so a late or
+          re-run deploy never takes staging back to an older commit.
+        type: boolean
+        default: false
+    outputs:
+      function-url:
+        value: ${{ jobs.deploy.outputs.function-url }}
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  CDK_CLI_VERSION: 2.1146.1
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.stack }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.outputs.outputs.function_url }}
+    outputs:
+      function-url: ${{ steps.outputs.outputs.function_url }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+
+      # Must match the Lambda runtime (python3.11).
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js (CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The backend's dependencies aren't pinned, so a later build could differ from
+      # what staging tested. The package is built once and kept (as a tarball, which
+      # keeps file modes) for the promotion to production.
+      - name: Build Lambda package
+        if: inputs.package-run-id == ''
+        run: |
+          backend/scripts/build_lambda.sh
+          tar -czf lambda-package.tar.gz -C backend/build package
+
+      - name: Keep the Lambda package
+        if: inputs.package-run-id == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package-${{ inputs.sha }}
+          path: lambda-package.tar.gz
+          if-no-files-found: error
+          # A re-run of a failed deploy builds and deploys again, replacing the package.
+          overwrite: true
+
+      - name: Download the Lambda package staging ran
+        if: inputs.package-run-id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-package-${{ inputs.sha }}
+          run-id: ${{ inputs.package-run-id }}
+          github-token: ${{ github.token }}
+
+      - name: Unpack the Lambda package
+        if: inputs.package-run-id != ''
+        run: |
+          mkdir -p backend/build
+          tar -xzf lambda-package.tar.gz -C backend/build
+
+      - name: Install CDK app dependencies
+        working-directory: infra
+        run: pip install -r requirements.txt
+
+      # Access keys of the IAM user trainwise-github-deploy. It may only assume the
+      # CDK bootstrap roles; those roles do the actual deployment.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      # Where the alarm emails go: the environment's variable ALARM_EMAIL.
+      # Kept out of the repository; without it the alarm topic has no subscriber.
+      - name: Check the commit is still main's newest
+        if: inputs.require-main-head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          main=$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)
+          if [ "$SHA" != "$main" ]; then
+            echo "::error::$SHA is no longer main's newest commit ($main); not deploying it."; exit 1
+          fi
+
+      - name: Show changes
+        working-directory: infra
+        env:
+          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
+          STACK: ${{ inputs.stack }}
+        run: npx --yes "aws-cdk@${CDK_CLI_VERSION}" diff "$STACK" -c "alarmEmail=${ALARM_EMAIL}"
+
+      - name: Deploy
+        working-directory: infra
+        env:
+          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
+          STACK: ${{ inputs.stack }}
+        run: >-
+          npx --yes "aws-cdk@${CDK_CLI_VERSION}" deploy "$STACK"
+          -c "alarmEmail=${ALARM_EMAIL}"
+          --require-approval never
+          --outputs-file cdk-outputs.json
+
+      - name: Read stack outputs
+        id: outputs
+        working-directory: infra
+        env:
+          STACK: ${{ inputs.stack }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          url=$(python3 -c "import json, os; print(json.load(open('cdk-outputs.json'))[os.environ['STACK']]['FunctionUrl'])")
+          echo "function_url=$url" >> "$GITHUB_OUTPUT"
+          echo "$STACK at \`$SHA\`: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test
+        env:
+          API_URL: ${{ steps.outputs.outputs.function_url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            status=$(curl -s -o response.json -w '%{http_code}' "${API_URL%/}/health" || true)
+            if [ "$status" = "200" ]; then
+              cat response.json
+              exit 0
+            fi
+            echo "Attempt $attempt: /health returned $status"
+            sleep 5
+          done
+          cat response.json || true
+          exit 1

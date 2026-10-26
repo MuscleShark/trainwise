@@ -349,3 +349,19 @@ def test_monthly_budget_notifies_the_topic(template):
             ],
         },
     )
+
+
+def test_coach_metrics_use_the_given_namespace():
+    template = synth(metric_namespace="IronSage/Coach-test")
+    filters = template.find_resources("AWS::Logs::MetricFilter").values()
+    namespaces = {
+        t["MetricNamespace"] for f in filters for t in f["Properties"]["MetricTransformations"]
+    }
+    assert namespaces == {"IronSage/Coach-test"}
+    alarms = template.find_resources("AWS::CloudWatch::Alarm").values()
+    custom = {a["Properties"]["Namespace"] for a in alarms} - {"AWS/Lambda"}
+    assert custom == {"IronSage/Coach-test"}
+
+
+def test_monthly_budget_can_be_left_out():
+    synth(monthly_budget=False).resource_count_is("AWS::Budgets::Budget", 0)
