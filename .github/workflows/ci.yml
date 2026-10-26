@@ -51,6 +51,23 @@ jobs:
     name: Backend tests
     runs-on: ubuntu-latest
 
+    # The tests run on SQLite with coverage, then again on PostgreSQL, the production
+    # database (row locks, JSON and time zones behave differently there).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: trainwise
+          POSTGRES_PASSWORD: trainwise
+          POSTGRES_DB: trainwise_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U trainwise"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     defaults:
       run:
         working-directory: backend
@@ -75,6 +92,11 @@ jobs:
 
       - name: Run API tests with coverage
         run: pytest -q --cov --cov-report=term --cov-fail-under=90
+
+      - name: Run API tests on PostgreSQL
+        run: pytest -q
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://trainwise:trainwise@localhost:5432/trainwise_test
 
       - name: Add coverage to job summary
         if: ${{ !cancelled() }}
