@@ -65,14 +65,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
+      # Where the alarm emails go: the production environment's variable ALARM_EMAIL.
+      # Kept out of the repository; without it the alarm topic has no subscriber.
       - name: Show changes
         working-directory: infra
-        run: npx --yes "aws-cdk@${CDK_CLI_VERSION}" diff
+        env:
+          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
+        run: npx --yes "aws-cdk@${CDK_CLI_VERSION}" diff -c "alarmEmail=${ALARM_EMAIL}"
 
       - name: Deploy
         working-directory: infra
+        env:
+          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
         run: >-
           npx --yes "aws-cdk@${CDK_CLI_VERSION}" deploy
+          -c "alarmEmail=${ALARM_EMAIL}"
           --require-approval never
           --outputs-file cdk-outputs.json
 

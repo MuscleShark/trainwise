@@ -81,11 +81,20 @@ def handler(event, context):
     load_ssm_parameters(os.getenv("SSM_PARAMETER_PREFIX"), ("DATABASE_URL", "ANTHROPIC_API_KEY"))
     from coach.providers import DEFAULT_MODEL, model
     from database import SessionLocal
+    from models import Recommendation
 
+    line = {"recommendation_id": event["recommendation_id"]}
     with SessionLocal() as db:
-        status = run(db, uuid.UUID(event["recommendation_id"]), model(DEFAULT_MODEL))
-    # One JSON line per run; a CloudWatch metric filter counts the failed ones.
-    print(json.dumps({"recommendation_id": event["recommendation_id"], "status": status}))
+        recommendation_id = uuid.UUID(event["recommendation_id"])
+        status = run(db, recommendation_id, model(DEFAULT_MODEL))
+        line["status"] = status
+        if status == "ready":
+            recommendation = db.get(Recommendation, recommendation_id)
+            line["input_tokens"] = recommendation.input_tokens
+            line["output_tokens"] = recommendation.output_tokens
+    # One JSON line per run; CloudWatch metric filters count the failed ones and the
+    # tokens (infra/trainwise_infra/api_stack.py).
+    print(json.dumps(line))
     return {"status": status}
 
 

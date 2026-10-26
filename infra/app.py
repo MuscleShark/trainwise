@@ -25,6 +25,9 @@ ApiStack(
     frontend_urls=app.node.get_context("frontendUrls"),
     clerk_issuer=app.node.get_context("clerkIssuer"),
     ssm_parameter_prefix=app.node.get_context("ssmParameterPrefix"),
+    alarm_topic_name=app.node.get_context("alarmTopicName"),
+    # Set by the deploy workflow from the GitHub variable ALARM_EMAIL (not in the repo).
+    alarm_email=app.node.try_get_context("alarmEmail") or None,
     env=cdk.Environment(
         account=app.node.get_context("account"),
         region=app.node.get_context("region"),

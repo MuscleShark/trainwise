@@ -6,6 +6,7 @@
     "functionName": "trainwise-api-prod",
     "migrateFunctionName": "trainwise-migrate-prod",
     "coachFunctionName": "trainwise-coach-prod",
+    "alarmTopicName": "trainwise-alarms-prod",
     "frontendUrls": [
       "https://ironsage.app",
       "https://www.ironsage.app"

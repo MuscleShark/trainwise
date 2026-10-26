@@ -8,8 +8,7 @@ from aws_cdk.assertions import Match, Template
 from trainwise_infra.api_stack import ApiStack
 
 
-@pytest.fixture(scope="module")
-def template() -> Template:
+def synth(**kwargs) -> Template:
     app = cdk.App()
     stack = ApiStack(
         app,
@@ -21,9 +20,16 @@ def template() -> Template:
         frontend_urls=["https://example.vercel.app", "http://localhost:3000"],
         clerk_issuer="https://test-instance.clerk.accounts.dev",
         ssm_parameter_prefix="/trainwise/test",
+        alarm_topic_name="trainwise-alarms-test",
         env=cdk.Environment(account="123456789012", region="us-east-2"),
+        **kwargs,
     )
     return Template.from_stack(stack)
+
+
+@pytest.fixture(scope="module")
+def template() -> Template:
+    return synth(alarm_email="alerts@example.com")
 
 
 def test_function_configuration(template):
@@ -166,3 +172,117 @@ def test_logs_are_kept_for_a_month(template):
             "AWS::Logs::LogGroup",
             {"LogGroupName": f"/aws/lambda/{name}", "RetentionInDays": 30},
         )
+
+
+ALARM_NAMES = (
+    "trainwise-coach-test-errors",
+    "trainwise-coach-test-failed-answers",
+    "trainwise-coach-test-daily-calls",
+    "trainwise-api-test-5xx",
+    "trainwise-api-test-throttles",
+    "trainwise-api-test-slow",
+    "trainwise-migrate-test-errors",
+)
+
+
+def test_every_alarm_notifies_the_topic_when_it_goes_off_and_clears(template):
+    (topic_id,) = template.find_resources(
+        "AWS::SNS::Topic", {"Properties": {"TopicName": "trainwise-alarms-test"}}
+    )
+    alarms = template.find_resources("AWS::CloudWatch::Alarm")
+    assert sorted(a["Properties"]["AlarmName"] for a in alarms.values()) == sorted(ALARM_NAMES)
+    for alarm in alarms.values():
+        assert alarm["Properties"]["AlarmActions"] == [{"Ref": topic_id}]
+        assert alarm["Properties"]["OKActions"] == [{"Ref": topic_id}]
+
+
+def test_alarm_email_is_subscribed_only_when_given(template):
+    template.has_resource_properties(
+        "AWS::SNS::Subscription", {"Protocol": "email", "Endpoint": "alerts@example.com"}
+    )
+    synth().resource_count_is("AWS::SNS::Subscription", 0)
+
+
+def test_cloudwatch_and_budgets_may_publish_to_the_topic(template):
+    (policy,) = template.find_resources("AWS::SNS::TopicPolicy").values()
+    statements = policy["Properties"]["PolicyDocument"]["Statement"]
+    services = sorted(s["Principal"]["Service"] for s in statements)
+    assert services == ["budgets.amazonaws.com", "cloudwatch.amazonaws.com"]
+    for statement in statements:
+        assert statement["Action"] == "sns:Publish"
+        assert statement["Condition"] == {
+            "StringEquals": {"aws:SourceAccount": "123456789012"}
+        }
+
+
+def test_api_alarms_watch_5xx_throttles_and_slow_requests(template):
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {
+            "AlarmName": "trainwise-api-test-5xx",
+            "Namespace": "AWS/Lambda",
+            "MetricName": "Url5xxCount",
+            "Dimensions": [{"Name": "FunctionName", "Value": Match.any_value()}],
+            "Statistic": "Sum",
+            "Threshold": 3,
+        },
+    )
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {"AlarmName": "trainwise-api-test-throttles", "MetricName": "Throttles", "Threshold": 1},
+    )
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {
+            "AlarmName": "trainwise-api-test-slow",
+            "MetricName": "Duration",
+            "ExtendedStatistic": "p95",
+            "Threshold": 12_000,
+            "EvaluationPeriods": 3,
+        },
+    )
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {"AlarmName": "trainwise-migrate-test-errors", "MetricName": "Errors"},
+    )
+
+
+def test_coach_tokens_are_counted_from_the_log_line(template):
+    for field, metric_name in (("input_tokens", "InputTokens"), ("output_tokens", "OutputTokens")):
+        template.has_resource_properties(
+            "AWS::Logs::MetricFilter",
+            {
+                "FilterPattern": f"{{ $.{field} >= 0 }}",
+                "MetricTransformations": [
+                    {
+                        "MetricNamespace": "IronSage/Coach",
+                        "MetricName": metric_name,
+                        "MetricValue": f"$.{field}",
+                    }
+                ],
+            },
+        )
+
+
+def test_monthly_budget_notifies_the_topic(template):
+    (topic_id,) = template.find_resources("AWS::SNS::Topic")
+    template.has_resource_properties(
+        "AWS::Budgets::Budget",
+        {
+            "Budget": {
+                "BudgetType": "COST",
+                "TimeUnit": "MONTHLY",
+                "BudgetLimit": {"Amount": 10, "Unit": "USD"},
+            },
+            "NotificationsWithSubscribers": [
+                {
+                    "Notification": {"NotificationType": "ACTUAL", "Threshold": 80},
+                    "Subscribers": [{"SubscriptionType": "SNS", "Address": {"Ref": topic_id}}],
+                },
+                {
+                    "Notification": {"NotificationType": "FORECASTED", "Threshold": 100},
+                    "Subscribers": [{"SubscriptionType": "SNS", "Address": {"Ref": topic_id}}],
+                },
+            ],
+        },
+    )
