@@ -6,7 +6,7 @@ import IronSageStore
 /// Sample data for `-demo` launches (screenshots and trying screens without an account).
 @MainActor
 enum DemoData {
-    static func fill(_ store: LocalStore) {
+    static func fill(_ store: LocalStore, coach: CoachService) {
         let bench = exercise("Barbell bench press", "杠铃卧推", .barbell, .total, [.chest], [.frontDelts, .triceps], ["bench", "卧推"])
         let squat = exercise("Back squat", "杠铃深蹲", .barbell, .total, [.quads, .glutes], [.adductors, .lowerBack], ["squat", "深蹲"])
         let rdl = exercise("Romanian deadlift", "罗马尼亚硬拉", .barbell, .total, [.hamstrings, .glutes], [.lowerBack], ["RDL", "罗马硬拉"])
@@ -42,6 +42,34 @@ enum DemoData {
             store.save(workout("Legs", daysAgo: 2 + 7 * week, [(squat, 180, [(100 - back * 2, 5), (100 - back * 2, 5), (100 - back * 2, 5)]), (rdl, 150, [(80 - back, 8), (80 - back, 8)])]))
         }
         fillHealth(store)
+        fillCoach(store, coach: coach)
+    }
+
+    /// The AI coach turned on, with an answer for the day due next (Legs).
+    private static func fillCoach(_ store: LocalStore, coach: CoachService) {
+        coach.turnOn()
+        guard let day = store.upNext?.day else { return }
+        let today = HealthDays.key(.now)
+        let context = store.nextSessionContext()
+        guard let request = Coach.request(
+            for: day, exercises: store.exercises, context: context,
+            readiness: ReadinessComparison.compare(store.readiness, on: today),
+            profile: store.profile, chinese: AppLanguage.isChinese
+        ) else { return }
+        let chinese = AppLanguage.isChinese
+        let reasons = [
+            chinese ? "上次每组都是 5 次，今天同样重量争取每组 6 次。" : "You got 5 reps on every set last time, so aim for 6 at the same weight.",
+            chinese ? "上次每组都做到了 10 次，今天加一档重量，从 8 次开始。" : "You reached 10 reps on every set, so one step heavier today, starting at 8.",
+        ]
+        let advice = CoachAdvice(
+            summary: chinese ? "睡眠和平时差不多，按计划练：深蹲加次数，硬拉加重量。" : "You slept about as usual, so follow the plan: more squat reps, more deadlift weight.",
+            exercises: request.exercises.enumerated().map { index, plan in
+                .init(exerciseId: plan.exerciseId, action: .follow, reason: reasons[min(index, reasons.count - 1)], sets: plan.plannedSets)
+            },
+            model: "anthropic:claude-sonnet-5-5"
+        )
+        let key = Coach.planKey(day: day, lastWorkout: store.finishedWorkouts.first, readiness: store.readiness[today], request: request)
+        store.save(Recommendation(forDate: today, status: .ready, output: advice, request: request, planKey: key, requestedAt: .now))
     }
 
     /// Five weeks of nights and morning weights, with a little day-to-day noise.

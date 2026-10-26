@@ -8,6 +8,7 @@ struct WorkoutView: View {
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
     @Environment(HealthService.self) private var health
+    @Environment(CoachService.self) private var coach
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focus: SetField?
     @State private var isPickingExercise = false
@@ -112,6 +113,8 @@ struct WorkoutView: View {
                     Task {
                         await health.saveToHealth(workout)
                         await sync.sync()
+                        // The next session's plan just changed.
+                        await coach.refresh()
                     }
                 }
             } message: {
@@ -204,6 +207,7 @@ private struct ExerciseHeader: View {
     let session: WorkoutSession
     let item: WorkoutExercise
     @Environment(LocalStore.self) private var store
+    @Environment(CoachService.self) private var coach
 
     private static let restChoices = [30, 45, 60, 75, 90, 120, 150, 180, 240, 300]
 
@@ -221,9 +225,15 @@ private struct ExerciseHeader: View {
                     if let rest = item.restSeconds {
                         Text("Rest \(Duration.clock(TimeInterval(rest)))")
                     }
-                    if let suggestion {
+                    if let coachAdvice {
+                        Label(coachAdvice.reason, systemImage: "sparkles")
+                            .padding(.top, 2)
+                            .accessibilityLabel(Text("AI coach: \(coachAdvice.reason)"))
+                    } else if let suggestion {
                         Label(suggestion.reason(unit: store.weightUnit), systemImage: suggestion.systemImage)
                             .padding(.top, 2)
+                    }
+                    if let suggestion {
                         if suggestion.isStalled {
                             Label(NextSession.Suggestion.stallNote, systemImage: "exclamationmark.circle")
                         }
@@ -272,6 +282,12 @@ private struct ExerciseHeader: View {
 
     private var suggestion: NextSession.Suggestion? {
         session.suggestion(for: item, template: templateItem)
+    }
+
+    /// The AI coach's reason, when this workout's sets started from its advice.
+    private var coachAdvice: CoachAdvice.Exercise? {
+        guard !session.isEditing, templateItem != nil else { return nil }
+        return coach.appliedAdvice(for: session.workout.id)?.advice(for: item.exerciseId)
     }
 }
 

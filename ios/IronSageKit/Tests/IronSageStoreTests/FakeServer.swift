@@ -90,15 +90,18 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
         exercises: [String] = [],
         bodyMeasurements: [String] = [],
         readiness: [String] = [],
+        recommendations: [String]? = nil,
         profile: String = "null"
     ) -> String {
-        """
+        // Without recommendations, the page looks like one from before the AI coach.
+        let coach = recommendations.map { #", "recommendations": [\#($0.joined(separator: ","))]"# } ?? ""
+        return """
         {"change_seq": \(changeSeq), "has_more": \(hasMore), "profile": \(profile),
          "exercises": [\(exercises.joined(separator: ","))],
          "workouts": [\(workouts.joined(separator: ","))],
          "templates": [\(templates.joined(separator: ","))],
          "body_measurements": [\(bodyMeasurements.joined(separator: ","))],
-         "readiness": [\(readiness.joined(separator: ","))]}
+         "readiness": [\(readiness.joined(separator: ","))]\(coach)}
         """
     }
 

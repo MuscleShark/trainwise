@@ -25,6 +25,8 @@ public final class LocalStore {
     public private(set) var bodyMeasurements: [BodyMeasurement] = []
     /// By date, "2026-10-25".
     public private(set) var readiness: [String: Readiness] = [:]
+    /// The AI coach's requests and advice, newest first.
+    public private(set) var recommendations: [Recommendation] = []
 
     @ObservationIgnored private let context: ModelContext
 
@@ -128,6 +130,40 @@ public final class LocalStore {
         self.profile = profile
     }
 
+    /// Saves a request to the AI coach; the next sync sends it.
+    public func save(_ recommendation: Recommendation) {
+        write(.recommendation, recommendation.id, recommendation)
+        cacheRecommendation(recommendation)
+    }
+
+    /// The newest request for a date, "2026-10-26".
+    public func recommendation(for date: String) -> Recommendation? {
+        recommendations.first { $0.forDate == date }
+    }
+
+    /// Requests not sent yet are cancelled, for example when the coach is turned off:
+    /// nothing goes to the AI after that.
+    public func cancelPendingRecommendations() {
+        for change in pendingChanges() where change.kind == .recommendation {
+            guard var recommendation = try? Wire.decode(Recommendation.self, from: change.payload) else { continue }
+            recommendation.status = .failed
+            recommendation.error = "cancelled"
+            resolveLocally(recommendation)
+        }
+    }
+
+    /// Records an answer the phone worked out itself (the server refused the request),
+    /// without sending anything.
+    func resolveLocally(_ recommendation: Recommendation) {
+        guard let stored = record(.recommendation, recommendation.id),
+              let payload = try? Wire.encode(recommendation)
+        else { return }
+        stored.payload = payload
+        stored.pending = nil
+        persist()
+        cacheRecommendation(recommendation)
+    }
+
     /// Removes everything, for example when another user signs in.
     public func removeAll() {
         do {
@@ -143,6 +179,7 @@ public final class LocalStore {
         profile = nil
         bodyMeasurements = []
         readiness = [:]
+        recommendations = []
     }
 
     // MARK: Sync
@@ -204,15 +241,26 @@ public final class LocalStore {
         case profile(Profile)
         case bodyMeasurement(BodyMeasurement)
         case readiness(Readiness)
+        case recommendation(Recommendation)
     }
 
     /// Applies a change from the server. Local edits not yet uploaded win: they go up on
     /// the next push and replace the server's version.
     func applyRemote(_ value: RemoteValue, id: UUID, changeSeq: Int, deleted: Bool) {
+        var value = value
         let kind = value.kind
         let existing = record(kind, id)
         if existing?.pending != nil {
             return
+        }
+        // The server doesn't send back what was asked; keep the phone's copy of it.
+        if case .recommendation(var remote) = value,
+           let existing, let local = try? Wire.decode(Recommendation.self, from: existing.payload) {
+            remote.request = local.request
+            remote.planKey = local.planKey
+            remote.requestedAt = local.requestedAt
+            remote.sentAt = local.sentAt
+            value = .recommendation(remote)
         }
         if deleted && kind != .exercise {
             if let existing {
@@ -283,6 +331,7 @@ public final class LocalStore {
         profile = nil
         bodyMeasurements = []
         readiness = [:]
+        recommendations = []
         let records = (try? context.fetch(FetchDescriptor<StoredRecord>())) ?? []
         for record in records {
             guard let kind = RecordKind(rawValue: record.kind) else { continue }
@@ -308,6 +357,8 @@ public final class LocalStore {
                 case .readiness:
                     let day = try Wire.decode(Readiness.self, from: record.payload)
                     readiness[day.date] = day
+                case .recommendation:
+                    recommendations.append(try Wire.decode(Recommendation.self, from: record.payload))
                 }
             } catch {
                 log.error("Skipping unreadable \(kind.rawValue, privacy: .public) \(record.recordID, privacy: .public): \(error, privacy: .public)")
@@ -315,6 +366,7 @@ public final class LocalStore {
         }
         workouts.sort { $0.startedAt > $1.startedAt }
         bodyMeasurements.sort { $0.measuredAt > $1.measuredAt }
+        recommendations.sort(by: Self.newestFirst)
         sortTemplates()
     }
 
@@ -390,6 +442,8 @@ public final class LocalStore {
             cacheMeasurement(measurement)
         case .readiness(let day):
             readiness[day.date] = day
+        case .recommendation(let recommendation):
+            cacheRecommendation(recommendation)
         }
     }
 
@@ -401,6 +455,7 @@ public final class LocalStore {
         case .profile: profile = nil
         case .bodyMeasurement: bodyMeasurements.removeAll { $0.id == id }
         case .readiness: readiness = readiness.filter { Self.readinessID($0.key) != id }
+        case .recommendation: recommendations.removeAll { $0.id == id }
         }
     }
 
@@ -414,6 +469,16 @@ public final class LocalStore {
         bodyMeasurements.removeAll { $0.id == measurement.id }
         let index = bodyMeasurements.firstIndex { $0.measuredAt < measurement.measuredAt } ?? bodyMeasurements.endIndex
         bodyMeasurements.insert(measurement, at: index)
+    }
+
+    private func cacheRecommendation(_ recommendation: Recommendation) {
+        recommendations.removeAll { $0.id == recommendation.id }
+        recommendations.append(recommendation)
+        recommendations.sort(by: Self.newestFirst)
+    }
+
+    private static func newestFirst(_ a: Recommendation, _ b: Recommendation) -> Bool {
+        a.forDate != b.forDate ? a.forDate > b.forDate : (a.requestedAt ?? .distantPast) > (b.requestedAt ?? .distantPast)
     }
 
     private func cacheTemplate(_ template: Template) {
@@ -436,6 +501,7 @@ extension LocalStore.RemoteValue {
         case .profile: .profile
         case .bodyMeasurement: .bodyMeasurement
         case .readiness: .readiness
+        case .recommendation: .recommendation
         }
     }
 
@@ -447,6 +513,7 @@ extension LocalStore.RemoteValue {
         case .profile(let value): value
         case .bodyMeasurement(let value): value
         case .readiness(let value): value
+        case .recommendation(let value): value
         }
     }
 }

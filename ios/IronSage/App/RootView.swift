@@ -10,6 +10,7 @@ struct RootView: View {
     @Environment(SyncEngine.self) private var sync
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
+    @Environment(CoachService.self) private var coach
     @Environment(\.services) private var services
     @Environment(\.scenePhase) private var scenePhase
 
@@ -32,12 +33,14 @@ struct RootView: View {
             services?.prepare(forUser: userID)
             await health.importRecent()
             await sync.sync()
+            await coach.refresh()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active, clerk.user != nil, services?.isDemo != true {
                 Task {
                     await health.importRecent()
                     await sync.sync()
+                    await coach.refresh()
                 }
             }
         }

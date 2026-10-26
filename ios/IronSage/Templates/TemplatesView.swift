@@ -108,6 +108,7 @@ private struct TemplateRow: View {
 struct TemplateDetailView: View {
     let templateID: UUID
     @Environment(LocalStore.self) private var store
+    @Environment(CoachService.self) private var coach
     @State private var session: WorkoutSession?
     @State private var isRenaming = false
     @State private var newName = ""
@@ -182,7 +183,12 @@ struct TemplateDetailView: View {
             isBlockedByActiveWorkout = true
             return
         }
-        session = WorkoutSession.start(day, of: template, store: store)
+        let advised = coach.advice(for: day)
+        let started = WorkoutSession.start(day, of: template, store: store, advice: advised?.output)
+        if let advised {
+            coach.recordApplied(advised, to: started.workout.id)
+        }
+        session = started
     }
 }
 

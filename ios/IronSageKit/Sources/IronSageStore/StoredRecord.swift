@@ -5,6 +5,7 @@ enum RecordKind: String, Sendable {
     case exercise, workout, template, profile
     case bodyMeasurement = "body_measurement"
     case readiness
+    case recommendation
 
     /// Records that others refer to go up first.
     var uploadOrder: Int {
@@ -15,6 +16,8 @@ enum RecordKind: String, Sendable {
         case .workout: 3
         case .bodyMeasurement: 4
         case .readiness: 5
+        // After the readiness it may describe.
+        case .recommendation: 6
         }
     }
 }

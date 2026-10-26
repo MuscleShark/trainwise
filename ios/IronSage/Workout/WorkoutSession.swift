@@ -47,14 +47,16 @@ final class WorkoutSession: Identifiable {
         return suggestion
     }
 
-    /// Starts a workout that follows a template day, with the suggested sets.
-    static func start(_ day: TemplateDay, of template: Template, store: LocalStore) -> WorkoutSession {
+    /// Starts a workout that follows a template day, with the suggested sets, adjusted
+    /// by the AI coach's advice when there is some for this day.
+    static func start(_ day: TemplateDay, of template: Template, store: LocalStore, advice: CoachAdvice? = nil) -> WorkoutSession {
+        let planned = WorkoutLog.exercises(for: day, exercises: store.exercises, context: store.nextSessionContext())
         let title = template.days.count > 1
             ? "\(template.name(chinese: AppLanguage.isChinese)) · \(day.name(chinese: AppLanguage.isChinese))"
             : template.name(chinese: AppLanguage.isChinese)
         return start(
             title: String(title.prefix(120)),
-            exercises: WorkoutLog.exercises(for: day, exercises: store.exercises, context: store.nextSessionContext()),
+            exercises: advice.map { Coach.applying($0, to: planned) } ?? planned,
             templateID: template.id,
             store: store
         )

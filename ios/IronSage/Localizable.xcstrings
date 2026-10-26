@@ -191,6 +191,26 @@
         }
       }
     },
+    "AI coach" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练"
+          }
+        }
+      }
+    },
+    "AI coach: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练：%@"
+          }
+        }
+      }
+    },
     "All exercises" : {
       "localizations" : {
         "zh-Hans" : {
@@ -481,6 +501,16 @@
         }
       }
     },
+    "Daily summaries of sleep, heart rate variability and resting heart rate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "睡眠、心率变异性和静息心率的每日汇总"
+          }
+        }
+      }
+    },
     "Date" : {
       "localizations" : {
         "zh-Hans" : {
@@ -721,6 +751,16 @@
         }
       }
     },
+    "Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每条建议都会显示它所依据的数据。你可以随时在设置中关闭 AI 教练。"
+          }
+        }
+      }
+    },
     "Exercise options" : {
       "localizations" : {
         "zh-Hans" : {
@@ -881,6 +921,16 @@
         }
       }
     },
+    "Get the AI coach's take on this session" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "让 AI 教练看看这次训练"
+          }
+        }
+      }
+    },
     "Glutes" : {
       "localizations" : {
         "zh-Hans" : {
@@ -997,6 +1047,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "IronSage 训练计划"
+          }
+        }
+      }
+    },
+    "Keep on" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持开启"
           }
         }
       }
@@ -1341,6 +1401,16 @@
         }
       }
     },
+    "Nothing is sent to Anthropic." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不会向 Anthropic 发送任何数据。"
+          }
+        }
+      }
+    },
     "Obliques" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1651,6 +1721,16 @@
         }
       }
     },
+    "Sends your recent training and daily health summaries to Anthropic to prepare suggestions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会把你最近的训练和每日健康汇总发给 Anthropic，用于生成建议。"
+          }
+        }
+      }
+    },
     "Set" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1921,6 +2001,16 @@
         }
       }
     },
+    "The AI coach is looking at your plan…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练正在看你的计划…"
+          }
+        }
+      }
+    },
     "The exercise list downloads the first time IronSage connects." : {
       "localizations" : {
         "zh-Hans" : {
@@ -1957,6 +2047,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "力竭组"
+          }
+        }
+      }
+    },
+    "To suggest your next weights and reps, IronSage sends this to Anthropic, the company that makes the Claude AI model:" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为了建议你下次的重量和次数，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）："
           }
         }
       }
@@ -2011,6 +2111,16 @@
         }
       }
     },
+    "Training guidance, not medical advice. Stop if something hurts." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅为训练建议，不构成医疗建议。如有疼痛请停止训练。"
+          }
+        }
+      }
+    },
     "Traps" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2027,6 +2137,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "肱三头肌"
+          }
+        }
+      }
+    },
+    "Turn off" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "Turn off the AI coach?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭 AI 教练？"
+          }
+        }
+      }
+    },
+    "Turn on AI coach" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启 AI 教练"
+          }
+        }
+      }
+    },
+    "Turn on the AI coach?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启 AI 教练？"
           }
         }
       }
@@ -2057,6 +2207,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上背"
+          }
+        }
+      }
+    },
+    "Usual %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平时 %@"
           }
         }
       }
@@ -2151,6 +2311,16 @@
         }
       }
     },
+    "What the AI coach used" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练依据的数据"
+          }
+        }
+      }
+    },
     "Working set" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2207,6 +2377,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你昨晚睡得少，今天不加重量。"
+          }
+        }
+      }
+    },
+    "You'll stop getting suggestions, and IronSage stops sending data to Anthropic. Past suggestions stay in your history." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你将不再收到建议，IronSage 也会停止向 Anthropic 发送数据。以前的建议仍保留在历史记录中。"
+          }
+        }
+      }
+    },
+    "Your account doesn't have the AI coach yet." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的账户还没有开通 AI 教练。"
+          }
+        }
+      }
+    },
+    "Your experience, goal and units" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练经验、目标和单位"
+          }
+        }
+      }
+    },
+    "Your experience, goal and units were sent too. Your name and email address never are." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同时发送了你的训练经验、目标和单位。不会发送你的姓名和邮箱地址。"
+          }
+        }
+      }
+    },
+    "Your name and email address are never sent." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不会发送你的姓名和邮箱地址。"
+          }
+        }
+      }
+    },
+    "Your recent sets for the exercises in the suggestion" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本次建议涉及动作的最近训练组"
           }
         }
       }
