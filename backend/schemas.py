@@ -359,4 +359,6 @@ class SyncResponse(BaseModel):
     templates: list[TemplateRead]
     body_measurements: list[BodyMeasurementRead]
     readiness: list[ReadinessRead]
-    recommendations: list[RecommendationRead]
+    # Optional in the contract, so an app built before the coach decodes a page
+    # without it (and an older backend's pages decode in a newer app).
+    recommendations: list[RecommendationRead] = Field(default_factory=list)

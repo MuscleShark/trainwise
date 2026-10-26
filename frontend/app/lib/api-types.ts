@@ -882,7 +882,7 @@ export interface components {
             /** Readiness */
             readiness: components["schemas"]["ReadinessRead"][];
             /** Recommendations */
-            recommendations: components["schemas"]["RecommendationRead"][];
+            recommendations?: components["schemas"]["RecommendationRead"][];
             /** Templates */
             templates: components["schemas"]["TemplateRead"][];
             /** Workouts */

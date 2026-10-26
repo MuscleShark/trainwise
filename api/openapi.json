@@ -1438,8 +1438,7 @@
           "workouts",
           "templates",
           "body_measurements",
-          "readiness",
-          "recommendations"
+          "readiness"
         ],
         "title": "SyncResponse",
         "type": "object"
