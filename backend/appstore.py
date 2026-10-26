@@ -178,8 +178,17 @@ class Transaction:
     environment: str
     purchased_at: datetime
     expires_at: datetime
+    # When Apple signed this copy. A refund produces a newer copy of the same transaction.
+    signed_at: datetime
     # Set when Apple refunded the purchase or Family Sharing access ended.
     revoked_at: datetime | None
+    # introductory, promotional, offer_code or win_back; None at the regular price.
+    offer_type: str | None = None
+    offer_identifier: str | None = None
+
+
+# The transaction's `offerType`.
+OFFER_TYPES = {1: "introductory", 2: "promotional", 3: "offer_code", 4: "win_back"}
 
 
 def verify_transaction(jws: str) -> Transaction:
@@ -207,8 +216,15 @@ def verify_transaction(jws: str) -> Transaction:
         environment=str(payload.get("environment", "Production")),
         purchased_at=purchased_at,
         expires_at=expires_at,
+        signed_at=_timestamp(payload.get("signedDate")) or purchased_at,
         revoked_at=_timestamp(payload.get("revocationDate")),
+        offer_type=OFFER_TYPES.get(payload.get("offerType")),
+        offer_identifier=_offer_identifier(payload.get("offerIdentifier")),
     )
+
+
+def _offer_identifier(value: object) -> str | None:
+    return value[:100] if isinstance(value, str) and value else None
 
 
 @dataclass(frozen=True)
@@ -218,7 +234,9 @@ class Notification:
     notification_type: str
     subtype: str | None
     transaction: Transaction | None
-    # While Apple retries a failed renewal the subscriber keeps access until then.
+    # Whether it carried renewal info, and the billing grace period from it: while
+    # Apple retries a failed renewal the subscriber keeps access until then.
+    has_renewal_info: bool
     grace_period_expires_at: datetime | None
 
 
@@ -231,6 +249,7 @@ def verify_notification(signed_payload: str) -> Notification:
     if isinstance(data.get("signedTransactionInfo"), str):
         transaction = verify_transaction(data["signedTransactionInfo"])
     grace_period_expires_at = None
+    has_renewal_info = isinstance(data.get("signedRenewalInfo"), str)
     if isinstance(data.get("signedRenewalInfo"), str):
         renewal = decode(data["signedRenewalInfo"], allow_xcode=accepts_xcode())
         grace_period_expires_at = _timestamp(renewal.get("gracePeriodExpiresDate"))
@@ -238,5 +257,6 @@ def verify_notification(signed_payload: str) -> Notification:
         notification_type=str(payload.get("notificationType", "")),
         subtype=payload.get("subtype"),
         transaction=transaction,
+        has_renewal_info=has_renewal_info,
         grace_period_expires_at=grace_period_expires_at,
     )

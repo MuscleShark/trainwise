@@ -41,6 +41,16 @@
         }
       }
     },
+    "Confirm your IronSage Coach subscription" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认你的 IronSage 教练订阅"
+          }
+        }
+      }
+    },
     "Couldn't reach the App Store. Check your connection and try again." : {
       "localizations" : {
         "zh-Hans" : {
@@ -141,6 +151,16 @@
         }
       }
     },
+    "Redeem code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兑换优惠码"
+          }
+        }
+      }
+    },
     "Renews %@" : {
       "localizations" : {
         "zh-Hans" : {
@@ -237,6 +257,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AI 教练需要订阅 IronSage 教练。建议的重量和次数依然免费。"
+          }
+        }
+      }
+    },
+    "The code couldn't be redeemed. Check it and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法兑换这个优惠码。请检查后重试。"
           }
         }
       }
@@ -2737,6 +2767,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本次建议涉及动作的最近训练组"
+          }
+        }
+      }
+    },
+    "Your subscription couldn't be confirmed with IronSage yet. Use Restore purchases on the subscription page to try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 暂时无法确认你的订阅。请在订阅页面使用“恢复购买”重试。"
+          }
+        }
+      }
+    },
+    "Your subscription was found but couldn't be confirmed with IronSage yet. Check your connection and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已找到你的订阅，但 IronSage 暂时无法确认。请检查网络后重试。"
           }
         }
       }

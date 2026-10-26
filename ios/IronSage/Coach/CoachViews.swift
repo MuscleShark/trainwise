@@ -113,7 +113,14 @@ struct CoachUpNextRow: View {
 
     var body: some View {
         Group {
-            if coach.isEnabled && coach.isUnavailable && !subscriptions.hasAccess {
+            if coach.isEnabled && coach.isUnavailable && subscriptions.needsConfirmation {
+                Button {
+                    // Gaining access asks the coach again (SubscriptionService.onAccessGained).
+                    Task { try? await subscriptions.restore() }
+                } label: {
+                    Label("Confirm your IronSage Coach subscription", systemImage: "arrow.clockwise")
+                }
+            } else if coach.isEnabled && coach.isUnavailable && !subscriptions.hasAccess {
                 Button {
                     showsPaywall = true
                 } label: {
@@ -241,6 +248,7 @@ struct CoachSettingsSection: View {
     @State private var isConfirmingOff = false
     @State private var showsPaywall = false
     @State private var managesSubscription = false
+    @State private var redeemsCode = false
 
     var body: some View {
         Section {
@@ -287,6 +295,12 @@ struct CoachSettingsSection: View {
                 Button("Subscribe to IronSage Coach") { showsPaywall = true }
                     .sheet(isPresented: $showsPaywall) { PaywallSheet() }
             }
+            if !subscriptions.serverAccess || subscriptions.entitlement != nil {
+                Button("Redeem code") { redeemsCode = true }
+                    .offerCodeRedemption(isPresented: $redeemsCode) { _ in
+                        Task { await subscriptions.refresh() }
+                    }
+            }
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(coach.isEnabled
@@ -294,6 +308,8 @@ struct CoachSettingsSection: View {
                     : "Nothing is sent to Anthropic.")
                 if subscriptions.isLinkedElsewhere {
                     Text("This Apple Account's subscription is linked to another IronSage account.")
+                } else if subscriptions.needsConfirmation {
+                    Text("Your subscription couldn't be confirmed with IronSage yet. Use Restore purchases on the subscription page to try again.")
                 } else if coach.isUnavailable && !subscriptions.hasAccess {
                     Text("The AI coach needs an IronSage Coach subscription. Suggested weights and reps stay free.")
                 }

@@ -249,9 +249,10 @@ export interface paths {
          * Put Subscription
          * @description Records a coach subscription the phone bought or restored.
          *
-         *     The phone sends the transaction StoreKit signed after each purchase, restore or
-         *     renewal it sees. It is verified against Apple's root certificate, so a forged or
-         *     altered one is refused (400). An expired one is stored and reported as expired.
+         *     The phone sends the transaction StoreKit signed after each purchase, restore,
+         *     redeemed offer code or renewal it sees. It is verified against Apple's root
+         *     certificate, so a forged or altered one is refused (400). An expired one is stored
+         *     and reported as expired.
          *     409 when the same App Store subscription is already linked to another account.
          */
         put: operations["putSubscription"];
@@ -939,6 +940,11 @@ export interface components {
              * Format: date-time
              */
             expires_at: string | null;
+            /**
+             * Offer Type
+             * @enum {string|null}
+             */
+            offer_type: "introductory" | "promotional" | "offer_code" | "win_back" | null;
             /** Product Id */
             product_id: string | null;
             /**

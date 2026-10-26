@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -65,7 +65,11 @@ def delete_me(
     db.execute(delete(BodyMeasurement).where(BodyMeasurement.user_id == current_user.id))
     db.execute(delete(DailyReadiness).where(DailyReadiness.user_id == current_user.id))
     db.execute(delete(Recommendation).where(Recommendation.user_id == current_user.id))
-    db.execute(delete(Subscription).where(Subscription.user_id == current_user.id))
+    # Unlinked, not deleted: the App Store subscription itself lives on (the user
+    # cancels it in Settings), and a refunded one must not be claimed again.
+    db.execute(
+        update(Subscription).where(Subscription.user_id == current_user.id).values(user_id=None)
+    )
     db.execute(delete(Profile).where(Profile.user_id == current_user.id))
     db.execute(delete(Exercise).where(Exercise.owner_user_id == current_user.id))
     db.delete(current_user)

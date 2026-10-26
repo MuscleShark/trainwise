@@ -45,7 +45,7 @@ def ask_coach(client, email=EMAIL):
 def stored(email=EMAIL) -> Subscription | None:
     with TestingSessionLocal() as db:
         user = db.scalar(select(User).where(User.email == email))
-        return user and db.get(Subscription, user.id)
+        return user and db.scalar(select(Subscription).where(Subscription.user_id == user.id))
 
 
 # Apple's root
@@ -89,6 +89,7 @@ def test_no_subscription(client, store):
         "product_id": None,
         "expires_at": None,
         "environment": None,
+        "offer_type": None,
         "coach_access": False,
     }
 
@@ -185,6 +186,32 @@ def test_an_older_transaction_does_not_shorten_the_subscription(client, store):
     )["transactionId"]
 
 
+def test_the_free_trial_is_recorded_as_the_introductory_offer(client, store):
+    assert put(client, store.transaction()).json()["offer_type"] == "introductory"
+    assert stored().offer_identifier is None
+
+
+def test_a_redeemed_offer_code_is_recorded(client, store, started):
+    response = put(
+        client,
+        store.transaction(offerType=3, offerIdentifier="LAUNCH50", productId=YEARLY),
+    )
+
+    assert response.json()["status"] == "active"
+    assert response.json()["offer_type"] == "offer_code"
+    assert stored().offer_identifier == "LAUNCH50"
+    assert ask_coach(client).status_code == 200
+
+
+def test_a_renewal_at_the_regular_price_clears_the_offer(client, store):
+    put(client, store.transaction(offerType=3, offerIdentifier="LAUNCH50"))
+    response = put(client, store.transaction(
+        offerType=None, expiresDate=now_ms() + 30 * DAY_MS
+    ))
+    assert response.json()["offer_type"] is None
+    assert stored().offer_identifier is None
+
+
 def test_a_renewal_to_yearly_updates_the_product(client, store):
     put(client, store.transaction())
     response = put(client, store.transaction(productId=YEARLY, expiresDate=now_ms() + 365 * DAY_MS))
@@ -218,11 +245,67 @@ def test_a_refunded_transaction_revokes_access(client, store, started):
     assert ask_coach(client).status_code == 402
 
 
-def test_deleting_the_account_removes_the_subscription(client, store):
+def test_deleting_the_account_unlinks_the_subscription(client, store):
     put(client, store.transaction())
     assert client.delete("/v1/me", headers=auth_headers(EMAIL)).status_code == 204
     with TestingSessionLocal() as db:
-        assert db.scalar(select(Subscription)) is None
+        assert db.scalar(select(Subscription)).user_id is None
+
+    # The same Apple Account can link it to a new IronSage account.
+    response = put(client, store.transaction(), email="new.account@example.com")
+    assert response.json()["status"] == "active"
+
+
+def test_a_saved_copy_from_before_a_refund_does_not_restore_access(client, store, started):
+    purchase = store.transaction_payload(signedDate=now_ms() - 60_000)
+    saved = store.sign(purchase)
+    put(client, saved)
+    refunded = store.transaction(
+        transactionId=purchase["transactionId"], revocationDate=now_ms()
+    )
+    notify(client, store.notification("REFUND", transaction=refunded))
+
+    assert put(client, saved).json()["status"] == "revoked"
+    assert ask_coach(client).status_code == 402
+    # Nor on a new account after deleting this one.
+    client.delete("/v1/me", headers=auth_headers(EMAIL))
+    assert put(client, saved, email="again@example.com").json()["status"] == "revoked"
+
+
+def test_a_refund_reversal_restores_access(client, store):
+    purchase = store.transaction_payload(signedDate=now_ms() - 60_000)
+    put(client, store.sign(purchase))
+    put(client, store.transaction(transactionId=purchase["transactionId"], revocationDate=now_ms()))
+    assert get(client)["status"] == "revoked"
+
+    reversed_ = store.transaction(transactionId=purchase["transactionId"])
+    notify(client, store.notification("REFUND_REVERSED", transaction=reversed_))
+
+    assert get(client)["status"] == "active"
+
+
+def test_a_concurrent_first_request_is_retried(client, store, monkeypatch):
+    from sqlalchemy.exc import IntegrityError
+
+    from routers import subscription as subscription_router
+
+    real_link = subscription_router.link
+    calls = []
+
+    def racing_link(*args):
+        calls.append(1)
+        if len(calls) == 1:
+            raise IntegrityError("INSERT", {}, Exception("duplicate key"))
+        real_link(*args)
+
+    monkeypatch.setattr(subscription_router, "link", racing_link)
+    assert put(client, store.transaction()).status_code == 200
+
+    def always_conflicting(*args):
+        raise IntegrityError("INSERT", {}, Exception("duplicate key"))
+
+    monkeypatch.setattr(subscription_router, "link", always_conflicting)
+    assert put(client, store.transaction()).status_code == 409
 
 
 # Xcode's StoreKit testing
@@ -366,7 +449,20 @@ def test_the_billing_grace_period_keeps_access(client, store, started):
     ))
 
     assert get(client)["status"] == "active"
-    assert stored().expires_at.timestamp() == pytest.approx(grace / 1000)
+    assert stored().access_until.timestamp() == pytest.approx(grace / 1000)
+    # The phone still has the lapsed transaction and sends it again: access stays.
+    resent = store.transaction(
+        expiresDate=now_ms() - 1, transactionId=stored().transaction_id, signedDate=now_ms() + 1
+    )
+    assert put(client, resent).json()["status"] == "active"
+    assert ask_coach(client).status_code == 200
+
+    notify(client, store.notification(
+        "GRACE_PERIOD_EXPIRED",
+        transaction=resent,
+        renewal={"originalTransactionId": "2000000000000001"},
+    ))
+    assert get(client)["status"] == "expired"
 
 
 def test_a_notification_for_an_unclaimed_subscription_is_accepted_and_ignored(client, store):

@@ -166,8 +166,9 @@ The API verifies App Store transactions against Apple's root certificate, so it 
    ```
 
    Then send a test notification from App Store Connect; the API answers 200 and logs `App Store notification TEST` in CloudWatch.
-4. Test on a real iPhone with a Sandbox account (Settings › Developer › Sandbox Apple Account). Sandbox renews monthly plans every 5 minutes, so expiry is quick to see.
-5. In the App Store listing, put the Terms of Use (Apple's standard EULA is used) and the privacy policy links in the description or the EULA field, as Guideline 3.1.2 asks.
+4. Offer codes (promotions): under each subscription › Offer Codes, create an offer (for example half off the first year) and generate one-time or custom codes. Nothing changes in the app or the API: users redeem them with "Redeem code", and the API records the offer on the subscription.
+5. Test on a real iPhone with a Sandbox account (Settings › Developer › Sandbox Apple Account). Sandbox renews monthly plans every 5 minutes, so expiry is quick to see.
+6. In the App Store listing, put the Terms of Use (Apple's standard EULA is used) and the privacy policy links in the description or the EULA field, as Guideline 3.1.2 asks.
 
 ## Day-to-day
 

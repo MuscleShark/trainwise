@@ -1412,6 +1412,20 @@
               "null"
             ]
           },
+          "offer_type": {
+            "enum": [
+              "introductory",
+              "promotional",
+              "offer_code",
+              "win_back",
+              null
+            ],
+            "title": "Offer Type",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "product_id": {
             "title": "Product Id",
             "type": [
@@ -1435,6 +1449,7 @@
           "product_id",
           "expires_at",
           "environment",
+          "offer_type",
           "coach_access"
         ],
         "title": "SubscriptionRead",
@@ -3059,7 +3074,7 @@
         ]
       },
       "put": {
-        "description": "Records a coach subscription the phone bought or restored.\n\nThe phone sends the transaction StoreKit signed after each purchase, restore or\nrenewal it sees. It is verified against Apple's root certificate, so a forged or\naltered one is refused (400). An expired one is stored and reported as expired.\n409 when the same App Store subscription is already linked to another account.",
+        "description": "Records a coach subscription the phone bought or restored.\n\nThe phone sends the transaction StoreKit signed after each purchase, restore,\nredeemed offer code or renewal it sees. It is verified against Apple's root\ncertificate, so a forged or altered one is refused (400). An expired one is stored\nand reported as expired.\n409 when the same App Store subscription is already linked to another account.",
         "operationId": "putSubscription",
         "requestBody": {
           "content": {

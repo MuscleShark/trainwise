@@ -48,7 +48,20 @@
 
           ],
           "codeOffers" : [
-
+            {
+              "displayPrice" : "19.99",
+              "eligibility" : [
+                "new",
+                "expired"
+              ],
+              "internalID" : "6754000022",
+              "isStackable" : false,
+              "numberOfPeriods" : 1,
+              "offerID" : "COACHYEAR50",
+              "paymentMode" : "payUpFront",
+              "referenceName" : "Half off the first year",
+              "subscriptionPeriod" : "P1Y"
+            }
           ],
           "displayPrice" : "39.99",
           "familyShareable" : false,
@@ -86,7 +99,20 @@
 
           ],
           "codeOffers" : [
-
+            {
+              "displayPrice" : "2.49",
+              "eligibility" : [
+                "new",
+                "expired"
+              ],
+              "internalID" : "6754000021",
+              "isStackable" : false,
+              "numberOfPeriods" : 3,
+              "offerID" : "COACHMONTH50",
+              "paymentMode" : "payAsYouGo",
+              "referenceName" : "Half off the first three months",
+              "subscriptionPeriod" : "P1M"
+            }
           ],
           "displayPrice" : "4.99",
           "familyShareable" : false,

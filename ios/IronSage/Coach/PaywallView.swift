@@ -13,6 +13,7 @@ struct PaywallView: View {
     @State private var selectedID = SubscriptionService.yearly
     @State private var isWorking = false
     @State private var message: LocalizedStringResource?
+    @State private var redeemsCode = false
 
     /// Apple's standard license agreement, used instead of a custom EULA.
     static let termsOfUse = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
@@ -73,8 +74,13 @@ struct PaywallView: View {
                 }
                 .buttonStyle(BrandPrimaryButtonStyle())
                 .disabled(selected == nil || isWorking)
-                Button("Restore purchases") {
-                    Task { await restore() }
+                HStack(spacing: 24) {
+                    Button("Restore purchases") {
+                        Task { await restore() }
+                    }
+                    Button("Redeem code") {
+                        redeemsCode = true
+                    }
                 }
                 .disabled(isWorking)
                 .padding(.vertical, 8)
@@ -85,6 +91,11 @@ struct PaywallView: View {
         }
         .background(Color.appBackground)
         .task { await subscriptions.loadProducts() }
+        // A redeemed offer code arrives as a transaction through Transaction.updates,
+        // which SubscriptionService sends to the server like any purchase.
+        .offerCodeRedemption(isPresented: $redeemsCode) { result in
+            Task { await redeemed(result) }
+        }
         .alert(
             Text(message ?? ""),
             isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })
@@ -180,14 +191,29 @@ struct PaywallView: View {
         defer { isWorking = false }
         do {
             try await subscriptions.restore()
+        } catch StoreKitError.userCancelled {
+            return
         } catch {
             message = "Couldn't reach the App Store. Check your connection and try again."
             return
         }
-        if subscriptions.hasAccess {
+        if subscriptions.hasAccess || subscriptions.isLinkedElsewhere {
             finish()
+        } else if subscriptions.needsConfirmation {
+            message = "Your subscription was found but couldn't be confirmed with IronSage yet. Check your connection and try again."
         } else {
             message = "No IronSage Coach subscription was found for this Apple Account."
+        }
+    }
+
+    private func redeemed(_ result: Result<Void, any Error>) async {
+        guard case .success = result else {
+            message = "The code couldn't be redeemed. Check it and try again."
+            return
+        }
+        await subscriptions.refresh()
+        if subscriptions.hasAccess {
+            finish()
         }
     }
 

@@ -50,10 +50,22 @@ final class SubscriptionService {
     private(set) var serverAccess = false
     /// This Apple Account's subscription is linked to another IronSage account.
     private(set) var isLinkedElsewhere = false
+    /// The server has answered since launch, so `serverAccess` is known.
+    private(set) var hasServerAnswer = false
 
-    /// Subscribed on this Apple Account and linked to this IronSage account, or allowed by the server.
+    /// May use the coach. The server decides once it has answered (it checks Apple's
+    /// signature and sees refunds and the grace period); until then, or offline, or in
+    /// demo mode, this Apple Account's entitlement counts.
     var hasAccess: Bool {
-        (entitlement != nil && !isLinkedElsewhere) || serverAccess
+        if hasServerAnswer || isLinkedElsewhere {
+            return serverAccess
+        }
+        return entitlement != nil
+    }
+
+    /// Subscribed in the App Store, but the server hasn't accepted it (yet).
+    var needsConfirmation: Bool {
+        entitlement != nil && !hasAccess && !isLinkedElsewhere
     }
 
     /// Called when the account gains access, for example after a purchase, a restore or
@@ -63,6 +75,8 @@ final class SubscriptionService {
     @ObservationIgnored private let api: (any APIProtocol)?
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var updates: Task<Void, Never>?
+    /// The first refresh after launch only learns the state; it doesn't count as gaining access.
+    @ObservationIgnored private var hasRefreshed = false
 
     private enum Keys {
         /// The last transaction the server accepted, so it isn't sent on every launch.
@@ -129,9 +143,10 @@ final class SubscriptionService {
     func refresh() async {
         let hadAccess = hasAccess
         defer {
-            if !hadAccess && hasAccess {
+            if hasRefreshed && !hadAccess && hasAccess {
                 onAccessGained()
             }
+            hasRefreshed = true
         }
         var latest: (entitlement: Entitlement, jws: String, id: UInt64)?
         for await result in Transaction.currentEntitlements {
@@ -168,6 +183,8 @@ final class SubscriptionService {
     func reset() {
         serverAccess = false
         isLinkedElsewhere = false
+        hasServerAnswer = false
+        hasRefreshed = false
         defaults.removeObject(forKey: Keys.sent)
     }
 
@@ -192,11 +209,12 @@ final class SubscriptionService {
             case .ok(let ok):
                 let read = try ok.body.json
                 serverAccess = read.coachAccess
+                hasServerAnswer = true
                 isLinkedElsewhere = false
                 defaults.set(String(transactionID), forKey: Keys.sent)
             case .undocumented(statusCode: 409, _):
                 isLinkedElsewhere = true
-            case .unprocessableContent:
+            case .unprocessableContent, .undocumented(statusCode: 400, _):
                 log.error("The server refused the transaction as invalid")
             case .undocumented(let status, _):
                 log.error("Sending the transaction failed with \(status)")
@@ -212,6 +230,7 @@ final class SubscriptionService {
         do {
             if case .ok(let ok) = try await api.getSubscription() {
                 serverAccess = try ok.body.json.coachAccess
+                hasServerAnswer = true
             }
         } catch {
             log.error("Reading the subscription failed: \(String(describing: error), privacy: .public)")

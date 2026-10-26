@@ -361,6 +361,9 @@ class SubscriptionRead(BaseModel):
     product_id: str | None
     expires_at: datetime | None
     environment: str | None
+    # The offer the current period came from: introductory (free trial), promotional,
+    # offer_code (a redeemed promotion code) or win_back; null at the regular price.
+    offer_type: Literal["introductory", "promotional", "offer_code", "win_back"] | None
     # True with an active subscription, or for test accounts allowed by hand.
     coach_access: bool
 

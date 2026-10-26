@@ -349,29 +349,45 @@ class Recommendation(SyncedMixin, Base):
 
 
 class Subscription(Base):
-    """The user's App Store subscription to the AI coach: one entitlement per user.
+    """An App Store subscription to the AI coach, and the account it belongs to.
 
-    Written from signed transactions the phone sends after a purchase or restore
-    (PUT /v1/subscription) and from App Store Server Notifications (renewals, expiries,
-    refunds). An original transaction id stays the same across renewals and belongs
-    to one account.
+    Written from signed transactions the phone sends after a purchase, restore or
+    redeemed code (PUT /v1/subscription) and from App Store Server Notifications
+    (renewals, expiries, refunds). The original transaction id stays the same across
+    renewals; it belongs to at most one account, and an account has at most one.
+    Deleting the account only unlinks the row (user_id null), so a refunded purchase
+    can't be claimed again by a new account.
     """
 
     __tablename__ = "subscriptions"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    original_transaction_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), unique=True)
     product_id: Mapped[str] = mapped_column(String(100), nullable=False)
-    original_transaction_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    # The latest transaction applied, a renewal or the purchase.
+    # The latest transaction applied (the purchase or a renewal) and when Apple signed
+    # that copy of it: an older copy of the same transaction never overrides a newer one.
     transaction_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    signed_at: Mapped[datetime] = mapped_column(UtcDateTime, nullable=False)
     # Production, Sandbox (TestFlight and App Review) or Xcode (local testing only).
     environment: Mapped[str] = mapped_column(String(20), nullable=False)
     # active, expired or revoked (refunded), as of the last update; read it through
-    # subscription_status(), which also looks at expires_at.
+    # subscription_status(), which also looks at the dates.
     status: Mapped[str] = mapped_column(String(10), nullable=False)
-    # End of the paid or trial period, or of the billing grace period.
+    # The offer the latest transaction used, if any: introductory (the free trial),
+    # promotional, offer_code (a redeemed promotion code) or win_back, and for codes
+    # and promotions the offer's identifier from App Store Connect.
+    offer_type: Mapped[str | None] = mapped_column(String(20))
+    offer_identifier: Mapped[str | None] = mapped_column(String(100))
+    # End of the paid or trial period of the latest transaction.
     expires_at: Mapped[datetime] = mapped_column(UtcDateTime, nullable=False)
+    # While Apple retries a failed renewal (billing grace period) access lasts until
+    # then. Only notifications set it; the phone's copy of the transaction doesn't know.
+    grace_period_expires_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         UtcDateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
+
+    @property
+    def access_until(self) -> datetime:
+        return max(filter(None, (self.expires_at, self.grace_period_expires_at)))

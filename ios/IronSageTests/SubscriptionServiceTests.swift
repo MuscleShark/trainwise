@@ -30,18 +30,45 @@ final class SubscriptionServiceTests: XCTestCase {
         session?.clearTransactions()
     }
 
-    func testProductsShowPriceAndFreeTrial() {
+    /// StoreKit's test session applies changes asynchronously: refreshes until `condition` holds.
+    private func refresh(until condition: () -> Bool, timeout: Duration = .seconds(15)) async {
+        let deadline = ContinuousClock.now + timeout
+        await service.refresh()
+        while !condition(), ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(500))
+            await service.refresh()
+        }
+    }
+
+    func testProductsShowPriceAndFreeTrial() async {
         XCTAssertEqual(service.products.map(\.id), [SubscriptionService.yearly, SubscriptionService.monthly])
         XCTAssertEqual(service.products.map(\.displayPrice), ["$39.99", "$4.99"])
         XCTAssertEqual(service.products.map(\.trialDays), [7, 7])
         XCTAssertEqual(service.products.map(\.isYearly), [true, false])
+        await refresh { service.isEligibleForTrial }
         XCTAssertTrue(service.isEligibleForTrial)
         XCTAssertFalse(service.hasAccess)
+    }
+
+    func testTheConfigurationHasAnOfferCodeForEachPlan() throws {
+        // Real codes are made in App Store Connect; these let redemption be tried locally.
+        let configuration = URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appending(path: "IronSage.storekit")
+        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: configuration)) as? [String: Any]
+        let groups = try XCTUnwrap(json?["subscriptionGroups"] as? [[String: Any]])
+        let plans = try XCTUnwrap(groups.first?["subscriptions"] as? [[String: Any]])
+        let codes = plans.flatMap { ($0["codeOffers"] as? [[String: Any]] ?? []).compactMap { $0["offerID"] as? String } }
+        XCTAssertEqual(Set(codes), ["COACHYEAR50", "COACHMONTH50"])
     }
 
     func testBuyingStartsTheFreeTrialAndGivesAccess() async throws {
         var gained = 0
         service.onAccessGained = { gained += 1 }
+        // The launch refresh: learning the state isn't gaining access.
+        await service.refresh()
+        XCTAssertEqual(gained, 0)
         let monthly = try XCTUnwrap(service.products.first { $0.id == SubscriptionService.monthly })
 
         let outcome = try await service.purchase(monthly)
@@ -75,7 +102,7 @@ final class SubscriptionServiceTests: XCTestCase {
         XCTAssertTrue(service.hasAccess)
 
         try session.expireSubscription(productIdentifier: SubscriptionService.yearly)
-        await service.refresh()
+        await refresh { service.entitlement == nil }
 
         XCTAssertNil(service.entitlement)
         XCTAssertFalse(service.hasAccess)
@@ -88,7 +115,7 @@ final class SubscriptionServiceTests: XCTestCase {
         XCTAssertTrue(service.hasAccess)
 
         try session.refundTransaction(identifier: UInt(transaction.id))
-        await service.refresh()
+        await refresh { service.entitlement == nil }
 
         XCTAssertNil(service.entitlement)
     }
