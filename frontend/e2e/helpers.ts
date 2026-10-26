@@ -1,6 +1,9 @@
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { expect, type Page } from "@playwright/test";
 
+// The backend that playwright.config.ts starts for E2E.
+export const API_URL = "http://localhost:8001";
+
 // Clerk development instances accept this code for +clerk_test email addresses.
 export const TEST_CODE = "424242";
 
@@ -43,6 +46,15 @@ export async function signIn(page: Page, email: string, code: string = TEST_CODE
   await page.goto("/login");
   await enterEmail(page, email);
   await enterCode(page, code);
+}
+
+// The signed-in user's Clerk session token, as the iPhone app sends it to the API.
+export async function sessionToken(page: Page): Promise<string> {
+  return page.evaluate(async () => {
+    const clerk = (window as unknown as { Clerk: { session: { getToken(): Promise<string> } } })
+      .Clerk;
+    return clerk.session.getToken();
+  });
 }
 
 export async function signUpNewUser(page: Page, prefix: string) {
