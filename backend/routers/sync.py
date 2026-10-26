@@ -13,6 +13,7 @@ from models import (
     Recommendation,
     Template,
     User,
+    WeeklySummary,
     Workout,
 )
 from routers.templates import WITH_DAYS
@@ -48,6 +49,7 @@ def sync(
         (BodyMeasurement, BodyMeasurement.user_id),
         (DailyReadiness, DailyReadiness.user_id),
         (Recommendation, Recommendation.user_id),
+        (WeeklySummary, WeeklySummary.user_id),
     ]
     changes = union_all(
         *(
@@ -80,4 +82,5 @@ def sync(
         body_measurements=list(changed(BodyMeasurement, BodyMeasurement.user_id)),
         readiness=list(changed(DailyReadiness, DailyReadiness.user_id)),
         recommendations=list(changed(Recommendation, Recommendation.user_id)),
+        weekly_summaries=list(changed(WeeklySummary, WeeklySummary.user_id)),
     )

@@ -81,6 +81,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/coach/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Coach Settings
+         * @description Records whether the user turned the AI coach on in the app, and its language.
+         *
+         *     The weekly summary is written only while it is on. Works without a subscription,
+         *     so turning the coach off always succeeds.
+         */
+        put: operations["putCoachSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/exercises": {
         parameters: {
             query?: never;
@@ -503,6 +526,20 @@ export interface components {
             output_tokens: number;
             /** Summary */
             summary: string;
+        };
+        /**
+         * CoachSettings
+         * @description What the app tells the server about the AI coach.
+         */
+        CoachSettings: {
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "zh";
         };
         /** DoneSet */
         DoneSet: {
@@ -981,6 +1018,8 @@ export interface components {
             recommendations?: components["schemas"]["RecommendationRead"][];
             /** Templates */
             templates: components["schemas"]["TemplateRead"][];
+            /** Weekly Summaries */
+            weekly_summaries?: components["schemas"]["WeeklySummaryRead"][];
             /** Workouts */
             workouts: components["schemas"]["WorkoutRead"][];
         };
@@ -1175,6 +1214,60 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WeeklyResult */
+        WeeklyResult: {
+            /** Deload */
+            deload: boolean;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /** Model */
+            model: string;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /** Suggestions */
+            suggestions: string[];
+            /** Summary */
+            summary: string;
+        };
+        /** WeeklySummaryRead */
+        WeeklySummaryRead: {
+            /** Change Seq */
+            change_seq: number;
+            /**
+             * Deleted At
+             * Format: date-time
+             */
+            deleted_at: string | null;
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            output?: components["schemas"]["WeeklyResult"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "running" | "ready" | "failed";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
         };
         /** WorkoutExerciseRead */
         WorkoutExerciseRead: {
@@ -1464,6 +1557,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    putCoachSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoachSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoachSettings"];
+                };
             };
             /** @description Validation Error */
             422: {

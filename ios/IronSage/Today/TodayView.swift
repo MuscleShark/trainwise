@@ -37,6 +37,8 @@ struct TodayView: View {
                     }
                 }
 
+                WeeklySummaryCard()
+
                 ReadinessCard()
 
                 if let last = store.finishedWorkouts.first {

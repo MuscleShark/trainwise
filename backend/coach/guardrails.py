@@ -7,7 +7,27 @@ from .schemas import (
     ExercisePlan,
     FinalExercise,
     PlannedSet,
+    WeeklyInput,
+    WeeklyOutput,
 )
+
+# Words that suggest a lighter week, in either language.
+DELOAD_WORDS = (
+    "deload",
+    "lighter week",
+    "light week",
+    "easier week",
+    "recovery week",
+    "减量",
+    "减载",
+    "轻松一周",
+    "轻量周",
+    "恢复周",
+)
+
+# How many suggestions a weekly summary has, and how long each may be.
+SUGGESTIONS = range(1, 3)
+SUGGESTION_LENGTH = 300
 
 
 class InvalidAdvice(ValueError):
@@ -60,3 +80,24 @@ def adjusted_sets(exercise: ExercisePlan, action: Action) -> list[PlannedSet]:
         if len(working) > 1:
             del sets[working[-1]]
     return sets
+
+
+def check_week(week: WeeklyInput, output: WeeklyOutput) -> WeeklyOutput:
+    """The summary, trimmed. A lighter week is only allowed when the rules suggested
+    one; a summary that doesn't follow the rule is rejected, since its words would
+    say otherwise."""
+    suggestions = [text.strip() for text in output.suggestions if text.strip()]
+    if not output.summary.strip():
+        raise InvalidAdvice("no summary")
+    if len(suggestions) not in SUGGESTIONS:
+        raise InvalidAdvice(f"{len(suggestions)} suggestions")
+    if any(len(text) > SUGGESTION_LENGTH for text in suggestions):
+        raise InvalidAdvice("a suggestion is too long")
+    if output.deload and not week.deload_suggested:
+        raise InvalidAdvice("a lighter week the rules didn't suggest")
+    text = " ".join([output.summary, *suggestions]).lower()
+    if not week.deload_suggested and any(word in text for word in DELOAD_WORDS):
+        raise InvalidAdvice("a lighter week the rules didn't suggest")
+    return WeeklyOutput(
+        summary=output.summary.strip(), suggestions=suggestions, deload=output.deload
+    )

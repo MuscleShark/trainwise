@@ -187,6 +187,14 @@ public final class SyncEngine {
         case (.recommendation, _):
             // Sent by send(recommendation:_:).
             return .accepted(changeSeq: nil)
+        case (.coachSettings, _):
+            let body = try Wire.api(store.payload(of: change, as: CoachSettings.self), as: Components.Schemas.CoachSettings.self)
+            // Not a synced record: it has no change_seq.
+            let response = try await api.putCoachSettings(body: .json(body))
+            return response.statusCode.map(Outcome.from(status:)) ?? .accepted(changeSeq: nil)
+        case (.weeklySummary, _):
+            // Written by the server only.
+            return .accepted(changeSeq: nil)
         }
     }
 
@@ -295,6 +303,10 @@ public final class SyncEngine {
             for recommendation in page.recommendations ?? [] {
                 let value = try Wire.app(recommendation, as: Recommendation.self)
                 store.applyRemote(.recommendation(value), id: value.id, changeSeq: recommendation.changeSeq, deleted: recommendation.deletedAt != nil)
+            }
+            for summary in page.weeklySummaries ?? [] {
+                let value = try Wire.app(summary, as: WeeklySummary.self)
+                store.applyRemote(.weeklySummary(value), id: value.id, changeSeq: summary.changeSeq, deleted: summary.deletedAt != nil)
             }
 
             since = page.changeSeq
@@ -448,6 +460,16 @@ extension Operations.DeleteTemplate.Output: SyncOutput {
     var statusCode: Int? {
         switch self {
         case .noContent: nil
+        case .unprocessableContent: 422
+        case .undocumented(let status, _): status
+        }
+    }
+}
+
+extension Operations.PutCoachSettings.Output: SyncOutput {
+    var statusCode: Int? {
+        switch self {
+        case .ok: nil
         case .unprocessableContent: 422
         case .undocumented(let status, _): status
         }

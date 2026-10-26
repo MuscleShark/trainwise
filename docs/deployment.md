@@ -10,6 +10,7 @@ Browser ──► Vercel (Next.js frontend, root directory: frontend/)
                  ├──► Neon PostgreSQL (us-east-2, pooled connection)
                  └──► starts the coach worker Lambda ──► Anthropic API (Claude Sonnet 5.5)
                                          └──► writes the advice back to Neon
+EventBridge Scheduler (Monday 06:00 Los Angeles) ──► coach worker: weekly summaries
 ```
 
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
@@ -30,9 +31,10 @@ The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accoun
 | Lambda `trainwise-migrate-prod` | Same code package, handler `migrate_handler.handler`, 5-minute timeout. Its role may only read `/trainwise/prod/DATABASE_URL_DIRECT`. Log group kept for 30 days |
 | Migration trigger | CDK trigger that invokes `trainwise-migrate-prod` whenever its code changes, before the API function is updated |
 | Log group | `/aws/lambda/trainwise-api-prod`, kept for 30 days |
-| Lambda `trainwise-coach-prod` | The AI coach worker: same code package, handler `coach_handler.handler`, 60 s. The API starts it without waiting (the API role may invoke it, nothing else). Its role may read `/trainwise/prod/DATABASE_URL` and `/trainwise/prod/ANTHROPIC_API_KEY`. No retries: a failure is stored on the recommendation. Log group kept for 30 days |
+| Lambda `trainwise-coach-prod` | The AI coach worker: same code package, handler `coach_handler.handler`, 60 s. The API starts it without waiting (the API role may invoke it). Its role may read `/trainwise/prod/DATABASE_URL` and `/trainwise/prod/ANTHROPIC_API_KEY`, and invoke the function itself (one run per user for the weekly summary). No retries: a failure is stored on the recommendation or summary. Log group kept for 30 days |
+| EventBridge Scheduler `trainwise-coach-prod-weekly-summaries` | Every Monday at 06:00 America/Los_Angeles, starts the coach worker with `{"job": "weekly_summaries"}`, which writes last week's summary for every user who has coach access and turned it on in the app. Scheduler retries delivering the event up to twice; a timeout inside the job is covered by the job itself (it hands over to a new run before its time runs out, and restarts summaries left pending). A user and week gets at most one summary. Its own role may only invoke the coach worker |
 | SNS topic `trainwise-alarms-prod` | Every alarm and the budget notify it. The email subscriber is the `ALARM_EMAIL` variable of the GitHub `production` environment (step 5), so the address is not in the repository. Without it the topic has no subscriber |
-| Alarms | Each one emails when it goes off and again when it clears. Coach worker: `trainwise-coach-prod-errors` (crashed or timed out), `trainwise-coach-prod-failed-answers` (5 or more failed answers in an hour, counted from the worker's log lines), `trainwise-coach-prod-daily-calls` (more than 300 calls in a day). API: `trainwise-api-prod-5xx` (3 or more 5xx responses in 5 minutes, from the Function URL, so it includes errors FastAPI turned into a 500, crashes and timeouts), `trainwise-api-prod-throttles` (any throttled request: the account's concurrency limit was reached), `trainwise-api-prod-slow` (p95 duration above 12 s, close to the 15 s timeout, for 15 minutes). `trainwise-migrate-prod-errors` (a migration failed; the deploy fails too) |
+| Alarms | Each one emails when it goes off and again when it clears. Coach worker: `trainwise-coach-prod-errors` (crashed or timed out), `trainwise-coach-prod-failed-answers` (5 or more failed answers in an hour, counted from the worker's log lines, weekly summaries included), `trainwise-coach-prod-daily-calls` (more than 300 calls in a day; on Mondays each subscriber's summary is one more, so raise it before about 250 subscribers), `trainwise-coach-prod-weekly-job-errors` (the weekly job itself failed or timed out: no summaries that week). API: `trainwise-api-prod-5xx` (3 or more 5xx responses in 5 minutes, from the Function URL, so it includes errors FastAPI turned into a 500, crashes and timeouts), `trainwise-api-prod-throttles` (any throttled request: the account's concurrency limit was reached), `trainwise-api-prod-slow` (p95 duration above 12 s, close to the 15 s timeout, for 15 minutes). `trainwise-migrate-prod-errors` (a migration failed; the deploy fails too) |
 | AI token metrics | `IronSage/Coach` → `InputTokens` / `OutputTokens`, from the `input_tokens` / `output_tokens` the worker logs for each answer. CloudWatch → Metrics → `IronSage/Coach`, statistic *Sum*, period 1 day shows the tokens per day |
 | Budget `TrainWiseApi-monthly-cost` | AWS Budgets, $10 a month for the whole account: notifies the topic at 80% of actual spend and when the forecast passes 100%. An account-level budget, like the zero-spend budget in step 0: it needs neither AWS Organizations nor "advanced features" (never turn those on: they remove the project spend limit). The AI provider bills separately and is not included: set a monthly spend limit in the Anthropic Console as well |
 
@@ -96,6 +98,12 @@ The coach is for subscribers (see [Subscriptions](architecture.md#subscriptions)
 
 ```sql
 UPDATE users SET coach_enabled = true WHERE email = 'you@example.com';
+```
+
+The weekly summary also needs the coach turned on in the app (`users.coach_consent`, set by the app). To write last week's summaries without waiting for Monday (safe to repeat: users who already have one are skipped), in CloudShell:
+
+```bash
+aws lambda invoke --region us-east-2 --function-name trainwise-coach-prod --cli-binary-format raw-in-base64-out --payload '{"job": "weekly_summaries"}' /dev/stdout
 ```
 
 `/trainwise/prod/SECRET_KEY` was used by the old password sign-in and is no longer read. It can be deleted.

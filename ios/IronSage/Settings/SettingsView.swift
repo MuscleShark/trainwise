@@ -116,6 +116,7 @@ struct SettingsView: View {
                 Button("Sign out", role: .destructive) {
                     Task {
                         do {
+                            await services?.coach.withdrawBeforeSignOut()
                             try await clerk.auth.signOut()
                             services?.removeLocalData()
                         } catch {

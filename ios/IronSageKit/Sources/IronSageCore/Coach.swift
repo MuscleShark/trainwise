@@ -197,12 +197,79 @@ public struct Recommendation: Identifiable, Hashable, Codable, Sendable {
     public var isWaiting: Bool { status == .pending || status == .running }
 }
 
+/// What the app tells the server about the coach: whether the user turned it on, and
+/// in which language. The server writes the weekly summary only while it is on.
+public struct CoachSettings: Codable, Hashable, Sendable {
+    public var enabled: Bool
+    /// "en" or "zh"
+    public var language: String
+
+    public init(enabled: Bool, language: String) {
+        self.enabled = enabled
+        self.language = language
+    }
+}
+
+/// The coach's recap of one week, written by the server every Monday morning from the
+/// synced workouts and readiness (backend/weekly.py). It arrives through sync.
+public struct WeeklySummary: Identifiable, Hashable, Codable, Sendable {
+    public struct Output: Codable, Hashable, Sendable {
+        /// 3 to 5 sentences.
+        public var summary: String
+        /// One or two, for the coming week.
+        public var suggestions: [String]
+        /// One suggestion is a lighter week.
+        public var deload: Bool
+        public var model: String
+
+        public init(summary: String, suggestions: [String], deload: Bool, model: String) {
+            self.summary = summary
+            self.suggestions = suggestions
+            self.deload = deload
+            self.model = model
+        }
+    }
+
+    public var id: UUID
+    /// The Monday the week started on, "2026-10-19".
+    public var weekStart: String
+    public var status: Recommendation.Status
+    public var output: Output?
+    public var error: String?
+
+    public init(id: UUID = UUID(), weekStart: String, status: Recommendation.Status, output: Output? = nil, error: String? = nil) {
+        self.id = id
+        self.weekStart = weekStart
+        self.status = status
+        self.output = output
+        self.error = error
+    }
+}
+
 public enum Coach {
     /// After this long without an answer the request is sent again, and the server
     /// marks it timed out (backend/routers/coach.py).
     public static let answerTimeout: TimeInterval = 2 * 60
     /// The phone asks at most this often per day, under the server's limit of 5.
     public static let dailyRequests = 3
+
+    /// The summary of last week (Monday to Sunday) to show `now`, once it is ready.
+    /// Older ones are not shown: a week without training gets no summary.
+    public static func weeklySummary(in summaries: [WeeklySummary], now: Date = .now, calendar: Calendar = .current) -> WeeklySummary? {
+        guard let key = lastWeekStart(now: now, calendar: calendar) else { return nil }
+        return summaries.first { $0.weekStart == key && $0.status == .ready && $0.output != nil }
+    }
+
+    /// The Monday of the last full week before `now`, "2026-10-19", as the server
+    /// names the week (weeks start on Monday whatever the locale).
+    public static func lastWeekStart(now: Date = .now, calendar: Calendar = .current) -> String? {
+        var monday = calendar
+        monday.firstWeekday = 2
+        guard let thisWeek = monday.dateInterval(of: .weekOfYear, for: now)?.start,
+              let lastWeek = monday.date(byAdding: .day, value: -7, to: thisWeek)
+        else { return nil }
+        return HealthDays.key(lastWeek, calendar: calendar)
+    }
 
     /// Identifies the plan a request was for: the template day, the last finished
     /// workout and whether last night's sleep was known. When any of them changes (a

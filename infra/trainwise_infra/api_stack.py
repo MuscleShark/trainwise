@@ -1,10 +1,12 @@
-from aws_cdk import ArnFormat, CfnOutput, Duration, RemovalPolicy, Stack
+from aws_cdk import ArnFormat, CfnOutput, Duration, RemovalPolicy, Stack, TimeZone
 from aws_cdk import aws_budgets as budgets
 from aws_cdk import aws_cloudwatch as cloudwatch
 from aws_cdk import aws_cloudwatch_actions as cloudwatch_actions
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
+from aws_cdk import aws_scheduler as scheduler
+from aws_cdk import aws_scheduler_targets as scheduler_targets
 from aws_cdk import aws_sns as sns
 from aws_cdk import aws_sns_subscriptions as subscriptions
 from aws_cdk import triggers
@@ -28,6 +30,10 @@ MONTHLY_BUDGET_USD = 10
 
 # p95 duration (ms) of the API above which it is close to its 15 s timeout.
 API_SLOW_P95_MS = 12_000
+
+# The weekly summary job: Monday 06:00 in Los Angeles (09:00 in New York), after the
+# week has ended everywhere. Each user's week is their own local Monday to Sunday.
+WEEKLY_SUMMARY_TIME_ZONE = "America/Los_Angeles"
 
 
 class ApiStack(Stack):
@@ -146,6 +152,64 @@ class ApiStack(Stack):
             alarm_description="Several coach answers failed in an hour (provider down?).",
             metric=failed.metric(period=Duration.hours(1), statistic="Sum"),
             threshold=5,
+        )
+        # The weekly summary: the schedule starts the worker with the job, which starts
+        # the worker once more per user (coach_handler.start_weekly_summaries). The ARN is
+        # built from the name, since the function's own ARN would make its role depend on
+        # the function.
+        self.coach_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["lambda:InvokeFunction"],
+                resources=[
+                    self.format_arn(
+                        service="lambda",
+                        resource="function",
+                        resource_name=coach_function_name,
+                        arn_format=ArnFormat.COLON_RESOURCE_NAME,
+                    )
+                ],
+            )
+        )
+        scheduler.Schedule(
+            self,
+            "CoachWeeklySchedule",
+            schedule_name=f"{coach_function_name}-weekly-summaries",
+            description="Writes last week's coach summary for every subscriber.",
+            schedule=scheduler.ScheduleExpression.cron(
+                minute="0",
+                hour="6",
+                week_day="MON",
+                time_zone=TimeZone.of(WEEKLY_SUMMARY_TIME_ZONE),
+            ),
+            # The job is safe to repeat: a user and week has at most one summary.
+            target=scheduler_targets.LambdaInvoke(
+                self.coach_function,
+                input=scheduler.ScheduleTargetInput.from_object({"job": "weekly_summaries"}),
+                retry_attempts=2,
+                max_event_age=Duration.hours(2),
+            ),
+        )
+        # The job logs one line per run with how many users failed (no summary written,
+        # for example the worker couldn't be started). Its own crash or timeout is in
+        # the worker's Errors alarm above.
+        job_failed = logs.MetricFilter(
+            self,
+            "CoachWeeklyJobFailedFilter",
+            log_group=coach_logs,
+            filter_pattern=logs.FilterPattern.all(
+                logs.FilterPattern.string_value("$.job", "=", "weekly_summaries"),
+                logs.FilterPattern.number_value("$.failed", ">", 0),
+            ),
+            metric_namespace="IronSage/Coach",
+            metric_name="WeeklyJobFailedUsers",
+            metric_value="$.failed",
+        )
+        self._alarm(
+            "CoachWeeklyJobAlarm",
+            alarm_name=f"{coach_function_name}-weekly-job-errors",
+            alarm_description="The weekly summary job couldn't start some users' summaries.",
+            metric=job_failed.metric(period=Duration.hours(1), statistic="Sum"),
+            threshold=1,
         )
         self._alarm(
             "CoachCallsAlarm",

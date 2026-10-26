@@ -122,6 +122,7 @@ Agreed on 2026-10-25:
 | Who decides access | The API, from the signed transaction it verified (`402` without one). The phone's StoreKit state only decides what the screens offer. `users.coach_enabled` stays as a manual override for test accounts |
 | Promotion codes | Apple's subscription offer codes, redeemed with StoreKit's sheet ("Redeem code" on the paywall and in Settings). The resulting transaction reaches the API like a purchase; its offer type and id are stored |
 | Receipt checks | Offline: the JWS chain is checked against Apple Root CA - G3 in the code, so no App Store Connect API key is needed. Calling the App Store Server API (for example to look up a transaction) can come later |
+| Weekly summary | Every Monday 06:00 Los Angeles time, for the last full week in each user's own time zone. The backend computes the numbers from synced data; the model only words them, in the language the app reported. Only for users with coach access who turned the coach on in the app (the app tells the server). Under one cent each. No push notification until the Apple Developer account exists |
 | Agent | Not in M3. A chat coach with tools comes after the US launch |
 | Markets | US App Store first. Mainland China later; it needs a mainland filing entity, a China-hosted backend, a filed domestic model and its own sign-in |
 
@@ -167,15 +168,13 @@ iPhone app (SwiftUI)
         ▼
 API Lambda (FastAPI, /v1) ──────────► Neon Postgres
   │                                     ▲
-  │ enqueue                             │
+  │ starts without waiting              │
   ▼                                     │
-SQS ──► worker Lambda ──────────────────┤──► Claude API
-          ▲                             │
-EventBridge Scheduler (weekly summary)  │
-                                        │
-Coach Lambda (streaming, longer timeout)┘──► Claude API
+Coach worker Lambda ────────────────────┘──► Claude API
+  ▲   └─ starts itself once per user for the weekly summary
+EventBridge Scheduler (Monday 06:00 Los Angeles)
 App Store Server Notifications V2 ─► API Lambda (subscription state)
-APNs ◄── worker Lambda (weekly summary push)
+APNs ◄── coach worker Lambda (weekly summary push, later)
 Sentry ◄── app and Lambdas (errors)
 ```
 
@@ -207,7 +206,7 @@ daily_readiness       date (local), sleep minutes and stages, HRV (SDNN), restin
 
 Synced records (exercises, workouts, templates, body measurements, readiness, profile) carry `updated_at`, `deleted_at` (soft delete) and `change_seq`.
 
-Added with the AI coach (P1): `recommendations`, `ai_usage`, `subscriptions` (one row per user: product, `expires_at`, original and latest transaction id, environment, status).
+Added with the AI coach (P1): `recommendations` (migration 0006), `subscriptions` (0007; one row per user: product, `expires_at`, original and latest transaction id, environment, status), `weekly_summaries` and `users.coach_consent` / `coach_language` (0008), `ai_usage`.
 
 Notes:
 
@@ -234,21 +233,33 @@ Notes:
    - Instructions are Markdown skills in `coach/skills/` (safety, next session), loaded by task. They work the same with every provider.
 3. **Stored** in `recommendations` with the inputs, so the user and we can see later why a suggestion was made.
 
+### Weekly summary
+
+Every Monday morning each subscriber who turned the coach on gets a short recap of their past week, on Today and in Progress.
+
+1. **The numbers come from the backend** (`backend/weekly.py`), from the workouts and readiness the phone synced, with the same rules the phone uses: completed working sets per muscle (secondary muscles 0.5) against the 10–20 reference band, new records (heaviest weight or best estimated one-rep max, beating every earlier session), lifts stalled across their last three sessions, and the week's sleep, HRV and resting heart rate against the 28 days before. A lighter week (deload) is suggested by the rules when two or more lifts stalled or four or more nights were short (under 6 hours, or an hour below usual), never from HRV or resting heart rate.
+2. **The model only words them** (skill `coach/skills/weekly_summary.md`): 3–5 sentences, one or two suggestions for the coming week, and `deload`. `coach/guardrails.check_week` rejects a lighter week the rules didn't suggest (the flag or its words), and answers without suggestions or with more than two.
+3. **The job** (`coach_handler.start_weekly_summaries`): EventBridge Scheduler starts the coach worker every Monday at 06:00 Los Angeles time (09:00 New York) with `{"job": "weekly_summaries"}`. For each user who turned the coach on in the app and has access (`routers/subscription.has_coach_access`, the same check as the API's), it takes the last full Monday-to-Sunday week in the time zone of their latest workout, stores a pending summary with its input, and starts the worker once more for it, which works like a recommendation (claim, no open transaction during the model call, fixed error codes) and checks access and consent again before asking the model. One summary per user and week (a unique constraint), so a retried job never pays twice; a summary left pending for 5 minutes is started again by the next run. With 15 s of its 60 s left, the job starts itself again to go on with the remaining users. Users without a finished workout that week get none.
+4. **Delivered through sync** as `weekly_summaries` in `GET /v1/sync`. The phone shows last week's summary once it is ready, and nothing for a week without one.
+5. **Consent on the server**: the server writes the summary on its own, so the app tells it whether the coach is on, and its language (`PUT /v1/coach/settings`), when the user turns it on or off and at launch, and turns it off before signing out and for the next account after a sign-out. Turning it off stops the next summary once the phone has synced; a phone that stays offline until Monday morning still gets that week's.
+
+Cost, estimated from the prompt size until the eval has run: a summary is about 1,200–1,500 input and 250–350 output tokens, **$0.005–0.007** on Sonnet 5.5, so about $0.03 per subscriber a month, well inside the $1.40 budget. Measure it with `python scripts/coach_eval.py anthropic:claude-sonnet-5-5 --task weekly_summary`.
+
 Later (version 2), a coach agent can chat and change plans with tools on our API. Tools are read-only by default. Any write (for example changing a plan) needs the user's confirmation. User-written text (notes, exercise names) is treated as data, never as instructions, to guard against prompt injection.
 
 ### Runtime
 
-- The current API Lambda has a 15 s timeout and Mangum buffers responses, so AI calls run elsewhere:
-  - **Coach Lambda** for interactive calls: streams responses (AWS Lambda Web Adapter) and has a longer timeout.
-  - **SQS + worker Lambda** for jobs nobody waits for (weekly summary), started by **EventBridge Scheduler**.
-- Every AI endpoint checks the subscription first. Without one it returns `402 Payment Required`.
+- The current API Lambda has a 15 s timeout and Mangum buffers responses, so AI calls run elsewhere. Nobody waits for them (see M3 decisions), so one **coach worker Lambda** (`trainwise-coach-prod`, 60 s) does both:
+  - **Next-session suggestions**: the API stores the request and starts the worker without waiting.
+  - **Weekly summaries**: **EventBridge Scheduler** starts it on Monday morning; it starts itself once per user, and again to go on with the job when its 60 s run short. No SQS: Lambda's own queue for asynchronous calls is enough at this size. Before many hundreds of subscribers, spread the runs out (an SQS queue with a concurrency limit), since they all reach the provider's rate limit at once.
+- Every AI endpoint checks access first (`routers/subscription.has_coach_access`). Without it it returns `402 Payment Required`.
 - Each user has a daily AI quota. `ai_usage` records tokens so costs can be watched.
 - Model choice, prices and rate limits are checked against each provider's current documentation when this is built, not from memory.
 
 ### Evaluation
 
 - Rules: ordinary unit tests.
-- AI step: `coach/eval_cases.py` holds example users (12 scenarios, each in English and Chinese). `scripts/coach_eval.py` runs them against real models and reports, per model, how many passed, the cost per suggestion and the time. A case fails on: no usable JSON, an action the coaching rules don't allow there (for example adding weight after a short night, or changing the plan for low HRV alone), a weight above the rule plan, the wrong language, a number that isn't in the input, or repeating instructions hidden in an exercise name.
+- AI step: `coach/eval_cases.py` holds example users: 12 next-session scenarios and 9 weekly-summary scenarios, each in English and Chinese. `scripts/coach_eval.py` runs them against real models and reports, per model, how many passed, the cost per suggestion and the time. A case fails on: no usable JSON, an action the coaching rules don't allow there (for example adding weight after a short night, or changing the plan for low HRV alone), a weight above the rule plan, the wrong language, a number that isn't in the input, or repeating instructions hidden in an exercise name. A weekly summary also fails with fewer than 3 or more than 5 sentences, or a lighter week that doesn't match the rules (including one suggested for low HRV alone). Run it with `--task weekly_summary`.
 
 ## Apple Health
 
@@ -301,7 +312,7 @@ How it is built:
 ### P1: before the AI coach
 
 6. Coach Lambda with streaming and a longer timeout.
-7. SQS, worker Lambda and EventBridge Scheduler for weekly summaries.
+7. ~~Worker Lambda and EventBridge Scheduler for weekly summaries~~. Done without SQS: the coach worker starts itself once per user.
 8. StoreKit 2 entitlement, App Store Server Notifications V2, `402` on AI endpoints, daily AI quota.
 9. `recommendations` table and AI evaluation set.
 10. Sentry and CloudWatch alarms (5xx errors, cost).

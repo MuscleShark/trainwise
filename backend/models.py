@@ -97,6 +97,12 @@ class User(Base):
     coach_enabled: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=false(), nullable=False
     )
+    # The user turned the AI coach on in the app (its consent screen), and the app's
+    # language then. The weekly summary is only written while it is on, in that language.
+    coach_consent: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
+    )
+    coach_language: Mapped[str | None] = mapped_column(String(5))
 
     profile: Mapped["Profile | None"] = relationship(back_populates="user", uselist=False)
 
@@ -391,3 +397,26 @@ class Subscription(Base):
     @property
     def access_until(self) -> datetime:
         return max(filter(None, (self.expires_at, self.grace_period_expires_at)))
+
+
+class WeeklySummary(SyncedMixin, Base):
+    """The AI coach's recap of one user's week, with the numbers it was given.
+
+    The weekly job (coach_handler.start_weekly_summaries) creates one per user and week
+    (status "pending"); the coach worker fills it in like a recommendation.
+    """
+
+    __tablename__ = "weekly_summaries"
+    __table_args__ = (UniqueConstraint("user_id", "week_start"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    # The Monday the week starts on, in the user's time zone.
+    week_start: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String(10), nullable=False)
+    input: Mapped[dict] = mapped_column(JSON, nullable=False)
+    output: Mapped[dict | None] = mapped_column(JSON)
+    model: Mapped[str | None] = mapped_column(String(80))
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error: Mapped[str | None] = mapped_column(Text)

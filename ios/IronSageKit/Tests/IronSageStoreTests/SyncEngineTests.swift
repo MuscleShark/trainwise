@@ -573,3 +573,55 @@ private func adviceJSON(id: String, status: String, changeSeq: Int, error: Strin
     store.removeAll()
     #expect(store.recommendations.isEmpty)
 }
+
+private func summaryJSON(id: String, status: String = "ready", changeSeq: Int) -> String {
+    let output = status == "ready" ? #"""
+        {"summary": "You trained 3 times. Chest got 12 sets. Sleep was steady.",
+         "suggestions": ["Add two sets for your back."], "deload": false,
+         "model": "anthropic:claude-sonnet-5-5", "input_tokens": 1200, "output_tokens": 250}
+        """# : "null"
+    return #"{"id": "\#(id)", "week_start": "2026-10-19", "status": "\#(status)", "output": \#(output), "error": null, "updated_at": "2026-10-26T14:00:00Z", "deleted_at": null, "change_seq": \#(changeSeq)}"#
+}
+
+@MainActor
+@Test func weeklySummariesComeThroughSync() async throws {
+    let id = UUID().uuidString.lowercased()
+    let harness = try Harness { request in
+        guard request.path.hasPrefix("/v1/sync") else { return try FakeServer.standard(request) }
+        if request.path.contains("since=0") {
+            return (200, FakeServer.syncPage(changeSeq: 3, hasMore: true, weeklySummaries: [summaryJSON(id: id, status: "pending", changeSeq: 3)]))
+        }
+        return (200, FakeServer.syncPage(changeSeq: 4, weeklySummaries: [summaryJSON(id: id, changeSeq: 4)]))
+    }
+
+    await harness.sync.sync()
+
+    #expect(harness.sync.state == .idle)
+    let summary = try #require(harness.store.weeklySummaries.first)
+    #expect(harness.store.weeklySummaries.count == 1)
+    #expect(summary.weekStart == "2026-10-19" && summary.status == .ready)
+    #expect(summary.output?.suggestions == ["Add two sets for your back."])
+    #expect(summary.output?.deload == false)
+    harness.store.removeAll()
+    #expect(harness.store.weeklySummaries.isEmpty)
+}
+
+@MainActor
+@Test func theCoachSettingGoesUpOnlyWhenItChanges() async throws {
+    let harness = try Harness { request in
+        request.path == "/v1/coach/settings" ? (200, #"{"enabled": true, "language": "zh"}"#) : try FakeServer.standard(request)
+    }
+    harness.store.save(CoachSettings(enabled: true, language: "zh"))
+    await harness.sync.sync()
+
+    let put = try #require(harness.server.requests.first { $0.path == "/v1/coach/settings" })
+    #expect(put.method == .put)
+    #expect(put.json["enabled"] as? Bool == true && put.json["language"] as? String == "zh")
+    #expect(harness.store.pendingChanges().isEmpty)
+
+    // The same again sends nothing; turning it off does.
+    harness.store.save(CoachSettings(enabled: true, language: "zh"))
+    #expect(harness.store.pendingChanges().isEmpty)
+    harness.store.save(CoachSettings(enabled: false, language: "zh"))
+    #expect(harness.store.pendingChanges().count == 1)
+}

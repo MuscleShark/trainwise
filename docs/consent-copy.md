@@ -32,13 +32,13 @@ iOS shows these inside its permission sheet. Keep them short; they must explain 
 
 ## 3. Turning on the AI coach
 
-Shown when a subscriber turns on the AI coach for the first time (M3). Nothing is sent to Anthropic before the user taps the primary button.
+Shown when a subscriber turns on the AI coach for the first time (M3). Nothing is sent to Anthropic before the user taps the primary button. The app then tells the server the coach is on (`PUT /v1/coach/settings`), so the weekly summary is written only for users who agreed, and stops when they turn the coach off (once the phone has synced) or sign out.
 
 | | English | 中文 |
 |---|---|---|
 | Title | Turn on the AI coach? | 开启 AI 教练？ |
-| Body | To suggest your next weights and reps, IronSage sends this to Anthropic, the company that makes the Claude AI model: | 为了建议你下次的重量和次数，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）： |
-| List item 1 | Your recent sets for the exercises in the suggestion | 本次建议涉及动作的最近训练组 |
+| Body | To suggest your next weights and reps and write your weekly summary, IronSage sends this to Anthropic, the company that makes the Claude AI model: | 为了建议你下次的重量和次数并撰写每周总结，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）： |
+| List item 1 | Your recent sets, and each week's sets per muscle and records | 你最近的训练组，以及每周各肌群的组数和个人纪录 |
 | List item 2 | Your experience, goal and units | 你的训练经验、目标和单位 |
 | List item 3 | Daily summaries of sleep, heart rate variability and resting heart rate | 睡眠、心率变异性和静息心率的每日汇总 |
 | Not sent | Your name and email address are never sent. | 不会发送你的姓名和邮箱地址。 |

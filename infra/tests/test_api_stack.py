@@ -102,6 +102,61 @@ def test_coach_alarms_watch_errors_and_daily_calls(template):
     )
 
 
+def test_a_weekly_schedule_starts_the_summary_job(template):
+    template.has_resource_properties(
+        "AWS::Scheduler::Schedule",
+        {
+            "Name": "trainwise-coach-test-weekly-summaries",
+            "ScheduleExpression": "cron(0 6 ? * MON *)",
+            "ScheduleExpressionTimezone": "America/Los_Angeles",
+            "State": "ENABLED",
+            "Target": {
+                "Input": json.dumps({"job": "weekly_summaries"}, separators=(",", ":")),
+                "RetryPolicy": {"MaximumRetryAttempts": 2, "MaximumEventAgeInSeconds": 7200},
+            },
+        },
+    )
+    # The schedule's own role: only the scheduler may assume it, and it may only start
+    # the coach worker.
+    (schedule,) = template.find_resources("AWS::Scheduler::Schedule").values()
+    role_id = schedule["Properties"]["Target"]["RoleArn"]["Fn::GetAtt"][0]
+    role = template.find_resources("AWS::IAM::Role")[role_id]
+    (statement,) = role["Properties"]["AssumeRolePolicyDocument"]["Statement"]
+    assert statement["Principal"] == {"Service": "scheduler.amazonaws.com"}
+    (policy,) = [
+        p
+        for p in template.find_resources("AWS::IAM::Policy").values()
+        if {"Ref": role_id} in p["Properties"]["Roles"]
+    ]
+    (grant,) = policy["Properties"]["PolicyDocument"]["Statement"]
+    assert grant["Action"] == "lambda:InvokeFunction"
+    coach_id = schedule["Properties"]["Target"]["Arn"]["Fn::GetAtt"][0]
+    assert grant["Resource"][0] == {"Fn::GetAtt": [coach_id, "Arn"]}
+    functions = template.find_resources("AWS::Lambda::Function")
+    assert functions[coach_id]["Properties"]["FunctionName"] == "trainwise-coach-test"
+
+
+def test_the_weekly_job_alarm_emails_the_alarm_topic(template):
+    template.has_resource_properties(
+        "AWS::Logs::MetricFilter",
+        {"FilterPattern": '{ ($.job = "weekly_summaries") && ($.failed > 0) }'},
+    )
+    alarms = template.find_resources(
+        "AWS::CloudWatch::Alarm",
+        {"Properties": {"AlarmName": "trainwise-coach-test-weekly-job-errors"}},
+    )
+    ((alarm),) = alarms.values()
+    assert alarm["Properties"]["MetricName"] == "WeeklyJobFailedUsers"
+    assert alarm["Properties"]["AlarmActions"] == alarm["Properties"]["OKActions"]
+    assert alarm["Properties"]["AlarmActions"]
+
+
+def test_the_coach_worker_may_start_itself_for_each_summary(template):
+    policy = policy_for_function(template, "trainwise-coach-test")
+    assert "lambda:InvokeFunction" in policy
+    assert ":function:trainwise-coach-test" in policy
+
+
 def test_secrets_are_not_in_environment(template):
     functions = template.find_resources("AWS::Lambda::Function")
     for function in functions.values():
@@ -178,6 +233,7 @@ ALARM_NAMES = (
     "trainwise-coach-test-errors",
     "trainwise-coach-test-failed-answers",
     "trainwise-coach-test-daily-calls",
+    "trainwise-coach-test-weekly-job-errors",
     "trainwise-api-test-5xx",
     "trainwise-api-test-throttles",
     "trainwise-api-test-slow",

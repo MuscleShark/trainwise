@@ -114,3 +114,24 @@ private let push = TemplateDay(name: "Push", exercises: [
     #expect(NextSession.Change.heldForSleep.wireName == "held_for_sleep")
     #expect(NextSession.Change.addLoadOrVariation.wireName == "add_load_or_variation")
 }
+
+@Test func onlyLastWeeksReadySummaryIsShown() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "America/New_York")!
+    calendar.firstWeekday = 1  // a Sunday-first locale still uses Monday weeks
+    let output = WeeklySummary.Output(summary: "Good week.", suggestions: ["Keep going."], deload: false, model: "m")
+    let summaries = [
+        WeeklySummary(weekStart: "2026-10-26", status: .pending),
+        WeeklySummary(weekStart: "2026-10-19", status: .ready, output: output),
+        WeeklySummary(weekStart: "2026-10-12", status: .ready, output: output),
+    ]
+    func now(_ text: String) -> Date { ISO8601DateFormatter().date(from: text)! }
+
+    // Sunday 25 October is still the week of the 19th: show the 12th's summary.
+    #expect(Coach.weeklySummary(in: summaries, now: now("2026-10-25T20:00:00-04:00"), calendar: calendar)?.weekStart == "2026-10-12")
+    // From Monday the 26th until the next Monday, the 19th's.
+    #expect(Coach.weeklySummary(in: summaries, now: now("2026-10-26T09:00:00-04:00"), calendar: calendar)?.weekStart == "2026-10-19")
+    #expect(Coach.weeklySummary(in: summaries, now: now("2026-11-01T22:00:00-05:00"), calendar: calendar)?.weekStart == "2026-10-19")
+    // A week without a ready summary shows none, not an older one.
+    #expect(Coach.weeklySummary(in: summaries, now: now("2026-11-02T09:00:00-05:00"), calendar: calendar) == nil)
+}

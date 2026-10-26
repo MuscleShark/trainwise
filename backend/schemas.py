@@ -15,7 +15,7 @@ from pydantic import (
     model_validator,
 )
 
-from coach.schemas import CoachInput, CoachResult
+from coach.schemas import CoachInput, CoachResult, Language, WeeklyResult
 
 Muscle = Literal[
     "chest",
@@ -374,6 +374,26 @@ class AppStoreNotification(BaseModel):
     signedPayload: str = Field(min_length=1, max_length=100_000)
 
 
+class CoachSettings(BaseModel):
+    """What the app tells the server about the AI coach."""
+
+    # The user turned the coach on (true) or off (false) in the app.
+    enabled: bool
+    # The app's language, for what the server writes on its own (the weekly summary).
+    language: Language = "en"
+
+
+class WeeklySummaryRead(SyncedRead):
+    # The Monday the week started on, in the user's time zone.
+    week_start: date
+    # pending or running: the coach is writing it; ready: `output` holds it; failed: no
+    # summary this week. `error` then says why: invalid_answer, declined, unavailable, or
+    # cancelled (the coach was turned off before it was written).
+    status: Literal["pending", "running", "ready", "failed"]
+    output: WeeklyResult | None
+    error: str | None
+
+
 # Sync
 
 
@@ -392,3 +412,5 @@ class SyncResponse(BaseModel):
     # Optional in the contract, so an app built before the coach decodes a page
     # without it (and an older backend's pages decode in a newer app).
     recommendations: list[RecommendationRead] = Field(default_factory=list)
+    # Optional for the same reason, added with the weekly summary.
+    weekly_summaries: list[WeeklySummaryRead] = Field(default_factory=list)

@@ -260,6 +260,29 @@
         "title": "CoachResult",
         "type": "object"
       },
+      "CoachSettings": {
+        "description": "What the app tells the server about the AI coach.",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "language": {
+            "default": "en",
+            "enum": [
+              "en",
+              "zh"
+            ],
+            "title": "Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "CoachSettings",
+        "type": "object"
+      },
       "DoneSet": {
         "properties": {
           "reps": {
@@ -1520,6 +1543,13 @@
             "title": "Templates",
             "type": "array"
           },
+          "weekly_summaries": {
+            "items": {
+              "$ref": "#/components/schemas/WeeklySummaryRead"
+            },
+            "title": "Weekly Summaries",
+            "type": "array"
+          },
           "workouts": {
             "items": {
               "$ref": "#/components/schemas/WorkoutRead"
@@ -2033,6 +2063,109 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WeeklyResult": {
+        "properties": {
+          "deload": {
+            "title": "Deload",
+            "type": "boolean"
+          },
+          "input_tokens": {
+            "default": 0,
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "output_tokens": {
+            "default": 0,
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "suggestions",
+          "deload",
+          "model"
+        ],
+        "title": "WeeklyResult",
+        "type": "object"
+      },
+      "WeeklySummaryRead": {
+        "properties": {
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "title": "Error",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "$ref": "#/components/schemas/WeeklyResult"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "running",
+              "ready",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "week_start": {
+            "format": "date",
+            "title": "Week Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq",
+          "week_start",
+          "status",
+          "error"
+        ],
+        "title": "WeeklySummaryRead",
         "type": "object"
       },
       "WorkoutExerciseRead": {
@@ -2614,6 +2747,53 @@
         "summary": "Put Body Measurement",
         "tags": [
           "Body and readiness"
+        ]
+      }
+    },
+    "/v1/coach/settings": {
+      "put": {
+        "description": "Records whether the user turned the AI coach on in the app, and its language.\n\nThe weekly summary is written only while it is on. Works without a subscription,\nso turning the coach off always succeeds.",
+        "operationId": "putCoachSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoachSettings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Coach Settings",
+        "tags": [
+          "Coach"
         ]
       }
     },
