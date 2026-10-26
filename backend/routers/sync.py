@@ -10,6 +10,7 @@ from models import (
     DailyReadiness,
     Exercise,
     Profile,
+    Recommendation,
     Template,
     User,
     Workout,
@@ -46,6 +47,7 @@ def sync(
         (Template, Template.owner_user_id),
         (BodyMeasurement, BodyMeasurement.user_id),
         (DailyReadiness, DailyReadiness.user_id),
+        (Recommendation, Recommendation.user_id),
     ]
     changes = union_all(
         *(
@@ -77,4 +79,5 @@ def sync(
         templates=[template_read(t) for t in changed(Template, Template.owner_user_id, WITH_DAYS)],
         body_measurements=list(changed(BodyMeasurement, BodyMeasurement.user_id)),
         readiness=list(changed(DailyReadiness, DailyReadiness.user_id)),
+        recommendations=list(changed(Recommendation, Recommendation.user_id)),
     )

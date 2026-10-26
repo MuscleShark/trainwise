@@ -23,6 +23,10 @@ class CoachModel(Protocol):
     def complete(self, system: str, user: str, schema: dict) -> Completion: ...
 
 
+# Seconds one request may take; the worker Lambda has 60 s in all.
+REQUEST_TIMEOUT = 25
+
+
 class RefusedError(RuntimeError):
     """The provider declined to answer."""
 
@@ -36,7 +40,8 @@ class AnthropicModel:
         if client is None:
             import anthropic
 
-            client = anthropic.Anthropic()
+            # One attempt plus one retry must finish inside the worker's 60 s timeout.
+            client = anthropic.Anthropic(timeout=REQUEST_TIMEOUT, max_retries=1)
         self.client = client
         self.model = model
         self.effort = effort

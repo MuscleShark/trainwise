@@ -98,7 +98,7 @@ def test_lambda_modules_import_without_database_url():
     # An empty value, not a missing one: load_dotenv() would otherwise fill it from a
     # developer's backend/.env, but it never overrides a variable that is already set.
     env = {**os.environ, "DATABASE_URL": "", "SSM_PARAMETER_PREFIX": ""}
-    for module in ("migrate_handler",):
+    for module in ("migrate_handler", "coach_handler"):
         result = subprocess.run(
             [sys.executable, "-c", f"import {module}"],
             cwd=BACKEND_DIR,

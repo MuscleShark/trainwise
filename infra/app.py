@@ -21,6 +21,7 @@ ApiStack(
     code=lambda_.Code.from_asset(str(LAMBDA_PACKAGE)),
     function_name=app.node.get_context("functionName"),
     migrate_function_name=app.node.get_context("migrateFunctionName"),
+    coach_function_name=app.node.get_context("coachFunctionName"),
     frontend_urls=app.node.get_context("frontendUrls"),
     clerk_issuer=app.node.get_context("clerkIssuer"),
     ssm_parameter_prefix=app.node.get_context("ssmParameterPrefix"),

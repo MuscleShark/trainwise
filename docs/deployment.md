@@ -7,13 +7,15 @@ Browser ──► Vercel (Next.js frontend, root directory: frontend/)
    │
    └──────► AWS Lambda + Function URL (FastAPI via Mangum, us-east-2)
                  │          └── reads secrets from SSM Parameter Store at cold start
-                 └──► Neon PostgreSQL (us-east-2, pooled connection)
+                 ├──► Neon PostgreSQL (us-east-2, pooled connection)
+                 └──► starts the coach worker Lambda ──► Anthropic API (Claude Sonnet 5.5)
+                                         └──► writes the advice back to Neon
 ```
 
 - **Frontend**: Vercel's Git integration deploys every push to `main` and builds preview deployments for pull requests.
 - **Backend infrastructure and code**: defined with **AWS CDK** in [`infra/`](../infra). After the `CI` workflow succeeds on `main`, `.github/workflows/deploy-backend.yml` builds the Lambda package (`backend/scripts/build_lambda.sh`), runs `cdk deploy` and calls `/health` as a smoke test.
 - **Sign-in**: [Clerk](https://clerk.com). The Lambda only needs the Clerk instance's issuer URL (`clerkIssuer` in `infra/cdk.json`, not a secret) to verify session tokens. The Clerk secret key is used only by Vercel.
-- **Secrets**: `DATABASE_URL` (pooled) and `DATABASE_URL_DIRECT` (direct) are SSM Parameter Store *SecureString* parameters under `/trainwise/prod/`. CloudFormation cannot create SecureStrings, so they are created by hand (step 3). The API role can only read `DATABASE_URL`; the migration role can only read `DATABASE_URL_DIRECT`.
+- **Secrets**: `DATABASE_URL` (pooled) and `DATABASE_URL_DIRECT` (direct) are SSM Parameter Store *SecureString* parameters under `/trainwise/prod/`. CloudFormation cannot create SecureStrings, so they are created by hand (step 3). The API role can only read `DATABASE_URL`; the migration role can only read `DATABASE_URL_DIRECT`. `ANTHROPIC_API_KEY` is readable only by the coach worker.
 - **Database migrations**: [Alembic](https://alembic.sqlalchemy.org) (`backend/migrations/`). During each `cdk deploy`, a CDK trigger runs the `trainwise-migrate-prod` Lambda (`alembic upgrade head`) **before** the API function is updated. After the migrations it updates the built-in exercise catalog from `backend/catalog.py`, then the built-in templates from `backend/template_catalog.py`. If any step fails, the deploy fails and the API keeps its previous code.
 
 The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accounts. Keep every connection string and secret out of git and out of chat.
@@ -28,6 +30,8 @@ The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accoun
 | Lambda `trainwise-migrate-prod` | Same code package, handler `migrate_handler.handler`, 5-minute timeout. Its role may only read `/trainwise/prod/DATABASE_URL_DIRECT`. Log group kept for 30 days |
 | Migration trigger | CDK trigger that invokes `trainwise-migrate-prod` whenever its code changes, before the API function is updated |
 | Log group | `/aws/lambda/trainwise-api-prod`, kept for 30 days |
+| Lambda `trainwise-coach-prod` | The AI coach worker: same code package, handler `coach_handler.handler`, 60 s. The API starts it without waiting (the API role may invoke it, nothing else). Its role may read `/trainwise/prod/DATABASE_URL` and `/trainwise/prod/ANTHROPIC_API_KEY`. No retries: a failure is stored on the recommendation. Log group kept for 30 days |
+| Alarms | `trainwise-coach-prod-errors` (the worker crashed or timed out), `trainwise-coach-prod-failed-answers` (5 or more failed answers in an hour, counted from the worker's log lines) and `trainwise-coach-prod-daily-calls` (more than 300 calls in a day). Visible in the CloudWatch console; no notifications yet |
 
 Settings that are not secret live in [`infra/cdk.json`](../infra/cdk.json) (`frontendUrls`, `clerkIssuer`, `functionName`, `ssmParameterPrefix`, account and Region). To change one, edit the file in a PR. The deploy after merge applies the change.
 
@@ -78,6 +82,18 @@ read -rsp "Neon DIRECT url (postgresql+psycopg://...): " V && echo && aws ssm pu
 ```
 
 The deploy fails (and changes nothing) if `DATABASE_URL_DIRECT` is missing, because migrations cannot run.
+
+The AI coach's key (an Anthropic API key with a monthly spending limit set in the Anthropic console):
+
+```bash
+read -rsp "Anthropic API key: " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/ANTHROPIC_API_KEY --type SecureString --value "$V" --overwrite && unset V
+```
+
+Until subscriptions exist, only accounts switched on by hand may use the coach. In the Neon SQL editor:
+
+```sql
+UPDATE users SET coach_enabled = true WHERE email = 'you@example.com';
+```
 
 `/trainwise/prod/SECRET_KEY` was used by the old password sign-in and is no longer read. It can be deleted.
 

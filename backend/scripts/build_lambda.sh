@@ -18,7 +18,7 @@ python3 -m pip install \
   -r requirements.txt
 
 cp ./*.py build/package/
-cp -r routers migrations build/package/
+cp -r routers migrations coach build/package/
 cp alembic.ini build/package/
 find build/package -name "__pycache__" -type d -prune -exec rm -rf {} +
 

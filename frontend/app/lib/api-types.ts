@@ -183,6 +183,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/recommendations/{recommendation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Request Recommendation
+         * @description Asks the AI coach to adjust and explain the phone's rule plan.
+         *
+         *     Returns at once with status "pending"; the advice arrives through GET /v1/sync
+         *     when it is ready, usually within seconds. Sending the same id again returns the
+         *     existing request without asking again, so retries are safe.
+         *
+         *     402 when the account may not use the coach; 429 after DAILY_LIMIT requests in
+         *     24 hours.
+         */
+        put: operations["requestRecommendation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/sync": {
         parameters: {
             query?: never;
@@ -300,6 +327,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Action
+         * @description The only changes the coach may make to the rule plan.
+         * @enum {string}
+         */
+        Action: "follow" | "hold_weight" | "one_set_fewer";
         /** BodyMeasurementRead */
         BodyMeasurementRead: {
             /** Change Seq */
@@ -362,6 +395,90 @@ export interface components {
             source: "manual" | "healthkit";
             /** Value */
             value: number;
+        };
+        /** CoachInput */
+        CoachInput: {
+            /** Exercises */
+            exercises: components["schemas"]["ExercisePlan"][];
+            /**
+             * Experience
+             * @enum {string|null}
+             */
+            experience?: "beginner" | "intermediate" | "advanced" | null;
+            /**
+             * Goal
+             * @enum {string|null}
+             */
+            goal?: "strength" | "hypertrophy" | "general" | null;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "zh";
+            readiness?: components["schemas"]["Readiness"];
+            /**
+             * Unit
+             * @default kg
+             * @enum {string}
+             */
+            unit: "kg" | "lb";
+        };
+        /** CoachResult */
+        CoachResult: {
+            /** Exercises */
+            exercises: components["schemas"]["FinalExercise"][];
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /** Model */
+            model: string;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /** Summary */
+            summary: string;
+        };
+        /** DoneSet */
+        DoneSet: {
+            /** Reps */
+            reps?: number | null;
+            /** Rir */
+            rir?: number | null;
+            /** Weight Kg */
+            weight_kg?: number | null;
+        };
+        /** ExercisePlan */
+        ExercisePlan: {
+            change: components["schemas"]["RuleChange"];
+            /** Exercise Id */
+            exercise_id: string;
+            /**
+             * Is Compound
+             * @default true
+             */
+            is_compound: boolean;
+            /** Last Weight Kg */
+            last_weight_kg?: number | null;
+            /** Name */
+            name: string;
+            /** Planned Sets */
+            planned_sets: components["schemas"]["PlannedSet"][];
+            /** Recent Sessions */
+            recent_sessions?: components["schemas"]["Session"][];
+            /** Rep Max */
+            rep_max: number;
+            /** Rep Min */
+            rep_min: number;
+            /**
+             * Stalled
+             * @default false
+             */
+            stalled: boolean;
         };
         /** ExerciseRead */
         ExerciseRead: {
@@ -450,10 +567,40 @@ export interface components {
              */
             secondary_muscles: ("chest" | "upper_back" | "lats" | "traps" | "front_delts" | "side_delts" | "rear_delts" | "biceps" | "triceps" | "forearms" | "abs" | "obliques" | "lower_back" | "glutes" | "quads" | "hamstrings" | "adductors" | "abductors" | "calves")[];
         };
+        /** FinalExercise */
+        FinalExercise: {
+            action: components["schemas"]["Action"];
+            /** Exercise Id */
+            exercise_id: string;
+            /** Reason */
+            reason: string;
+            /** Sets */
+            sets: components["schemas"]["PlannedSet"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** Metric */
+        Metric: {
+            /** Usual */
+            usual?: number | null;
+            /** Value */
+            value: number;
+        };
+        /** PlannedSet */
+        PlannedSet: {
+            /** Reps */
+            reps?: number | null;
+            /**
+             * Set Type
+             * @default working
+             * @enum {string}
+             */
+            set_type: "warmup" | "working" | "drop" | "failure";
+            /** Weight Kg */
+            weight_kg?: number | null;
         };
         /** ProfileRead */
         ProfileRead: {
@@ -532,6 +679,12 @@ export interface components {
              */
             unit_system: "metric" | "imperial";
         };
+        /** Readiness */
+        Readiness: {
+            hrv_ms?: components["schemas"]["Metric"];
+            resting_hr_bpm?: components["schemas"]["Metric"];
+            sleep_minutes?: components["schemas"]["Metric"];
+        };
         /** ReadinessRead */
         ReadinessRead: {
             /** Awake Minutes */
@@ -599,6 +752,64 @@ export interface components {
              * @enum {string}
              */
             source: "manual" | "healthkit";
+        };
+        /** RecommendationRead */
+        RecommendationRead: {
+            /** Change Seq */
+            change_seq: number;
+            /**
+             * Deleted At
+             * Format: date-time
+             */
+            deleted_at: string | null;
+            /** Error */
+            error: string | null;
+            /**
+             * For Date
+             * Format: date
+             */
+            for_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            output?: components["schemas"]["CoachResult"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "running" | "ready" | "failed";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * RecommendationWrite
+         * @description A request for the AI coach's advice on the next session.
+         */
+        RecommendationWrite: {
+            /**
+             * For Date
+             * Format: date
+             */
+            for_date: string;
+            input: components["schemas"]["CoachInput"];
+        };
+        /**
+         * RuleChange
+         * @description Mirrors NextSession.Change on the phone.
+         * @enum {string}
+         */
+        RuleChange: "first_time" | "increase" | "add_reps" | "repeat_weight" | "decrease" | "deload" | "held_for_sleep" | "add_load_or_variation";
+        /** Session */
+        Session: {
+            /** Date */
+            date: string;
+            /** Sets */
+            sets: components["schemas"]["DoneSet"][];
         };
         /** SetRead */
         SetRead: {
@@ -670,6 +881,8 @@ export interface components {
             profile?: components["schemas"]["ProfileRead"];
             /** Readiness */
             readiness: components["schemas"]["ReadinessRead"][];
+            /** Recommendations */
+            recommendations: components["schemas"]["RecommendationRead"][];
             /** Templates */
             templates: components["schemas"]["TemplateRead"][];
             /** Workouts */
@@ -1361,6 +1574,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadinessRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    requestRecommendation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recommendation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecommendationWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationRead"];
                 };
             };
             /** @description Validation Error */

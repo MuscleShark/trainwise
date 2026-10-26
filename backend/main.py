@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database import get_db
-from routers import auth, body, exercises, profiles, sync, templates, workouts
+from routers import auth, body, coach, exercises, profiles, sync, templates, workouts
 
 
 def operation_id(route: APIRoute) -> str:
@@ -95,6 +95,7 @@ v1.include_router(exercises.router)
 v1.include_router(workouts.router)
 v1.include_router(templates.router)
 v1.include_router(body.router)
+v1.include_router(coach.router)
 v1.include_router(sync.router)
 app.include_router(v1)
 
