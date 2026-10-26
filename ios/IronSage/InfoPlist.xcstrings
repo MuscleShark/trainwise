@@ -1,9 +1,52 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage"
+          }
+        }
+      }
+    },
     "NSHealthShareUsageDescription" : {
       "comment" : "Why IronSage reads Apple Health data.",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, and body weight to show your progress and suggest your next sessions."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14,7 +57,14 @@
     },
     "NSHealthUpdateUsageDescription" : {
       "comment" : "Why IronSage writes to Apple Health.",
+      "extractionState" : "extracted_with_value",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage saves your strength workouts and the body weight you enter to Apple Health."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",

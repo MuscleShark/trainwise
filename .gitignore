@@ -24,3 +24,7 @@ ios/**/.build/
 ios/**/xcuserdata/
 ios/**/.swiftpm/
 DerivedData/
+
+# Coach eval reports (scripts/coach_eval.py --out/--answers): local results, not code.
+backend/*-eval.md
+backend/*-answers.md
