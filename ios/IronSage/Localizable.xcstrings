@@ -1,6 +1,316 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ a month, billed yearly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折合每月 %@，按年付费"
+          }
+        }
+      }
+    },
+    "%@ a month, charged to your Apple Account when you confirm. The subscription renews every month at the same price unless you turn it off at least 24 hours before the end of the current period. Manage or cancel it in Settings › Apple Account › Subscriptions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月 %@，确认购买时从你的 Apple 账户扣款。除非在当前周期结束前至少 24 小时关闭自动续订，订阅会每月以相同价格自动续订。可在“设置 › Apple 账户 › 订阅”中管理或取消。"
+          }
+        }
+      }
+    },
+    "%@ a year, charged to your Apple Account when you confirm. The subscription renews every year at the same price unless you turn it off at least 24 hours before the end of the current period. Manage or cancel it in Settings › Apple Account › Subscriptions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每年 %@，确认购买时从你的 Apple 账户扣款。除非在当前周期结束前至少 24 小时关闭自动续订，订阅会每年以相同价格自动续订。可在“设置 › Apple 账户 › 订阅”中管理或取消。"
+          }
+        }
+      }
+    },
+    "Adjustments for your sleep and recovery" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根据你的睡眠和恢复情况调整"
+          }
+        }
+      }
+    },
+    "Confirm your IronSage Coach subscription" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认你的 IronSage 教练订阅"
+          }
+        }
+      }
+    },
+    "Couldn't reach the App Store. Check your connection and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法连接 App Store。请检查网络后重试。"
+          }
+        }
+      }
+    },
+    "Ends %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 到期"
+          }
+        }
+      }
+    },
+    "Free for %lld days, then %@ a month. Payment is charged to your Apple Account when the trial ends. The subscription renews every month at the same price unless you turn it off at least 24 hours before the end of the current period. Manage or cancel it in Settings › Apple Account › Subscriptions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费试用 %1$lld 天，之后每月 %2$@。试用结束时从你的 Apple 账户扣款。除非在当前周期结束前至少 24 小时关闭自动续订，订阅会每月以相同价格自动续订。可在“设置 › Apple 账户 › 订阅”中管理或取消。"
+          }
+        }
+      }
+    },
+    "Free for %lld days, then %@ a year. Payment is charged to your Apple Account when the trial ends. The subscription renews every year at the same price unless you turn it off at least 24 hours before the end of the current period. Manage or cancel it in Settings › Apple Account › Subscriptions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费试用 %1$lld 天，之后每年 %2$@。试用结束时从你的 Apple 账户扣款。除非在当前周期结束前至少 24 小时关闭自动续订，订阅会每年以相同价格自动续订。可在“设置 › Apple 账户 › 订阅”中管理或取消。"
+          }
+        }
+      }
+    },
+    "Free trial until %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费试用至 %@"
+          }
+        }
+      }
+    },
+    "IronSage Coach" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 教练"
+          }
+        }
+      }
+    },
+    "Manage subscription" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理订阅"
+          }
+        }
+      }
+    },
+    "%@/month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/月"
+          }
+        }
+      }
+    },
+    "Monthly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月付"
+          }
+        }
+      }
+    },
+    "No IronSage Coach subscription was found for this Apple Account." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个 Apple 账户没有 IronSage 教练订阅。"
+          }
+        }
+      }
+    },
+    "Redeem code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兑换优惠码"
+          }
+        }
+      }
+    },
+    "Renews %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 续订"
+          }
+        }
+      }
+    },
+    "Restore purchases" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
+    },
+    "Rule-based suggestions stay free" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基于规则的建议依然免费"
+          }
+        }
+      }
+    },
+    "Start %lld-day free trial" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始 %lld 天免费试用"
+          }
+        }
+      }
+    },
+    "Subscribe" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅"
+          }
+        }
+      }
+    },
+    "Subscribe to IronSage Coach" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅 IronSage 教练"
+          }
+        }
+      }
+    },
+    "Subscribe to IronSage Coach for the AI coach's take" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅 IronSage 教练，听听 AI 教练的看法"
+          }
+        }
+      }
+    },
+    "Terms of Use" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用条款"
+          }
+        }
+      }
+    },
+    "The AI coach comes with IronSage Coach, a subscription with a free trial for new subscribers." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练包含在 IronSage 教练订阅中，新订阅者可以免费试用。"
+          }
+        }
+      }
+    },
+    "The AI coach needs an IronSage Coach subscription. Suggested weights and reps stay free." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 教练需要订阅 IronSage 教练。建议的重量和次数依然免费。"
+          }
+        }
+      }
+    },
+    "The code couldn't be redeemed. Check it and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法兑换这个优惠码。请检查后重试。"
+          }
+        }
+      }
+    },
+    "The purchase didn't go through. Please try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买没有完成，请重试。"
+          }
+        }
+      }
+    },
+    "The reason behind each suggested weight and rep" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个建议重量和次数背后的理由"
+          }
+        }
+      }
+    },
+    "This Apple Account's subscription is linked to another IronSage account." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个 Apple 账户的订阅已关联到另一个 IronSage 账户。"
+          }
+        }
+      }
+    },
+    "This subscription is already linked to another IronSage account. Sign in with that account to use it." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个订阅已关联到另一个 IronSage 账户。请登录那个账户使用。"
+          }
+        }
+      }
+    },
     "“%@” will be removed from all your devices." : {
       "localizations" : {
         "zh-Hans" : {
@@ -2371,6 +2681,26 @@
         }
       }
     },
+    "%@/year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/年"
+          }
+        }
+      }
+    },
+    "Yearly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年付"
+          }
+        }
+      }
+    },
     "You slept little last night, so no weight goes up today." : {
       "localizations" : {
         "zh-Hans" : {
@@ -2387,16 +2717,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你将不再收到建议，IronSage 也会停止向 Anthropic 发送数据。以前的建议仍保留在历史记录中。"
-          }
-        }
-      }
-    },
-    "Your account doesn't have the AI coach yet." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的账户还没有开通 AI 教练。"
           }
         }
       }
@@ -2431,12 +2751,42 @@
         }
       }
     },
+    "Your purchase is waiting for approval. The AI coach turns on once it goes through." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的购买正在等待批准。批准后 AI 教练会自动开启。"
+          }
+        }
+      }
+    },
     "Your recent sets for the exercises in the suggestion" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "本次建议涉及动作的最近训练组"
+          }
+        }
+      }
+    },
+    "Your subscription couldn't be confirmed with IronSage yet. Use Restore purchases on the subscription page to try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 暂时无法确认你的订阅。请在订阅页面使用“恢复购买”重试。"
+          }
+        }
+      }
+    },
+    "Your subscription was found but couldn't be confirmed with IronSage yet. Check your connection and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已找到你的订阅，但 IronSage 暂时无法确认。请检查网络后重试。"
           }
         }
       }

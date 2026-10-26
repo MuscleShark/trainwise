@@ -344,6 +344,36 @@ class RecommendationRead(SyncedRead):
     error: str | None
 
 
+# Subscription
+
+
+class SubscriptionWrite(BaseModel):
+    """A transaction StoreKit signed (`VerificationResult.jwsRepresentation`)."""
+
+    signed_transaction: str = Field(min_length=1, max_length=20_000)
+
+
+class SubscriptionRead(BaseModel):
+    """The account's coach subscription and whether it may use the AI coach."""
+
+    # none: never subscribed on this account; revoked: refunded.
+    status: Literal["active", "expired", "revoked", "none"]
+    product_id: str | None
+    expires_at: datetime | None
+    environment: str | None
+    # The offer the current period came from: introductory (free trial), promotional,
+    # offer_code (a redeemed promotion code) or win_back; null at the regular price.
+    offer_type: Literal["introductory", "promotional", "offer_code", "win_back"] | None
+    # True with an active subscription, or for test accounts allowed by hand.
+    coach_access: bool
+
+
+class AppStoreNotification(BaseModel):
+    """The body Apple POSTs for App Store Server Notifications V2."""
+
+    signedPayload: str = Field(min_length=1, max_length=100_000)
+
+
 # Sync
 
 

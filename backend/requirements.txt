@@ -6,5 +6,7 @@ alembic
 psycopg[binary]
 python-dotenv
 python-jose[cryptography]
+# Verifies the App Store's signed transactions (appstore.py).
+cryptography
 # The coach worker's model provider (coach/providers.py).
 anthropic

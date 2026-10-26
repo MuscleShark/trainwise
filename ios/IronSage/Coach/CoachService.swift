@@ -35,6 +35,9 @@ final class CoachService {
         static let decided = "IronSage.coach.decided"
         /// Workout id → the recommendation whose advice its sets started from.
         static let applied = "IronSage.coach.applied"
+        /// When the account last gained access (a purchase or restore): refusals from
+        /// before it no longer count.
+        static let accessSince = "IronSage.coach.accessSince"
     }
 
     /// Seconds between the syncs that pick up an answer, and how many of them.
@@ -70,7 +73,7 @@ final class CoachService {
     func reset() {
         isEnabled = false
         hasDecided = false
-        for key in [Keys.enabled, Keys.decided, Keys.applied] {
+        for key in [Keys.enabled, Keys.decided, Keys.applied, Keys.accessSince] {
             defaults.removeObject(forKey: key)
         }
     }
@@ -82,17 +85,33 @@ final class CoachService {
         defaults.set(true, forKey: Keys.decided)
     }
 
+    /// The account gained access (subscribed or restored): ask again, even today.
+    func accessGained() {
+        defaults.set(Date.now, forKey: Keys.accessSince)
+        Task { await refresh() }
+    }
+
     // MARK: Advice
 
-    /// The account can't use the coach (the server answered 402).
+    /// The account can't use the coach (the server answered 402): no subscription, or it ended.
     var isUnavailable: Bool {
-        store.recommendations.first?.error == "not_allowed"
+        guard let latest = store.recommendations.first else { return false }
+        return latest.error == "not_allowed" && !isOutdatedRefusal(latest)
+    }
+
+    /// A 402 from before the account gained access.
+    private func isOutdatedRefusal(_ recommendation: Recommendation) -> Bool {
+        guard recommendation.error == "not_allowed", let since = defaults.object(forKey: Keys.accessSince) as? Date
+        else { return false }
+        return (recommendation.requestedAt ?? .distantPast) < since
     }
 
     /// Today's request for the plan due next, whatever its state.
     var current: Recommendation? {
         guard let plan = currentPlan() else { return nil }
-        return store.recommendations.first { $0.forDate == HealthDays.key(.now) && $0.planKey == plan.key }
+        return store.recommendations.first {
+            $0.forDate == HealthDays.key(.now) && $0.planKey == plan.key && !isOutdatedRefusal($0)
+        }
     }
 
     /// The advice to start `day` with: the coach's answer for exactly the plan due now.
@@ -177,7 +196,7 @@ final class CoachService {
             return
         }
         // No access, or the day's limit: don't ask again today.
-        let todays = store.recommendations.filter { $0.forDate == today }
+        let todays = store.recommendations.filter { $0.forDate == today && !isOutdatedRefusal($0) }
         if todays.contains(where: { ["not_allowed", "limit_reached"].contains($0.error) }) || todays.count >= Coach.dailyRequests {
             return
         }

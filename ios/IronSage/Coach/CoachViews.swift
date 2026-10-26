@@ -1,11 +1,16 @@
 import IronSageCore
 import IronSageStore
+import StoreKit
 import SwiftUI
 
 /// Asked before anything is sent to the AI coach (docs/consent-copy.md, section 3).
+/// Without a subscription it continues to the paywall, and the coach turns on once
+/// the purchase goes through.
 struct CoachConsentView: View {
     @Environment(CoachService.self) private var coach
+    @Environment(SubscriptionService.self) private var subscriptions
     @Environment(\.dismiss) private var dismiss
+    @State private var showsPaywall = false
 
     private let sent: [(String, LocalizedStringResource)] = [
         ("dumbbell", "Your recent sets for the exercises in the suggestion"),
@@ -34,6 +39,11 @@ struct CoachConsentView: View {
                     Text("Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                    if !subscriptions.hasAccess {
+                        Text("The AI coach comes with IronSage Coach, a subscription with a free trial for new subscribers.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     Link("Privacy policy", destination: Site.page("privacy"))
                         .font(.footnote)
                 }
@@ -41,11 +51,18 @@ struct CoachConsentView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 VStack(spacing: 8) {
-                    Button("Turn on AI coach") {
-                        coach.turnOn()
-                        dismiss()
+                    if subscriptions.hasAccess {
+                        Button("Turn on AI coach") {
+                            coach.turnOn()
+                            dismiss()
+                        }
+                        .buttonStyle(BrandPrimaryButtonStyle())
+                    } else {
+                        Button("Continue") {
+                            showsPaywall = true
+                        }
+                        .buttonStyle(BrandPrimaryButtonStyle())
                     }
-                    .buttonStyle(BrandPrimaryButtonStyle())
                     Button("Not now") {
                         coach.notNow()
                         dismiss()
@@ -57,8 +74,31 @@ struct CoachConsentView: View {
                 .background(Color.appBackground)
             }
             .background(Color.appBackground)
+            .navigationDestination(isPresented: $showsPaywall) {
+                PaywallView {
+                    coach.turnOn()
+                    dismiss()
+                }
+            }
         }
         .interactiveDismissDisabled()
+    }
+}
+
+/// The paywall on its own, from places where the coach is already on.
+struct PaywallSheet: View {
+    @Environment(CoachService.self) private var coach
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            PaywallView { coach.accessGained() }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Not now") { dismiss() }
+                    }
+                }
+        }
     }
 }
 
@@ -67,11 +107,26 @@ struct CoachConsentView: View {
 struct CoachUpNextRow: View {
     let recommendation: Recommendation?
     @Environment(CoachService.self) private var coach
+    @Environment(SubscriptionService.self) private var subscriptions
     @State private var isAsking = false
+    @State private var showsPaywall = false
 
     var body: some View {
         Group {
-            if !coach.isEnabled {
+            if coach.isEnabled && coach.isUnavailable && subscriptions.needsConfirmation {
+                Button {
+                    // Gaining access asks the coach again (SubscriptionService.onAccessGained).
+                    Task { try? await subscriptions.restore() }
+                } label: {
+                    Label("Confirm your IronSage Coach subscription", systemImage: "arrow.clockwise")
+                }
+            } else if coach.isEnabled && coach.isUnavailable && !subscriptions.hasAccess {
+                Button {
+                    showsPaywall = true
+                } label: {
+                    Label("Subscribe to IronSage Coach for the AI coach's take", systemImage: "sparkles")
+                }
+            } else if !coach.isEnabled {
                 if !coach.hasDecided && !coach.isUnavailable {
                     Button {
                         isAsking = true
@@ -105,6 +160,7 @@ struct CoachUpNextRow: View {
         }
         .font(.subheadline)
         .sheet(isPresented: $isAsking) { CoachConsentView() }
+        .sheet(isPresented: $showsPaywall) { PaywallSheet() }
     }
 }
 
@@ -183,11 +239,16 @@ struct CoachDataView: View {
     }
 }
 
-/// The AI coach switch in Settings (docs/consent-copy.md, section 4).
+/// The AI coach switch in Settings (docs/consent-copy.md, section 4), and the
+/// IronSage Coach subscription.
 struct CoachSettingsSection: View {
     @Environment(CoachService.self) private var coach
+    @Environment(SubscriptionService.self) private var subscriptions
     @State private var isAsking = false
     @State private var isConfirmingOff = false
+    @State private var showsPaywall = false
+    @State private var managesSubscription = false
+    @State private var redeemsCode = false
 
     var body: some View {
         Section {
@@ -209,13 +270,48 @@ struct CoachSettingsSection: View {
             } message: {
                 Text("You'll stop getting suggestions, and IronSage stops sending data to Anthropic. Past suggestions stay in your history.")
             }
+            if let entitlement = subscriptions.entitlement {
+                LabeledContent("IronSage Coach") {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(entitlement.productID == SubscriptionService.yearly ? LocalizedStringKey("Yearly") : "Monthly")
+                        if let expiresAt = entitlement.expiresAt {
+                            Group {
+                                if entitlement.isTrial && entitlement.willRenew {
+                                    Text("Free trial until \(expiresAt, format: .dateTime.month().day())")
+                                } else if entitlement.willRenew {
+                                    Text("Renews \(expiresAt, format: .dateTime.month().day())")
+                                } else {
+                                    Text("Ends \(expiresAt, format: .dateTime.month().day())")
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                Button("Manage subscription") { managesSubscription = true }
+                    .manageSubscriptionsSheet(isPresented: $managesSubscription)
+            } else if !subscriptions.serverAccess {
+                Button("Subscribe to IronSage Coach") { showsPaywall = true }
+                    .sheet(isPresented: $showsPaywall) { PaywallSheet() }
+            }
+            if !subscriptions.serverAccess || subscriptions.entitlement != nil {
+                Button("Redeem code") { redeemsCode = true }
+                    .offerCodeRedemption(isPresented: $redeemsCode) { _ in
+                        Task { await subscriptions.refresh() }
+                    }
+            }
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(coach.isEnabled
                     ? "Sends your recent training and daily health summaries to Anthropic to prepare suggestions."
                     : "Nothing is sent to Anthropic.")
-                if coach.isUnavailable {
-                    Text("Your account doesn't have the AI coach yet.")
+                if subscriptions.isLinkedElsewhere {
+                    Text("This Apple Account's subscription is linked to another IronSage account.")
+                } else if subscriptions.needsConfirmation {
+                    Text("Your subscription couldn't be confirmed with IronSage yet. Use Restore purchases on the subscription page to try again.")
+                } else if coach.isUnavailable && !subscriptions.hasAccess {
+                    Text("The AI coach needs an IronSage Coach subscription. Suggested weights and reps stay free.")
                 }
             }
         }

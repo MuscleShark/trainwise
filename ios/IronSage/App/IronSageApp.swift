@@ -19,6 +19,7 @@ struct IronSageApp: App {
                     .environment(services.sync)
                     .environment(services.health)
                     .environment(services.coach)
+                    .environment(services.subscriptions)
                     .environment(\.services, services)
             case .failure(let error):
                 // Only reachable with a broken build configuration or a broken disk.
@@ -41,6 +42,7 @@ final class AppServices {
     let sync: SyncEngine
     let health: HealthService
     let coach: CoachService
+    let subscriptions: SubscriptionService
     /// Debug builds launched with `-demo`: sample data in memory, no sign-in, no network.
     let isDemo: Bool
 
@@ -62,6 +64,8 @@ final class AppServices {
         // Checked right before each request goes out, so turning the coach off stops
         // one that is already queued.
         sync.allowsCoach = { [coach] in coach.isEnabled }
+        subscriptions = SubscriptionService(api: isDemo ? nil : api)
+        subscriptions.onAccessGained = { [coach] in coach.accessGained() }
         #if DEBUG
         if isDemo {
             DemoData.fill(store, coach: coach)
@@ -83,6 +87,7 @@ final class AppServices {
         sync.reset()
         health.reset()
         coach.reset()
+        subscriptions.reset()
         UserDefaults.standard.removeObject(forKey: Self.ownerKey)
     }
 

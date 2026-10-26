@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Recommendation, User, utcnow
+from routers.subscription import has_coach_access
 from schemas import RecommendationRead, RecommendationWrite
 from security import get_current_user
 from sync import id_conflict, next_change_seq
@@ -62,7 +63,8 @@ def request_recommendation(
     when it is ready, usually within seconds. Sending the same id again returns the
     existing request without asking again, so retries are safe.
 
-    402 when the account may not use the coach; 429 after DAILY_LIMIT requests in
+    402 without an active coach subscription (test accounts can be allowed by hand
+    with users.coach_enabled); 429 after DAILY_LIMIT requests in
     24 hours.
     """
     recommendation = db.get(Recommendation, recommendation_id)
@@ -75,7 +77,7 @@ def request_recommendation(
             fail(db, recommendation, current_user, "timed_out")
         return recommendation
 
-    if not current_user.coach_enabled:
+    if not has_coach_access(db, current_user):
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="The AI coach needs a subscription.",
