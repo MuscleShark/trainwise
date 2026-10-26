@@ -1,6 +1,16 @@
 {
   "components": {
     "schemas": {
+      "Action": {
+        "description": "The only changes the coach may make to the rule plan.",
+        "enum": [
+          "follow",
+          "hold_weight",
+          "one_set_fewer"
+        ],
+        "title": "Action",
+        "type": "string"
+      },
       "BodyMeasurementRead": {
         "properties": {
           "change_seq": {
@@ -131,6 +141,200 @@
           "value"
         ],
         "title": "BodyMeasurementWrite",
+        "type": "object"
+      },
+      "CoachInput": {
+        "properties": {
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/ExercisePlan"
+            },
+            "maxItems": 15,
+            "minItems": 1,
+            "title": "Exercises",
+            "type": "array"
+          },
+          "experience": {
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
+            ],
+            "title": "Experience",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "goal": {
+            "enum": [
+              "strength",
+              "hypertrophy",
+              "general",
+              null
+            ],
+            "title": "Goal",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "language": {
+            "default": "en",
+            "enum": [
+              "en",
+              "zh"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/Readiness"
+          },
+          "unit": {
+            "default": "kg",
+            "enum": [
+              "kg",
+              "lb"
+            ],
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "exercises"
+        ],
+        "title": "CoachInput",
+        "type": "object"
+      },
+      "CoachResult": {
+        "properties": {
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/FinalExercise"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "input_tokens": {
+            "default": 0,
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "output_tokens": {
+            "default": 0,
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "exercises",
+          "model"
+        ],
+        "title": "CoachResult",
+        "type": "object"
+      },
+      "DoneSet": {
+        "properties": {
+          "reps": {
+            "title": "Reps",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "rir": {
+            "title": "Rir",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "weight_kg": {
+            "title": "Weight Kg",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "title": "DoneSet",
+        "type": "object"
+      },
+      "ExercisePlan": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/RuleChange"
+          },
+          "exercise_id": {
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "is_compound": {
+            "default": true,
+            "title": "Is Compound",
+            "type": "boolean"
+          },
+          "last_weight_kg": {
+            "title": "Last Weight Kg",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "planned_sets": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedSet"
+            },
+            "maxItems": 20,
+            "title": "Planned Sets",
+            "type": "array"
+          },
+          "recent_sessions": {
+            "items": {
+              "$ref": "#/components/schemas/Session"
+            },
+            "maxItems": 5,
+            "title": "Recent Sessions",
+            "type": "array"
+          },
+          "rep_max": {
+            "title": "Rep Max",
+            "type": "integer"
+          },
+          "rep_min": {
+            "title": "Rep Min",
+            "type": "integer"
+          },
+          "stalled": {
+            "default": false,
+            "title": "Stalled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "exercise_id",
+          "name",
+          "change",
+          "rep_min",
+          "rep_max",
+          "planned_sets"
+        ],
+        "title": "ExercisePlan",
         "type": "object"
       },
       "ExerciseRead": {
@@ -426,6 +630,36 @@
         "title": "ExerciseWrite",
         "type": "object"
       },
+      "FinalExercise": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "exercise_id": {
+            "title": "Exercise Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "sets": {
+            "items": {
+              "$ref": "#/components/schemas/PlannedSet"
+            },
+            "title": "Sets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "exercise_id",
+          "action",
+          "reason",
+          "sets"
+        ],
+        "title": "FinalExercise",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -437,6 +671,57 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Metric": {
+        "properties": {
+          "usual": {
+            "title": "Usual",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "title": "Metric",
+        "type": "object"
+      },
+      "PlannedSet": {
+        "properties": {
+          "reps": {
+            "title": "Reps",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "set_type": {
+            "default": "working",
+            "enum": [
+              "warmup",
+              "working",
+              "drop",
+              "failure"
+            ],
+            "title": "Set Type",
+            "type": "string"
+          },
+          "weight_kg": {
+            "title": "Weight Kg",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "title": "PlannedSet",
         "type": "object"
       },
       "ProfileRead": {
@@ -626,6 +911,21 @@
           }
         },
         "title": "ProfileWrite",
+        "type": "object"
+      },
+      "Readiness": {
+        "properties": {
+          "hrv_ms": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "resting_hr_bpm": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "sleep_minutes": {
+            "$ref": "#/components/schemas/Metric"
+          }
+        },
+        "title": "Readiness",
         "type": "object"
       },
       "ReadinessRead": {
@@ -818,6 +1118,124 @@
         "title": "ReadinessWrite",
         "type": "object"
       },
+      "RecommendationRead": {
+        "properties": {
+          "change_seq": {
+            "title": "Change Seq",
+            "type": "integer"
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "title": "Error",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "for_date": {
+            "format": "date",
+            "title": "For Date",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "$ref": "#/components/schemas/CoachResult"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "running",
+              "ready",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "updated_at",
+          "deleted_at",
+          "change_seq",
+          "for_date",
+          "status",
+          "error"
+        ],
+        "title": "RecommendationRead",
+        "type": "object"
+      },
+      "RecommendationWrite": {
+        "description": "A request for the AI coach's advice on the next session.",
+        "properties": {
+          "for_date": {
+            "format": "date",
+            "title": "For Date",
+            "type": "string"
+          },
+          "input": {
+            "$ref": "#/components/schemas/CoachInput"
+          }
+        },
+        "required": [
+          "for_date",
+          "input"
+        ],
+        "title": "RecommendationWrite",
+        "type": "object"
+      },
+      "RuleChange": {
+        "description": "Mirrors NextSession.Change on the phone.",
+        "enum": [
+          "first_time",
+          "increase",
+          "add_reps",
+          "repeat_weight",
+          "decrease",
+          "deload",
+          "held_for_sleep",
+          "add_load_or_variation"
+        ],
+        "title": "RuleChange",
+        "type": "string"
+      },
+      "Session": {
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "sets": {
+            "items": {
+              "$ref": "#/components/schemas/DoneSet"
+            },
+            "maxItems": 20,
+            "title": "Sets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "date",
+          "sets"
+        ],
+        "title": "Session",
+        "type": "object"
+      },
       "SetRead": {
         "properties": {
           "completed_at": {
@@ -989,6 +1407,13 @@
               "$ref": "#/components/schemas/ReadinessRead"
             },
             "title": "Readiness",
+            "type": "array"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationRead"
+            },
+            "title": "Recommendations",
             "type": "array"
           },
           "templates": {
@@ -2420,6 +2845,65 @@
         "summary": "Put Readiness",
         "tags": [
           "Body and readiness"
+        ]
+      }
+    },
+    "/v1/recommendations/{recommendation_id}": {
+      "put": {
+        "description": "Asks the AI coach to adjust and explain the phone's rule plan.\n\nReturns at once with status \"pending\"; the advice arrives through GET /v1/sync\nwhen it is ready, usually within seconds. Sending the same id again returns the\nexisting request without asking again, so retries are safe.\n\n402 when the account may not use the coach; 429 after DAILY_LIMIT requests in\n24 hours.",
+        "operationId": "requestRecommendation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recommendation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recommendation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Request Recommendation",
+        "tags": [
+          "Coach"
         ]
       }
     },

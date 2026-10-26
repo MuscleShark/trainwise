@@ -6,3 +6,5 @@ alembic
 psycopg[binary]
 python-dotenv
 python-jose[cryptography]
+# The coach worker's model provider (coach/providers.py).
+anthropic

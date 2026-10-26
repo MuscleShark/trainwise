@@ -27,7 +27,7 @@ class DoneSet(BaseModel):
 
 class Session(BaseModel):
     date: str
-    sets: list[DoneSet]
+    sets: list[DoneSet] = Field(max_length=20)
 
 
 class RuleChange(str, Enum):
@@ -51,7 +51,7 @@ class ExercisePlan(BaseModel):
     rep_min: int
     rep_max: int
     stalled: bool = False
-    planned_sets: list[PlannedSet]
+    planned_sets: list[PlannedSet] = Field(max_length=20)
     # The weight the rules started from, so the coach can hold it instead of increasing.
     last_weight_kg: float | None = None
     recent_sessions: list[Session] = Field(default_factory=list, max_length=5)

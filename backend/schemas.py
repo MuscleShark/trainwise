@@ -15,6 +15,8 @@ from pydantic import (
     model_validator,
 )
 
+from coach.schemas import CoachInput, CoachResult
+
 Muscle = Literal[
     "chest",
     "upper_back",
@@ -321,6 +323,27 @@ class ReadinessRead(SyncedRead, ReadinessWrite):
     date: date
 
 
+# Coach
+
+
+class RecommendationWrite(BaseModel):
+    """A request for the AI coach's advice on the next session."""
+
+    # The local date the session is planned for.
+    for_date: date
+    input: CoachInput
+
+
+class RecommendationRead(SyncedRead):
+    for_date: date
+    # pending or running: the coach is working on it; ready: `output` holds the
+    # advice; failed: no advice, so the app keeps the rule plan. `error` then says why:
+    # invalid_answer, declined, unavailable or timed_out.
+    status: Literal["pending", "running", "ready", "failed"]
+    output: CoachResult | None
+    error: str | None
+
+
 # Sync
 
 
@@ -336,3 +359,6 @@ class SyncResponse(BaseModel):
     templates: list[TemplateRead]
     body_measurements: list[BodyMeasurementRead]
     readiness: list[ReadinessRead]
+    # Optional in the contract, so an app built before the coach decodes a page
+    # without it (and an older backend's pages decode in a newer app).
+    recommendations: list[RecommendationRead] = Field(default_factory=list)

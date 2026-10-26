@@ -17,6 +17,7 @@ def template() -> Template:
         code=lambda_.Code.from_inline("def handler(event, context): pass"),
         function_name="trainwise-api-test",
         migrate_function_name="trainwise-migrate-test",
+        coach_function_name="trainwise-coach-test",
         frontend_urls=["https://example.vercel.app", "http://localhost:3000"],
         clerk_issuer="https://test-instance.clerk.accounts.dev",
         ssm_parameter_prefix="/trainwise/test",
@@ -40,9 +41,58 @@ def test_function_configuration(template):
                     "FRONTEND_URL": "https://example.vercel.app,http://localhost:3000",
                     "CLERK_ISSUER": "https://test-instance.clerk.accounts.dev",
                     "SSM_PARAMETER_PREFIX": "/trainwise/test",
+                    "COACH_FUNCTION_NAME": "trainwise-coach-test",
                 }
             },
         },
+    )
+
+
+def test_coach_worker_configuration(template):
+    template.has_resource_properties(
+        "AWS::Lambda::Function",
+        {
+            "FunctionName": "trainwise-coach-test",
+            "Handler": "coach_handler.handler",
+            "Timeout": 60,
+            "Environment": {"Variables": {"SSM_PARAMETER_PREFIX": "/trainwise/test"}},
+        },
+    )
+    # Errors are stored on the recommendation; Lambda must not run the request again.
+    template.has_resource_properties(
+        "AWS::Lambda::EventInvokeConfig", {"MaximumRetryAttempts": 0}
+    )
+
+
+def test_only_the_coach_worker_can_read_the_ai_key(template):
+    coach = policy_for_function(template, "trainwise-coach-test")
+    assert "parameter/trainwise/test/ANTHROPIC_API_KEY" in coach
+    assert "parameter/trainwise/test/DATABASE_URL\"" in coach
+    for other in ("trainwise-api-test", "trainwise-migrate-test"):
+        assert "ANTHROPIC_API_KEY" not in policy_for_function(template, other)
+
+
+def test_the_api_may_start_the_coach_worker(template):
+    policy = policy_for_function(template, "trainwise-api-test")
+    assert "lambda:InvokeFunction" in policy
+
+
+def test_coach_alarms_watch_errors_and_daily_calls(template):
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {"AlarmName": "trainwise-coach-test-errors", "MetricName": "Errors", "Threshold": 1},
+    )
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {"AlarmName": "trainwise-coach-test-daily-calls", "MetricName": "Invocations"},
+    )
+    template.has_resource_properties(
+        "AWS::Logs::MetricFilter",
+        {"FilterPattern": '{ $.status = "failed" }'},
+    )
+    template.has_resource_properties(
+        "AWS::CloudWatch::Alarm",
+        {"AlarmName": "trainwise-coach-test-failed-answers", "MetricName": "FailedAnswers"},
     )
 
 
@@ -54,6 +104,7 @@ def test_secrets_are_not_in_environment(template):
         assert "DATABASE_URL_DIRECT" not in variables
         assert "SECRET_KEY" not in variables
         assert "CLERK_SECRET_KEY" not in variables
+        assert "ANTHROPIC_API_KEY" not in variables
 
 
 def test_public_function_url_without_cors(template):

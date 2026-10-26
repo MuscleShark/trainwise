@@ -13,6 +13,7 @@ from decimal import Decimal
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Date,
     DateTime,
     Float,
@@ -24,6 +25,7 @@ from sqlalchemy import (
     TypeDecorator,
     UniqueConstraint,
     Uuid,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -90,6 +92,10 @@ class User(Base):
         default=0,
         server_default="0",
         nullable=False,
+    )
+    # May use the AI coach. Set by hand for test accounts until subscriptions exist.
+    coach_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
     )
 
     profile: Mapped["Profile | None"] = relationship(back_populates="user", uselist=False)
@@ -317,3 +323,26 @@ class DailyReadiness(SyncedMixin, Base):
     hrv_sdnn_ms: Mapped[float | None] = mapped_column(Float)
     resting_hr_bpm: Mapped[float | None] = mapped_column(Float)
     source: Mapped[str] = mapped_column(String(10), nullable=False)
+
+
+class Recommendation(SyncedMixin, Base):
+    """The AI coach's advice for one session, with what it was given.
+
+    The phone creates it with the rule plan (status "pending"); the coach worker fills
+    in the result and sets "ready", or "failed" with the reason. Both changes take a
+    new change_seq, so the phone gets them through GET /v1/sync.
+    """
+
+    __tablename__ = "recommendations"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    # The local date the advice is for.
+    for_date: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String(10), nullable=False)
+    input: Mapped[dict] = mapped_column(JSON, nullable=False)
+    output: Mapped[dict | None] = mapped_column(JSON)
+    model: Mapped[str | None] = mapped_column(String(80))
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error: Mapped[str | None] = mapped_column(Text)
