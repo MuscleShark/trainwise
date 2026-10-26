@@ -116,7 +116,7 @@ Agreed on 2026-10-25:
 | Where the rules run | On the phone (`IronSageCore/NextSession.swift`), so suggestions work offline and cost nothing |
 | When the AI runs | Ahead of time: after a workout syncs, and in the morning once last night's sleep is in. The result is stored and shown offline; nobody waits for it, so no streaming Lambda is needed |
 | What the AI may change | Only one of three actions per exercise: follow the rule plan, hold the weight, or one set fewer. The backend turns the action into sets, so the model never writes a weight |
-| AI provider | Not tied to one. A small adapter per provider (Claude, Gemini, OpenAI); the eval set decides which one runs in production. Changing provider also means updating the privacy policy, the consent text and the App Store privacy label |
+| AI provider | Not tied to one: a small adapter per provider (Claude, Gemini, OpenAI). **Claude Sonnet 5.5** runs in production, chosen on 2026-10-25 from the eval (Opus, Sonnet and Haiku 5.5 all chose correctly in every case; Sonnet costs about $0.007 per suggestion, about 2.8 s). Changing provider also means updating the privacy policy, the consent text and the App Store privacy label |
 | Price | $4.99 a month or $39.99 a year, with a 7-day free trial |
 | Agent | Not in M3. A chat coach with tools comes after the US launch |
 | Markets | US App Store first. Mainland China later; it needs a mainland filing entity, a China-hosted backend, a filed domestic model and its own sign-in |

@@ -133,6 +133,9 @@ class GeminiModel:
 
 PROVIDERS = {"anthropic": AnthropicModel, "openai": OpenAIModel, "google": GeminiModel}
 
+# The model used in production, chosen with the eval (docs/architecture.md, M3 decisions).
+DEFAULT_MODEL = "anthropic:claude-sonnet-5-5"
+
 
 def model(spec: str) -> CoachModel:
     """ "anthropic:claude-opus-5-5", "openai:gpt-6-astra", "google:gemini-3.8-flash"."""
