@@ -2,11 +2,12 @@
 grounded numbers, cost and time. Next-session cases and weekly-summary cases are scored
 with their own rules, and the same checks on wording."""
 
+import json
 import re
 import time
 from dataclasses import dataclass, field
 
-from . import guardrails
+from . import guardrails, prompt
 from .eval_cases import Case, WeeklyCase
 from .providers import CoachModel
 from .schemas import CoachInput, CoachResult, Readiness, WeeklyInput, WeeklyResult, WeekReadiness
@@ -55,31 +56,20 @@ def minutes_as_text(minutes: float) -> set[float]:
     }
 
 
+def input_numbers(plan: CoachInput | WeeklyInput) -> set[float]:
+    """Every number in the input exactly as the model saw it: weights already in the
+    user's unit (prompt.model_view), so a weight it converted or rounded itself fails."""
+    view = json.dumps(prompt.model_view(plan), ensure_ascii=False)
+    return {float(text.replace(",", ".")) for text in NUMBER.findall(view)}
+
+
 def allowed_numbers(plan: CoachInput) -> set[float]:
-    """Numbers a reason may mention: everything in the input, weights also in pounds,
-    plate steps and the change between last time and the plan, sleep as hours and
-    minutes, the difference between each readiness value and its usual (also as a
-    percentage), and small counts such as "one more rep"."""
+    """Numbers a reason may mention: everything in the input as the model saw it
+    (weights in the user's unit, with each planned weight change), plate steps, sleep as
+    hours and minutes, the difference between each readiness value and its usual (also
+    as a percentage), and small counts such as "one more rep"."""
     numbers: set[float] = set(range(0, 11)) | PLATE_STEPS
-    for text in NUMBER.findall(plan.model_dump_json()):
-        numbers.add(float(text.replace(",", ".")))
-    weights = [
-        s.weight_kg
-        for e in plan.exercises
-        for s in [*e.planned_sets, *(d for session in e.recent_sessions for d in session.sets)]
-        if s.weight_kg
-    ]
-    for kg in weights:
-        lb = kg / 0.45359237
-        numbers.update({round(lb), round(lb * 2) / 2, round(lb, 1), round(lb / 2.5) * 2.5})
-    for exercise in plan.exercises:
-        top = max((s.weight_kg or 0 for s in exercise.planned_sets), default=0)
-        if exercise.last_weight_kg and top:
-            change = abs(top - exercise.last_weight_kg)
-            numbers.update(
-                {change, round(change / 0.45359237), round(change / 0.45359237 / 2.5) * 2.5}
-            )
-    return numbers | readiness_numbers(plan.readiness)
+    return numbers | input_numbers(plan) | readiness_numbers(plan.readiness)
 
 
 def readiness_numbers(readiness: Readiness | WeekReadiness) -> set[float]:
@@ -149,16 +139,11 @@ SENTENCE_END = re.compile(r"[.!?](?=\s|$)|[。！？]")
 
 
 def allowed_week_numbers(week: WeeklyInput) -> set[float]:
-    """Numbers a weekly summary may mention: everything in the input, record weights
-    also in pounds, sleep as hours and minutes, differences from usual, and small
-    counts such as "two or three more sets"."""
+    """Numbers a weekly summary may mention: everything in the input as the model saw
+    it (record weights in the user's unit), sleep as hours and minutes, differences from
+    usual, and small counts such as "two or three more sets"."""
     numbers: set[float] = set(range(0, 11)) | PLATE_STEPS
-    for text in NUMBER.findall(week.model_dump_json()):
-        numbers.add(float(text.replace(",", ".")))
-    for record in week.records:
-        lb = record.weight_kg / 0.45359237
-        numbers.update({round(lb), round(lb * 2) / 2, round(lb, 1), round(lb / 2.5) * 2.5})
-    return numbers | readiness_numbers(week.readiness)
+    return numbers | input_numbers(week) | readiness_numbers(week.readiness)
 
 
 def check_week(case: WeeklyCase, result: WeeklyResult) -> list[str]:
