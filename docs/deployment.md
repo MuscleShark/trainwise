@@ -89,7 +89,7 @@ The AI coach's key (an Anthropic API key with a monthly spending limit set in th
 read -rsp "Anthropic API key: " V && echo && aws ssm put-parameter --region us-east-2 --name /trainwise/prod/ANTHROPIC_API_KEY --type SecureString --value "$V" --overwrite && unset V
 ```
 
-Until subscriptions exist, only accounts switched on by hand may use the coach. In the Neon SQL editor:
+The coach is for subscribers (see [Subscriptions](architecture.md#subscriptions)). Test accounts can also be switched on by hand, without a subscription. In the Neon SQL editor:
 
 ```sql
 UPDATE users SET coach_enabled = true WHERE email = 'you@example.com';
@@ -148,6 +148,26 @@ Pull-request preview deployments get their own `*.vercel.app` URLs. The API reje
 ## 7. Check it
 
 Open the Vercel URL → sign up with an email code (and with Google / Apple) → sign out → sign in again → add a profile and a workout → reload and confirm the data is still there.
+
+## 8. App Store subscriptions (once the Apple Developer account exists)
+
+The API verifies App Store transactions against Apple's root certificate, so it needs no App Store Connect key. What is left is in App Store Connect:
+
+1. Under the app (bundle id `app.ironsage.IronSage`) › Subscriptions, create the group **IronSage Coach** with two auto-renewable subscriptions, matching `ios/IronSage.storekit`:
+   - `app.ironsage.coach.yearly`: 1 year, $39.99, level 1.
+   - `app.ironsage.coach.monthly`: 1 month, $4.99, level 2.
+   - On both, an introductory offer for new subscribers: free, 1 week, United States.
+   - English and Chinese display names, and a review screenshot of the paywall.
+2. Join the App Store Small Business Program (15% commission).
+3. Under App Information › App Store Server Notifications, set both the **Production** and the **Sandbox** URL to the API's notification endpoint, **Version 2**:
+
+   ```
+   https://po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws/v1/app-store/notifications
+   ```
+
+   Then send a test notification from App Store Connect; the API answers 200 and logs `App Store notification TEST` in CloudWatch.
+4. Test on a real iPhone with a Sandbox account (Settings › Developer › Sandbox Apple Account). Sandbox renews monthly plans every 5 minutes, so expiry is quick to see.
+5. In the App Store listing, put the Terms of Use (Apple's standard EULA is used) and the privacy policy links in the description or the EULA field, as Guideline 3.1.2 asks.
 
 ## Day-to-day
 

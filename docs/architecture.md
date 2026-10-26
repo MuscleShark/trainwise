@@ -117,7 +117,10 @@ Agreed on 2026-10-25:
 | When the AI runs | Ahead of time: after a workout syncs, and in the morning once last night's sleep is in. The result is stored and shown offline; nobody waits for it, so no streaming Lambda is needed |
 | What the AI may change | Only one of three actions per exercise: follow the rule plan, hold the weight, or one set fewer. The backend turns the action into sets, so the model never writes a weight |
 | AI provider | Not tied to one: a small adapter per provider (Claude, Gemini, OpenAI). **Claude Sonnet 5.5** runs in production, chosen on 2026-10-25 from the eval (Opus, Sonnet and Haiku 5.5 all chose correctly in every case; Sonnet costs about $0.007 per suggestion, about 2.8 s). Changing provider also means updating the privacy policy, the consent text and the App Store privacy label |
-| Price | $4.99 a month or $39.99 a year, with a 7-day free trial |
+| Price | $4.99 a month or $39.99 a year, with a 7-day free trial for new subscribers. One auto-renewable group "IronSage Coach": `app.ironsage.coach.monthly` and `app.ironsage.coach.yearly` (yearly ranks higher, so switching to it takes effect at once) |
+| Margin | About 50%. After Apple's 15% (Small Business Program) monthly nets about $4.24 and yearly about $2.83 a month, so everything a subscriber costs (AI, Lambda, database) stays under about $1.40 a month |
+| Who decides access | The API, from the signed transaction it verified (`402` without one). The phone's StoreKit state only decides what the screens offer. `users.coach_enabled` stays as a manual override for test accounts |
+| Receipt checks | Offline: the JWS chain is checked against Apple Root CA - G3 in the code, so no App Store Connect API key is needed. Calling the App Store Server API (for example to look up a transaction) can come later |
 | Agent | Not in M3. A chat coach with tools comes after the US launch |
 | Markets | US App Store first. Mainland China later; it needs a mainland filing entity, a China-hosted backend, a filed domestic model and its own sign-in |
 
@@ -203,7 +206,7 @@ daily_readiness       date (local), sleep minutes and stages, HRV (SDNN), restin
 
 Synced records (exercises, workouts, templates, body measurements, readiness, profile) carry `updated_at`, `deleted_at` (soft delete) and `change_seq`.
 
-Added with the AI coach (P1): `recommendations`, `ai_usage`, `subscriptions`.
+Added with the AI coach (P1): `recommendations`, `ai_usage`, `subscriptions` (one row per user: product, `expires_at`, original and latest transaction id, environment, status).
 
 Notes:
 
@@ -258,6 +261,17 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 
 - Apple handles payment, taxes, refunds, free trials and cancellation. Under the Small Business Program the commission is 15%.
 - The app sends the signed transaction to the API. **App Store Server Notifications V2** tell the API about renewals, refunds and cancellations. The API keeps one entitlement per user in `subscriptions`.
+
+How it is built:
+
+- **Phone** (`ios/IronSage/Coach/SubscriptionService.swift`): StoreKit 2. `Product.products` loads both plans, `purchase()` buys, `AppStore.sync()` restores, `Transaction.currentEntitlements` says whether this Apple Account is subscribed and `Transaction.updates` brings renewals, refunds and Ask to Buy approvals. Every verified transaction's JWS goes to `PUT /v1/subscription` (once per transaction; again after a restore). The paywall (`PaywallView.swift`) follows the coach consent sheet when there is no subscription, and is offered on Today when the coach answers `402` and in Settings. It shows the price, the trial, the renewal terms (App Store Review Guideline 3.1.2), Restore purchases, Apple's standard Terms of Use and the privacy policy.
+- **API** (`backend/appstore.py`, `backend/routers/subscription.py`):
+  - `PUT /v1/subscription` verifies the JWS (ES256; the `x5c` chain must lead to Apple Root CA - G3 and carry Apple's marker extensions, and every certificate must have been valid when the data was signed), then checks the bundle id `app.ironsage.IronSage`, the two product ids and the type. It stores product, `expires_at`, original and latest transaction id, environment (Production or Sandbox, which App Review and TestFlight use) and status. A transaction that ends earlier than the stored one is ignored, so a late or replayed one never shortens access.
+  - One original transaction id belongs to one IronSage account (`409` for another), so one purchase can't unlock several accounts. Deleting the account deletes the row; the App Store subscription itself is cancelled by the user in Settings.
+  - `POST /v1/app-store/notifications` takes App Store Server Notifications V2 without sign-in, verifies them the same way and applies the signed transaction and renewal info: renewals extend `expires_at`, the billing grace period extends it to the end of the grace period, expiries and refunds end access. Notifications for a subscription no account has claimed yet are ignored, because the phone sends it anyway.
+  - `GET /v1/subscription` returns the status and `coach_access` (subscription or manual override).
+  - Access is checked when the coach is asked (`PUT /v1/recommendations/{id}`): an active subscription (`expires_at` in the future and not refunded) or `users.coach_enabled`.
+- **Testing without an Apple Developer account**: the scheme runs the app with `ios/IronSage.storekit`, so buying, the trial, renewals, expiry and refunds work in the simulator (Debug › StoreKit › Manage Transactions in Xcode; Editor › Subscription Renewal Rate speeds renewals up). Those transactions are signed by Xcode, not Apple, and the API refuses them unless it runs locally with `APP_STORE_ACCEPT_XCODE=1` (ignored on Lambda). `ios/IronSageTests` runs the same purchase, restore, expiry and refund steps with `SKTestSession`.
 - Stripe web checkout is **postponed**. Since the Epic v. Apple ruling, US apps may link to web checkout. A court is still deciding what commission Apple may charge on those purchases, and the Supreme Court is reviewing part of the case. Revisit Stripe when that rate is settled. Because the API only checks the entitlement, a second payment source can be added without changing the AI endpoints.
 
 ## API conventions

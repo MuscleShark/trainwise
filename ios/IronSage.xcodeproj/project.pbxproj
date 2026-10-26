@@ -14,7 +14,19 @@
 		CFBD31196ED22D8F48EA3CD2 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = EA5C25D321A5C1AD4AA27CEA /* ClerkKit */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7B1D2E3F4A5B6C7D8E9F0A8B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97B15087254ABC65C8AEA63E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A159F6391DC11F147DC96697;
+			remoteInfo = IronSage;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		3E8C1A7D5B2F4D6E9A0B1C2D /* IronSage.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = IronSage.storekit; sourceTree = "<group>"; };
+		7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronSageTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A683105F0DCD7A114A01BA6 /* IronSage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IronSage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -37,6 +49,11 @@
 			path = IronSage;
 			sourceTree = "<group>";
 		};
+		7B1D2E3F4A5B6C7D8E9F0A3B /* IronSageTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = IronSageTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +69,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7B1D2E3F4A5B6C7D8E9F0A5B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -59,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				6A683105F0DCD7A114A01BA6 /* IronSage.app */,
+				7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -67,6 +92,8 @@
 			isa = PBXGroup;
 			children = (
 				6C5AD591CE88870D948F14A8 /* IronSage */,
+				7B1D2E3F4A5B6C7D8E9F0A3B /* IronSageTests */,
+				3E8C1A7D5B2F4D6E9A0B1C2D /* IronSage.storekit */,
 				69FF04A4E0C2BBCDE91100B2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +128,27 @@
 			productReference = 6A683105F0DCD7A114A01BA6 /* IronSage.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7B1D2E3F4A5B6C7D8E9F0A1B /* IronSageTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7B1D2E3F4A5B6C7D8E9F0A9B /* Build configuration list for PBXNativeTarget "IronSageTests" */;
+			buildPhases = (
+				7B1D2E3F4A5B6C7D8E9F0A4B /* Sources */,
+				7B1D2E3F4A5B6C7D8E9F0A5B /* Frameworks */,
+				7B1D2E3F4A5B6C7D8E9F0A6B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7B1D2E3F4A5B6C7D8E9F0A7B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7B1D2E3F4A5B6C7D8E9F0A3B /* IronSageTests */,
+			);
+			name = IronSageTests;
+			productName = IronSageTests;
+			productReference = 7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -113,6 +161,10 @@
 				TargetAttributes = {
 					A159F6391DC11F147DC96697 = {
 						CreatedOnToolsVersion = 27.1;
+					};
+					7B1D2E3F4A5B6C7D8E9F0A1B = {
+						CreatedOnToolsVersion = 27.1;
+						TestTargetID = A159F6391DC11F147DC96697;
 					};
 				};
 			};
@@ -136,12 +188,20 @@
 			projectRoot = "";
 			targets = (
 				A159F6391DC11F147DC96697 /* IronSage */,
+				7B1D2E3F4A5B6C7D8E9F0A1B /* IronSageTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		3DA306ADA816092E0786589F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7B1D2E3F4A5B6C7D8E9F0A6B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -158,7 +218,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7B1D2E3F4A5B6C7D8E9F0A4B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7B1D2E3F4A5B6C7D8E9F0A7B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A159F6391DC11F147DC96697 /* IronSage */;
+			targetProxy = 7B1D2E3F4A5B6C7D8E9F0A8B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		4A2E2FC835F0913628DBCC81 /* Release */ = {
@@ -291,6 +366,46 @@
 			};
 			name = Debug;
 		};
+		7B1D2E3F4A5B6C7D8E9F0AAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSageTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IronSage.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IronSage";
+			};
+			name = Debug;
+		};
+		7B1D2E3F4A5B6C7D8E9F0ABB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSageTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IronSage.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IronSage";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -308,6 +423,15 @@
 			buildConfigurations = (
 				9AE75E16C2D30D146FD60D6A /* Debug */,
 				4A2E2FC835F0913628DBCC81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7B1D2E3F4A5B6C7D8E9F0A9B /* Build configuration list for PBXNativeTarget "IronSageTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B1D2E3F4A5B6C7D8E9F0AAB /* Debug */,
+				7B1D2E3F4A5B6C7D8E9F0ABB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -11,6 +11,7 @@ struct RootView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
     @Environment(CoachService.self) private var coach
+    @Environment(SubscriptionService.self) private var subscriptions
     @Environment(\.services) private var services
     @Environment(\.scenePhase) private var scenePhase
 
@@ -33,6 +34,7 @@ struct RootView: View {
             services?.prepare(forUser: userID)
             await health.importRecent()
             await sync.sync()
+            await subscriptions.refresh()
             await coach.refresh()
         }
         .onChange(of: scenePhase) { _, phase in
@@ -40,6 +42,7 @@ struct RootView: View {
                 Task {
                     await health.importRecent()
                     await sync.sync()
+                    await subscriptions.refresh()
                     await coach.refresh()
                 }
             }
