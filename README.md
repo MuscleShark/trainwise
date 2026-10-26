@@ -259,7 +259,7 @@ GitHub Actions runs the following checks on every push to `main`. On a pull requ
 - Backend Python syntax compilation
 - Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally); the same tests run again on PostgreSQL (`TEST_DATABASE_URL=postgresql+psycopg://… pytest` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
-- iOS (macOS runner): `swift test` for IronSageKit, then the app's tests on a simulator: StoreKit tests against `IronSage.storekit` and UI tests (`ios/IronSageUITests`) that click through the main flows in demo mode
+- iOS (macOS runner): `swift test` for IronSageKit, then UI tests on a simulator (`ios/IronSageUITests`) that click through the main flows in demo mode. The StoreKit tests (`ios/IronSageTests`) only run in Xcode: StoreKit's local test service returns no products on GitHub's runners
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 

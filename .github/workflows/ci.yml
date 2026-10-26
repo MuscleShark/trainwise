@@ -223,9 +223,10 @@ jobs:
 
       # The OpenAPI generator runs as a package build plugin; CI has no one to
       # click "Trust & Enable", hence -skipPackagePluginValidation.
-      # Builds the app and runs its tests on a simulator: the StoreKit tests against
-      # IronSage.storekit, and the UI tests, which click through the main flows in
-      # demo mode (no sign-in, no network).
+      # Builds the app and runs its UI tests on a simulator: they click through the
+      # main flows in demo mode (no sign-in, no network). The StoreKit tests
+      # (IronSageTests) are skipped: StoreKit's local test service returns no products
+      # on GitHub's runners, so run them in Xcode before changing the subscription.
       - name: Test the app on a simulator
         run: |
           set -euo pipefail
@@ -237,6 +238,7 @@ jobs:
             -scheme IronSage \
             -destination "id=$device" \
             -skipPackagePluginValidation \
+            -skip-testing:IronSageTests \
             CODE_SIGNING_ALLOWED=NO
 
   e2e:
