@@ -20,10 +20,8 @@ const features = [
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-6 sm:px-8">
-        <Link href="/" aria-label="IronSage home">
-          <Logo height={52} />
-        </Link>
+      {/* The hero carries the logo on this page, so the header only has Sign in. */}
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-end px-4 py-6 sm:px-8">
         <Link
           href="/login"
           className="rounded-md px-3 py-2 text-sm font-medium text-steel transition-colors hover:text-ink"
@@ -35,6 +33,9 @@ export default function Home() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-8">
         <section className="grid items-center gap-12 py-12 sm:py-20 lg:grid-cols-[1.1fr_1fr]">
           <div>
+            <div className="mb-10">
+              <Logo height={180} className="h-32 w-auto sm:h-[180px]" />
+            </div>
             <h1 className="type-stamp text-5xl leading-[0.95] sm:text-7xl">
               Know what to lift next.
             </h1>
