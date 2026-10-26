@@ -1,0 +1,6 @@
+# AI provider SDKs for the coach eval (scripts/coach_eval.py). Not part of the API
+# Lambda yet; the coach worker will list the one provider it uses.
+-r requirements-dev.txt
+anthropic
+openai
+google-genai
