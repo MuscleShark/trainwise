@@ -23,6 +23,9 @@ public final class SyncEngine {
 
     public private(set) var state: State = .idle
     public private(set) var lastSyncedAt: Date?
+    /// Whether requests to the AI coach may be sent; checked right before each one, so
+    /// a request queued before the coach was turned off is cancelled instead.
+    @ObservationIgnored public var allowsCoach: @MainActor () -> Bool = { true }
 
     @ObservationIgnored private let store: LocalStore
     @ObservationIgnored private let api: any APIProtocol
@@ -111,6 +114,10 @@ public final class SyncEngine {
 
     func push(_ run: Int) async throws {
         for change in store.pendingChanges() {
+            if change.kind == .recommendation {
+                try await send(recommendation: change, run)
+                continue
+            }
             let outcome: Outcome
             do {
                 outcome = try await upload(change)
@@ -177,7 +184,69 @@ public final class SyncEngine {
         case (.readiness, .delete):
             // The API keeps one record per day and has no delete; a day is only replaced.
             return .accepted(changeSeq: nil)
+        case (.recommendation, _):
+            // Sent by send(recommendation:_:).
+            return .accepted(changeSeq: nil)
         }
+    }
+
+    /// Asks the AI coach. The answer comes later through the pull. A refusal (no
+    /// access, the daily limit, an invalid request) is final for this request: it is
+    /// recorded on the phone and never blocks the rest of the sync.
+    private func send(recommendation change: LocalStore.PendingChange, _ run: Int) async throws {
+        var recommendation = try store.payload(of: change, as: Recommendation.self)
+        guard let request = recommendation.request else {
+            store.discardPending(change, status: 400)
+            return
+        }
+        guard allowsCoach() else {
+            recommendation.status = .failed
+            recommendation.error = "cancelled"
+            store.resolveLocally(recommendation)
+            return
+        }
+        struct Body: Encodable {
+            let forDate: String
+            let input: CoachRequest
+        }
+        let body = try Wire.api(Body(forDate: recommendation.forDate, input: request), as: Components.Schemas.RecommendationWrite.self)
+        let status: Int
+        do {
+            let response = try await api.requestRecommendation(
+                path: .init(recommendationId: change.id.uuidString.lowercased()), body: .json(body)
+            )
+            try ensureCurrent(run)
+            switch response {
+            case .ok(let ok):
+                let read = try ok.body.json
+                store.markUploaded(change, changeSeq: read.changeSeq)
+                var accepted = try Wire.app(read, as: Recommendation.self)
+                accepted.request = recommendation.request
+                accepted.planKey = recommendation.planKey
+                accepted.requestedAt = recommendation.requestedAt
+                // The answer is due from now, the server's clock for its timeout.
+                accepted.sentAt = now()
+                store.resolveLocally(accepted)
+                return
+            case .unprocessableContent:
+                status = 422
+            case .undocumented(let code, _):
+                status = code
+            }
+        } catch let error as ClientError where error.response != nil {
+            status = error.response!.status.code
+        }
+        let reason: String
+        switch status {
+        case 402: reason = "not_allowed"
+        case 429: reason = "limit_reached"
+        case 400, 404, 409, 422: reason = "invalid_request"
+        default: throw SyncError.server(status: status)
+        }
+        log.error("The coach refused recommendation \(change.id, privacy: .public) with \(status)")
+        recommendation.status = .failed
+        recommendation.error = reason
+        store.resolveLocally(recommendation)
     }
 
     // MARK: Pull
@@ -222,6 +291,10 @@ public final class SyncEngine {
             for day in page.readiness {
                 let value = try Wire.app(day, as: Readiness.self)
                 store.applyRemote(.readiness(value), id: LocalStore.readinessID(value.date), changeSeq: day.changeSeq, deleted: day.deletedAt != nil)
+            }
+            for recommendation in page.recommendations ?? [] {
+                let value = try Wire.app(recommendation, as: Recommendation.self)
+                store.applyRemote(.recommendation(value), id: value.id, changeSeq: recommendation.changeSeq, deleted: recommendation.deletedAt != nil)
             }
 
             since = page.changeSeq

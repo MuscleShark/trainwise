@@ -40,7 +40,7 @@ Shown when a subscriber turns on the AI coach for the first time (M3). Nothing i
 | Body | To suggest your next weights and reps, IronSage sends this to Anthropic, the company that makes the Claude AI model: | 为了建议你下次的重量和次数，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）： |
 | List item 1 | Your recent sets for the exercises in the suggestion | 本次建议涉及动作的最近训练组 |
 | List item 2 | Your experience, goal and units | 你的训练经验、目标和单位 |
-| List item 3 | Daily summaries of sleep, heart rate variability, resting heart rate and workout heart rate | 睡眠、心率变异性、静息心率和训练心率的每日汇总 |
+| List item 3 | Daily summaries of sleep, heart rate variability and resting heart rate | 睡眠、心率变异性和静息心率的每日汇总 |
 | Not sent | Your name and email address are never sent. | 不会发送你的姓名和邮箱地址。 |
 | Note | Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time. | 每条建议都会显示它所依据的数据。你可以随时在设置中关闭 AI 教练。 |
 | Link | Privacy policy | 隐私政策 |

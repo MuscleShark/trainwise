@@ -16,6 +16,19 @@ extension LocalStore {
         )
     }
 
+    /// The next day of the template followed most recently.
+    var upNext: (template: Template, day: TemplateDay)? {
+        for workout in finishedWorkouts {
+            guard let id = workout.templateId else { continue }
+            // A deleted template: look at the workout before.
+            guard let template = templates.first(where: { $0.id == id }),
+                  let day = NextSession.nextDay(of: template, history: finishedWorkouts)
+            else { continue }
+            return (template, day)
+        }
+        return nil
+    }
+
     /// The suggestion for one exercise; nil when it was removed from the catalog.
     func suggestion(for exerciseID: UUID, template: TemplateExercise?, context: NextSession.Context) -> NextSession.Suggestion? {
         exercises[exerciseID].map { NextSession.suggest($0, template: template, context: context) }

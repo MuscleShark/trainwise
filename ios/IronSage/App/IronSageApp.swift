@@ -18,6 +18,7 @@ struct IronSageApp: App {
                     .environment(services.store)
                     .environment(services.sync)
                     .environment(services.health)
+                    .environment(services.coach)
                     .environment(\.services, services)
             case .failure(let error):
                 // Only reachable with a broken build configuration or a broken disk.
@@ -39,6 +40,7 @@ final class AppServices {
     let store: LocalStore
     let sync: SyncEngine
     let health: HealthService
+    let coach: CoachService
     /// Debug builds launched with `-demo`: sample data in memory, no sign-in, no network.
     let isDemo: Bool
 
@@ -56,9 +58,13 @@ final class AppServices {
         store = try LocalStore(inMemory: isDemo)
         sync = SyncEngine(store: store, api: api)
         health = HealthService(store: store, enabled: !isDemo)
+        coach = CoachService(store: store, sync: sync, isOnline: !isDemo, defaults: isDemo ? Self.demoDefaults() : .standard)
+        // Checked right before each request goes out, so turning the coach off stops
+        // one that is already queued.
+        sync.allowsCoach = { [coach] in coach.isEnabled }
         #if DEBUG
         if isDemo {
-            DemoData.fill(store)
+            DemoData.fill(store, coach: coach)
         }
         #endif
     }
@@ -76,7 +82,15 @@ final class AppServices {
         store.removeAll()
         sync.reset()
         health.reset()
+        coach.reset()
         UserDefaults.standard.removeObject(forKey: Self.ownerKey)
+    }
+
+    /// Demo launches keep their settings out of the real app's.
+    private static func demoDefaults() -> UserDefaults {
+        let defaults = UserDefaults(suiteName: "IronSage.demo")!
+        defaults.removePersistentDomain(forName: "IronSage.demo")
+        return defaults
     }
 }
 

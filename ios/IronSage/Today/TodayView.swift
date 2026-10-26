@@ -55,6 +55,9 @@ struct TodayView: View {
             .navigationDestination(for: ExerciseRoute.self) { route in
                 ExerciseDetailView(exerciseID: route.id)
             }
+            .navigationDestination(for: CoachRoute.self) { route in
+                CoachDataView(id: route.id)
+            }
             .navigationDestination(for: TemplateListRoute.self) { _ in
                 TemplateList()
                     .navigationTitle("Templates")
@@ -67,18 +70,7 @@ struct TodayView: View {
 }
 
 extension TodayView {
-    /// The next day of the template followed most recently.
-    private var upNext: (template: Template, day: TemplateDay)? {
-        for workout in store.finishedWorkouts {
-            guard let id = workout.templateId else { continue }
-            // A deleted template: look at the workout before.
-            guard let template = store.templates.first(where: { $0.id == id }),
-                  let day = NextSession.nextDay(of: template, history: store.finishedWorkouts)
-            else { continue }
-            return (template, day)
-        }
-        return nil
-    }
+    private var upNext: (template: Template, day: TemplateDay)? { store.upNext }
 }
 
 /// The template day due next, with each exercise's suggested top set.
@@ -87,13 +79,21 @@ private struct UpNextSection: View {
     let day: TemplateDay
     @Binding var session: WorkoutSession?
     @Environment(LocalStore.self) private var store
+    @Environment(CoachService.self) private var coach
 
     var body: some View {
         let unit = store.weightUnit
         let context = store.nextSessionContext()
+        let recommendation = coach.isEnabled ? coach.current : nil
+        let advised = coach.advice(for: day)
+        let advice = advised?.output
         Section {
             Button {
-                session = WorkoutSession.start(day, of: template, store: store)
+                let started = WorkoutSession.start(day, of: template, store: store, advice: advice)
+                if let advised {
+                    coach.recordApplied(advised, to: started.workout.id)
+                }
+                session = started
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
@@ -116,20 +116,32 @@ private struct UpNextSection: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            CoachUpNextRow(recommendation: recommendation)
             ForEach(day.exercises) { item in
                 if let suggestion = store.suggestion(for: item.exerciseId, template: item, context: context) {
-                    HStack(spacing: 8) {
-                        Text(store.exerciseName(item.exerciseId))
-                            .lineLimit(1)
-                        Spacer()
-                        Text(suggestion.topSet(unit: unit, loadType: store.exercises[item.exerciseId]?.loadType ?? .total) ?? TemplateTarget(item: item).summary)
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                        Image(systemName: suggestion.systemImage)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 16)
-                            .accessibilityHidden(true)
+                    let loadType = store.exercises[item.exerciseId]?.loadType ?? .total
+                    let advised = advice?.advice(for: item.exerciseId)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 8) {
+                            Text(store.exerciseName(item.exerciseId))
+                                .lineLimit(1)
+                            Spacer()
+                            Text(advised.flatMap { topSet($0, unit: unit, loadType: loadType) }
+                                ?? suggestion.topSet(unit: unit, loadType: loadType)
+                                ?? TemplateTarget(item: item).summary)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                            Image(systemName: advised == nil ? suggestion.systemImage : "sparkles")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(advised == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                                .frame(width: 16)
+                                .accessibilityHidden(true)
+                        }
+                        if let advised {
+                            Text(advised.reason)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .font(.subheadline)
                 }
@@ -137,8 +149,20 @@ private struct UpNextSection: View {
         } header: {
             Text("Up next")
         } footer: {
-            Text("Suggested from your last sessions. Each exercise says why once you start.")
+            if advice != nil {
+                Text("Training guidance, not medical advice. Stop if something hurts.")
+            } else {
+                Text("Suggested from your last sessions. Each exercise says why once you start.")
+            }
         }
+    }
+
+    /// The hardest of the coach's sets, as `NextSession.Suggestion.topSet` does.
+    private func topSet(_ advised: CoachAdvice.Exercise, unit: WeightUnit, loadType: LoadType) -> String? {
+        let sets = advised.sets.filter { $0.setType != .warmup }
+        let byWeight: (CoachRequest.PlannedSet, CoachRequest.PlannedSet) -> Bool = { ($0.weightKg ?? 0) < ($1.weightKg ?? 0) }
+        guard let top = loadType == .assisted ? sets.min(by: byWeight) : sets.max(by: byWeight) else { return nil }
+        return unit.formatSet(WorkoutSet(reps: top.reps, weightKg: top.weightKg))
     }
 }
 

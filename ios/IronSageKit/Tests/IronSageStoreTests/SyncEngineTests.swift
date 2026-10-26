@@ -436,3 +436,140 @@ private func pushDay(completed: Bool = true) -> Workout {
     #expect(LocalStore.readinessID("2026-11-25") == LocalStore.readinessID("2026-11-25"))
     #expect(LocalStore.readinessID("2026-11-25") != LocalStore.readinessID("2026-11-26"))
 }
+
+// MARK: AI coach
+
+private func coachRequest() -> CoachRequest {
+    CoachRequest(
+        language: "en", unit: "kg", goal: .hypertrophy, experience: .intermediate,
+        readiness: .init(sleepMinutes: .init(value: 310, usual: 445)),
+        exercises: [.init(
+            exerciseId: FakeServer.benchID, name: "Barbell bench press", isCompound: true,
+            change: "increase", repMin: 6, repMax: 10, stalled: false,
+            plannedSets: [.init(reps: 6, weightKg: 62.5, setType: .working)],
+            lastWeightKg: 60,
+            recentSessions: [.init(date: "2026-10-22", sets: [.init(reps: 10, weightKg: 60, rir: 2)])]
+        )]
+    )
+}
+
+private func adviceJSON(id: String, status: String, changeSeq: Int, error: String? = nil) -> String {
+    let output = status == "ready" ? #"""
+        {"summary": "Short night, so hold today.", "model": "anthropic:claude-sonnet-5-5",
+         "input_tokens": 900, "output_tokens": 80,
+         "exercises": [{"exercise_id": "\#(FakeServer.benchID)", "action": "hold_weight",
+           "reason": "You slept 5 h 10 min, so stay at 60 kg.",
+           "sets": [{"reps": 10, "weight_kg": 60, "set_type": "working"}]}]}
+        """# : "null"
+    return #"{"id": "\#(id)", "for_date": "2026-10-26", "status": "\#(status)", "output": \#(output), "error": \#(error.map { "\"\($0)\"" } ?? "null"), "updated_at": "2026-10-26T07:00:00Z", "deleted_at": null, "change_seq": \#(changeSeq)}"#
+}
+
+@MainActor
+@Test func aCoachRequestGoesUpAndItsAdviceComesBackThroughSync() async throws {
+    let recommendation = Recommendation(forDate: "2026-10-26", request: coachRequest(), planKey: "plan", requestedAt: .now)
+    let id = recommendation.id.uuidString.lowercased()
+    let harness = try Harness { request in
+        if request.method == .put, request.path.hasPrefix("/v1/recommendations/") {
+            return (200, adviceJSON(id: id, status: "pending", changeSeq: 7))
+        }
+        if request.path.hasPrefix("/v1/sync") {
+            return (200, FakeServer.syncPage(changeSeq: 8, recommendations: [adviceJSON(id: id, status: "ready", changeSeq: 8)]))
+        }
+        return try FakeServer.standard(request)
+    }
+    harness.store.save(recommendation)
+
+    await harness.sync.sync()
+
+    #expect(harness.sync.state == .idle)
+    let put = try #require(harness.server.requests.first { $0.path.hasPrefix("/v1/recommendations/") })
+    #expect(put.path == "/v1/recommendations/\(id)")
+    #expect(put.json["for_date"] as? String == "2026-10-26")
+    let input = try #require(put.json["input"] as? [String: Any])
+    #expect(input["unit"] as? String == "kg")
+    let sleep = (input["readiness"] as? [String: Any])?["sleep_minutes"] as? [String: Any]
+    #expect(sleep?["value"] as? Double == 310)
+    let plan = try #require((input["exercises"] as? [[String: Any]])?.first)
+    #expect(plan["exercise_id"] as? String == FakeServer.benchID)
+    #expect(plan["last_weight_kg"] as? Double == 60)
+    #expect((plan["planned_sets"] as? [[String: Any]])?.first?["set_type"] as? String == "working")
+
+    let stored = try #require(harness.store.recommendation(for: "2026-10-26"))
+    #expect(stored.status == .ready)
+    #expect(stored.output?.advice(for: bench)?.action == .holdWeight)
+    #expect(stored.output?.advice(for: bench)?.sets.first?.weightKg == 60)
+    // The phone keeps what it asked, which the server doesn't send back.
+    #expect(stored.request == coachRequest())
+    #expect(stored.planKey == "plan")
+    // The answer is timed from when the server accepted the request.
+    #expect(stored.sentAt != nil)
+    #expect(harness.store.pendingChanges().isEmpty)
+}
+
+@MainActor
+@Test func nothingGoesToTheCoachOnceItIsTurnedOff() async throws {
+    let harness = try Harness()
+    harness.store.save(Recommendation(forDate: "2026-10-26", request: coachRequest()))
+    harness.sync.allowsCoach = { false }
+
+    await harness.sync.sync()
+
+    #expect(!harness.server.requests.contains { $0.path.hasPrefix("/v1/recommendations/") })
+    #expect(harness.store.pendingChanges().isEmpty)
+    #expect(harness.store.recommendation(for: "2026-10-26")?.error == "cancelled")
+}
+
+@MainActor
+@Test func turningTheCoachOffCancelsQueuedRequests() throws {
+    let store = try LocalStore(inMemory: true)
+    store.save(Recommendation(forDate: "2026-10-26", request: coachRequest()))
+    store.cancelPendingRecommendations()
+    #expect(store.pendingChanges().isEmpty)
+    #expect(store.recommendation(for: "2026-10-26")?.status == .failed)
+}
+
+@MainActor
+@Test func aRefusedCoachRequestDoesntBlockTheSync() async throws {
+    for (status, reason) in [(402, "not_allowed"), (429, "limit_reached"), (422, "invalid_request")] {
+        let harness = try Harness { request in
+            if request.path.hasPrefix("/v1/recommendations/") {
+                return (status, #"{"detail": "No"}"#)
+            }
+            return try FakeServer.standard(request)
+        }
+        harness.store.save(Recommendation(forDate: "2026-10-26", request: coachRequest()))
+        harness.store.save(pushDay())
+
+        await harness.sync.sync()
+
+        #expect(harness.sync.state == .idle)
+        #expect(harness.store.pendingChanges().isEmpty)
+        let stored = try #require(harness.store.recommendation(for: "2026-10-26"))
+        #expect(stored.status == .failed && stored.error == reason)
+        #expect(harness.server.requests.contains { $0.path.hasPrefix("/v1/workouts/") })
+    }
+}
+
+@MainActor
+@Test func aServerErrorKeepsTheCoachRequestForLater() async throws {
+    let harness = try Harness { request in
+        request.path.hasPrefix("/v1/recommendations/") ? (503, #"{"detail": "Down"}"#) : try FakeServer.standard(request)
+    }
+    harness.store.save(Recommendation(forDate: "2026-10-26", request: coachRequest()))
+
+    await harness.sync.sync()
+
+    #expect(harness.sync.state == .failed)
+    #expect(harness.store.pendingChanges().count == 1)
+    #expect(harness.store.recommendation(for: "2026-10-26")?.status == .pending)
+}
+
+@MainActor
+@Test func recommendationsAreKeptAcrossLaunches() throws {
+    let store = try LocalStore(inMemory: true)
+    store.save(Recommendation(forDate: "2026-10-25", requestedAt: Date(timeIntervalSince1970: 1)))
+    store.save(Recommendation(forDate: "2026-10-26", requestedAt: Date(timeIntervalSince1970: 2)))
+    #expect(store.recommendations.map(\.forDate) == ["2026-10-26", "2026-10-25"])
+    store.removeAll()
+    #expect(store.recommendations.isEmpty)
+}

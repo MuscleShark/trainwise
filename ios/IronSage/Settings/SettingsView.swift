@@ -72,6 +72,7 @@ struct SettingsView: View {
                 }
 
                 HealthSettingsSection()
+                CoachSettingsSection()
 
                 Section("App") {
                     Button("Language") {
