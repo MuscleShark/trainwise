@@ -139,8 +139,22 @@ def test_the_prompt_loads_the_skills_and_asks_for_the_language_and_unit():
     system = prompt.system_prompt()
     assert "# Safety" in system and "# Next-session suggestion" in system
     user = prompt.user_message(plan(language="zh", unit="lb"))
-    assert "Simplified Chinese" in user and "write them in lb" in user
+    assert "Simplified Chinese" in user and "already in the user's unit (lb)" in user
     assert '"exercise_id": "bench"' in user
+    # Weights reach the model already in the user's unit, as the app shows them.
+    assert '"weight": "137.8 lb"' in user and "weight_kg" not in user
+    assert '"last_weight": "132.3 lb"' in user and '"weight_change": "+5.5 lb"' in user
+
+
+def test_weights_are_written_as_the_app_shows_them():
+    assert prompt.weight_text(140, "lb") == "308.6 lb"
+    assert prompt.weight_text(140, "kg") == "140 kg"
+    assert prompt.weight_text(61.235, "kg") == "61.24 kg"
+    assert prompt.weight_text(62.5, "lb") == "137.8 lb"
+    view = prompt.model_view(plan(unit="kg"))
+    bench = view["exercises"][0]
+    assert bench["weight_change"] == "+2.5 kg" and bench["last_weight"] == "60 kg"
+    assert all("weight_kg" not in s for s in bench["planned_sets"])
 
 
 def test_the_schema_is_flat_strict_and_without_length_limits():
@@ -330,7 +344,10 @@ def test_answers_list_every_reason_for_reading():
 
 def test_sleep_and_pounds_are_allowed_numbers():
     numbers = evaluation.allowed_numbers(plan(unit="lb", readiness=sleep(310, 445)))
-    assert {5, 10, 7.4, 137.5}.issubset(numbers)  # 5 h 10 min, usual 7.4 h, 62.5 kg ≈ 137.5 lb
+    # 5 h 10 min, usual 7.4 h, 62.5 kg shown as 137.8 lb, and the +5.5 lb change.
+    assert {5, 10, 7.4, 137.8, 5.5}.issubset(numbers)
+    # A weight the model converted or rounded itself isn't allowed.
+    assert 137.5 not in numbers and 62.5 not in numbers
     assert curl_first_time().planned_sets[0].weight_kg is None
 
 
@@ -470,6 +487,8 @@ def test_weekly_checks_catch_deloads_hrv_language_numbers_and_length():
 
 def test_weekly_numbers_allow_pounds_sleep_and_the_band():
     numbers = evaluation.allowed_week_numbers(weekly_case("pounds (en)").week)
-    # 140 kg ≈ 308.6 lb; the band is 10 to 20; sleep 446 min is 7 h 26 min, usual 440.
-    assert {308.6, 309, 10, 20, 7, 26, 7.4, 19, 25}.issubset(numbers)
+    # 140 kg is shown as 308.6 lb; the band is 10 to 20; sleep 446 min is 7 h 26 min.
+    assert {308.6, 10, 20, 7, 26, 7.4, 19, 25}.issubset(numbers)
+    # The eval's failure: the model rounded 308.6 lb to 310 itself.
+    assert 310 not in numbers and 309 not in numbers and 140 not in numbers
     assert 47.5 not in numbers

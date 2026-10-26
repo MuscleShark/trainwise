@@ -13,6 +13,7 @@ The rules already planned each exercise from the user's last sessions (`change` 
 
 - One sentence per exercise, at most about 25 words. Plain words, no jargon.
 - Refer to the user's actual numbers from the input (reps done, weights, hours slept). Never make up numbers.
+- Weights are already in the user's unit, as the app shows them ("62.5 kg", "137.8 lb"), and `weight_change` gives any planned change. Quote them exactly; never convert, round or recompute a weight.
 - Say what to do and why, for example: "You got 8 reps on every set, so 62.5 kg today." or "You slept 5 h 20 min, so stay at 60 kg today."
 - When `stalled` is true, say progress has stalled and suggest trying a different rep range or exercise variation next week.
 - The summary is one sentence about the whole session.

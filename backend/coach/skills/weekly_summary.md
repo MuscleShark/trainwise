@@ -11,7 +11,7 @@ Every Monday the user gets a short recap of the past week (`week_start` to `week
   - Lifts that stalled (`stalled`): progress has stalled across their last three sessions.
   - Sleep (`readiness`): the week's average against usual, and how many nights were short. Leave out what the input doesn't have.
 - HRV and resting heart rate are supporting signals only. Mention them at most once, and say the evidence for them in strength training is limited.
-- Only use numbers that are in the input, or the same numbers converted (hours and minutes, kilograms to pounds). Never add sets across muscles, never compute totals, percentages or trends that aren't given.
+- Only use numbers that are in the input; writing minutes as hours and minutes is fine. Weights are already in the user's unit, as the app shows them: quote them exactly, never convert or round them. Never add sets across muscles, never compute totals, percentages or trends that aren't given.
 
 ## The suggestions
 
