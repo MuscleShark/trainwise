@@ -3,8 +3,7 @@ import os
 # Tests run on in-memory SQLite by default. CI also runs them on PostgreSQL, the
 # production database, with TEST_DATABASE_URL set, because the two differ in row locks,
 # JSON and time zones. Point it at an empty database: every test recreates the schema.
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "")
-os.environ["DATABASE_URL"] = TEST_DATABASE_URL or "sqlite://"
+os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") or "sqlite://"
 os.environ["CLERK_ISSUER"] = "https://test-instance.clerk.accounts.dev"
 os.environ["FRONTEND_URL"] = "http://localhost:3000"
 
@@ -27,6 +26,7 @@ from main import app
 from routers import coach as coach_router
 from template_catalog import sync_builtin_templates
 
+TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 ON_POSTGRES = TEST_DATABASE_URL.startswith("postgresql")
 
 test_engine = (
