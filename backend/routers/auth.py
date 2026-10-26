@@ -9,6 +9,7 @@ from models import (
     Exercise,
     Profile,
     Recommendation,
+    Subscription,
     Template,
     TemplateDay,
     TemplateExercise,
@@ -64,6 +65,7 @@ def delete_me(
     db.execute(delete(BodyMeasurement).where(BodyMeasurement.user_id == current_user.id))
     db.execute(delete(DailyReadiness).where(DailyReadiness.user_id == current_user.id))
     db.execute(delete(Recommendation).where(Recommendation.user_id == current_user.id))
+    db.execute(delete(Subscription).where(Subscription.user_id == current_user.id))
     db.execute(delete(Profile).where(Profile.user_id == current_user.id))
     db.execute(delete(Exercise).where(Exercise.owner_user_id == current_user.id))
     db.delete(current_user)

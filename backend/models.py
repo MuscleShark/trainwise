@@ -93,7 +93,7 @@ class User(Base):
         server_default="0",
         nullable=False,
     )
-    # May use the AI coach. Set by hand for test accounts until subscriptions exist.
+    # May use the AI coach without a subscription. Set by hand for test accounts.
     coach_enabled: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=false(), nullable=False
     )
@@ -346,3 +346,32 @@ class Recommendation(SyncedMixin, Base):
     input_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     error: Mapped[str | None] = mapped_column(Text)
+
+
+class Subscription(Base):
+    """The user's App Store subscription to the AI coach: one entitlement per user.
+
+    Written from signed transactions the phone sends after a purchase or restore
+    (PUT /v1/subscription) and from App Store Server Notifications (renewals, expiries,
+    refunds). An original transaction id stays the same across renewals and belongs
+    to one account.
+    """
+
+    __tablename__ = "subscriptions"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    product_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    original_transaction_id: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    # The latest transaction applied, a renewal or the purchase.
+    transaction_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    # Production, Sandbox (TestFlight and App Review) or Xcode (local testing only).
+    environment: Mapped[str] = mapped_column(String(20), nullable=False)
+    # active, expired or revoked (refunded), as of the last update; read it through
+    # subscription_status(), which also looks at expires_at.
+    status: Mapped[str] = mapped_column(String(10), nullable=False)
+    # End of the paid or trial period, or of the billing grace period.
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        UtcDateTime, default=utcnow, onupdate=utcnow, nullable=False
+    )

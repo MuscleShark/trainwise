@@ -21,6 +21,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/app-store/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive App Store Notification
+         * @description App Store Server Notifications V2: renewals, expiries, refunds.
+         *
+         *     Called by Apple, not the app, so it needs no sign-in; the payload is verified like a
+         *     transaction instead (400 when it can't be). A subscription no account has claimed
+         *     yet is ignored: the phone sends it after the purchase anyway. Apple retries until
+         *     it gets a 200.
+         */
+        post: operations["receiveAppStoreNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/body-measurements": {
         parameters: {
             query?: never;
@@ -199,10 +224,37 @@ export interface paths {
          *     when it is ready, usually within seconds. Sending the same id again returns the
          *     existing request without asking again, so retries are safe.
          *
-         *     402 when the account may not use the coach; 429 after DAILY_LIMIT requests in
+         *     402 without an active coach subscription (test accounts can be allowed by hand
+         *     with users.coach_enabled); 429 after DAILY_LIMIT requests in
          *     24 hours.
          */
         put: operations["requestRecommendation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Subscription */
+        get: operations["getSubscription"];
+        /**
+         * Put Subscription
+         * @description Records a coach subscription the phone bought or restored.
+         *
+         *     The phone sends the transaction StoreKit signed after each purchase, restore or
+         *     renewal it sees. It is verified against Apple's root certificate, so a forged or
+         *     altered one is refused (400). An expired one is stored and reported as expired.
+         *     409 when the same App Store subscription is already linked to another account.
+         */
+        put: operations["putSubscription"];
         post?: never;
         delete?: never;
         options?: never;
@@ -333,6 +385,14 @@ export interface components {
          * @enum {string}
          */
         Action: "follow" | "hold_weight" | "one_set_fewer";
+        /**
+         * AppStoreNotification
+         * @description The body Apple POSTs for App Store Server Notifications V2.
+         */
+        AppStoreNotification: {
+            /** Signedpayload */
+            signedPayload: string;
+        };
         /** BodyMeasurementRead */
         BodyMeasurementRead: {
             /** Change Seq */
@@ -866,6 +926,36 @@ export interface components {
             weight_kg?: number | null;
         };
         /**
+         * SubscriptionRead
+         * @description The account's coach subscription and whether it may use the AI coach.
+         */
+        SubscriptionRead: {
+            /** Coach Access */
+            coach_access: boolean;
+            /** Environment */
+            environment: string | null;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string | null;
+            /** Product Id */
+            product_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "expired" | "revoked" | "none";
+        };
+        /**
+         * SubscriptionWrite
+         * @description A transaction StoreKit signed (`VerificationResult.jwsRepresentation`).
+         */
+        SubscriptionWrite: {
+            /** Signed Transaction */
+            signed_transaction: string;
+        };
+        /**
          * SyncResponse
          * @description Everything of the user's that changed after `since`, including deletions.
          */
@@ -1248,6 +1338,41 @@ export interface operations {
             };
         };
     };
+    receiveAppStoreNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppStoreNotification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listBodyMeasurements: {
         parameters: {
             query?: {
@@ -1609,6 +1734,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecommendationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionRead"];
+                };
+            };
+        };
+    };
+    putSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionRead"];
                 };
             };
             /** @description Validation Error */

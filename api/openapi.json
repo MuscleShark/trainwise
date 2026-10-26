@@ -11,6 +11,22 @@
         "title": "Action",
         "type": "string"
       },
+      "AppStoreNotification": {
+        "description": "The body Apple POSTs for App Store Server Notifications V2.",
+        "properties": {
+          "signedPayload": {
+            "maxLength": 100000,
+            "minLength": 1,
+            "title": "Signedpayload",
+            "type": "string"
+          }
+        },
+        "required": [
+          "signedPayload"
+        ],
+        "title": "AppStoreNotification",
+        "type": "object"
+      },
       "BodyMeasurementRead": {
         "properties": {
           "change_seq": {
@@ -1374,6 +1390,72 @@
         "title": "SetWrite",
         "type": "object"
       },
+      "SubscriptionRead": {
+        "description": "The account's coach subscription and whether it may use the AI coach.",
+        "properties": {
+          "coach_access": {
+            "title": "Coach Access",
+            "type": "boolean"
+          },
+          "environment": {
+            "title": "Environment",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "active",
+              "expired",
+              "revoked",
+              "none"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "product_id",
+          "expires_at",
+          "environment",
+          "coach_access"
+        ],
+        "title": "SubscriptionRead",
+        "type": "object"
+      },
+      "SubscriptionWrite": {
+        "description": "A transaction StoreKit signed (`VerificationResult.jwsRepresentation`).",
+        "properties": {
+          "signed_transaction": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Signed Transaction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "signed_transaction"
+        ],
+        "title": "SubscriptionWrite",
+        "type": "object"
+      },
       "SyncResponse": {
         "description": "Everything of the user's that changed after `since`, including deletions.",
         "properties": {
@@ -2299,6 +2381,50 @@
         "summary": "Get Health"
       }
     },
+    "/v1/app-store/notifications": {
+      "post": {
+        "description": "App Store Server Notifications V2: renewals, expiries, refunds.\n\nCalled by Apple, not the app, so it needs no sign-in; the payload is verified like a\ntransaction instead (400 when it can't be). A subscription no account has claimed\nyet is ignored: the phone sends it after the purchase anyway. Apple retries until\nit gets a 200.",
+        "operationId": "receiveAppStoreNotification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppStoreNotification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Receiveappstorenotification",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Receive App Store Notification",
+        "tags": [
+          "Subscription"
+        ]
+      }
+    },
     "/v1/body-measurements": {
       "get": {
         "operationId": "listBodyMeasurements",
@@ -2850,7 +2976,7 @@
     },
     "/v1/recommendations/{recommendation_id}": {
       "put": {
-        "description": "Asks the AI coach to adjust and explain the phone's rule plan.\n\nReturns at once with status \"pending\"; the advice arrives through GET /v1/sync\nwhen it is ready, usually within seconds. Sending the same id again returns the\nexisting request without asking again, so retries are safe.\n\n402 when the account may not use the coach; 429 after DAILY_LIMIT requests in\n24 hours.",
+        "description": "Asks the AI coach to adjust and explain the phone's rule plan.\n\nReturns at once with status \"pending\"; the advice arrives through GET /v1/sync\nwhen it is ready, usually within seconds. Sending the same id again returns the\nexisting request without asking again, so retries are safe.\n\n402 without an active coach subscription (test accounts can be allowed by hand\nwith users.coach_enabled); 429 after DAILY_LIMIT requests in\n24 hours.",
         "operationId": "requestRecommendation",
         "parameters": [
           {
@@ -2904,6 +3030,77 @@
         "summary": "Request Recommendation",
         "tags": [
           "Coach"
+        ]
+      }
+    },
+    "/v1/subscription": {
+      "get": {
+        "operationId": "getSubscription",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Subscription",
+        "tags": [
+          "Subscription"
+        ]
+      },
+      "put": {
+        "description": "Records a coach subscription the phone bought or restored.\n\nThe phone sends the transaction StoreKit signed after each purchase, restore or\nrenewal it sees. It is verified against Apple's root certificate, so a forged or\naltered one is refused (400). An expired one is stored and reported as expired.\n409 when the same App Store subscription is already linked to another account.",
+        "operationId": "putSubscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionWrite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Subscription",
+        "tags": [
+          "Subscription"
         ]
       }
     },

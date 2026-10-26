@@ -20,6 +20,7 @@ import security
 from catalog import sync_builtin_exercises
 from database import Base, get_db
 from main import app
+from routers import coach as coach_router
 from template_catalog import sync_builtin_templates
 
 test_engine = create_engine(
@@ -113,3 +114,12 @@ def client():
         yield test_client
 
     Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture
+def started(client):
+    """The ids the API asked the coach worker to start, instead of invoking Lambda."""
+    ids = []
+    app.dependency_overrides[coach_router.get_coach_starter] = lambda: ids.append
+    yield ids
+    app.dependency_overrides.pop(coach_router.get_coach_starter)

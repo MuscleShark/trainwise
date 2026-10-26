@@ -23,15 +23,6 @@ PLAN = CoachInput(readiness=sleep(300, 450), exercises=[bench_increase()]).model
 BODY = {"for_date": "2026-10-26", "input": PLAN}
 
 
-@pytest.fixture
-def started(client):
-    """The ids the API asked the worker to start, instead of invoking Lambda."""
-    ids = []
-    app.dependency_overrides[coach_router.get_coach_starter] = lambda: ids.append
-    yield ids
-    app.dependency_overrides.pop(coach_router.get_coach_starter)
-
-
 def enable_coach(client, email=EMAIL):
     client.get("/v1/me", headers=auth_headers(email))
     with TestingSessionLocal() as db:
