@@ -1,7 +1,8 @@
-name: Deploy backend
+name: Deploy backend to staging
 
-# Deploys the backend infrastructure and code (infra/, AWS CDK) after CI passes on main.
-# The frontend is deployed by Vercel's Git integration.
+# Deploys the backend (infra/, AWS CDK) to staging after CI passes on main, then
+# records the commit as passed on staging. Production is updated only by hand, with
+# promote-production.yml. The frontend is deployed by Vercel's Git integration.
 on:
   workflow_run:
     workflows: [CI]
@@ -12,97 +13,68 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: deploy-backend
-  cancel-in-progress: false
-
-env:
-  CDK_CLI_VERSION: 2.1146.1
-
 jobs:
-  deploy:
-    name: Deploy with AWS CDK
+  check:
+    name: Pick the commit
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.outputs.outputs.function_url }}
-    timeout-minutes: 20
-
+    outputs:
+      sha: ${{ steps.pick.outputs.sha }}
+      latest: ${{ steps.pick.outputs.latest }}
     steps:
-      - name: Check out the commit that passed CI
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-
-      # Must match the Lambda runtime (python3.11).
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Set up Node.js (CDK CLI)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Build Lambda package
-        run: backend/scripts/build_lambda.sh
-
-      - name: Install CDK app dependencies
-        working-directory: infra
-        run: pip install -r requirements.txt
-
-      # Access keys of the IAM user trainwise-github-deploy. It may only assume the
-      # CDK bootstrap roles; those roles do the actual deployment.
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      # Where the alarm emails go: the production environment's variable ALARM_EMAIL.
-      # Kept out of the repository; without it the alarm topic has no subscriber.
-      - name: Show changes
-        working-directory: infra
+      # CI runs can finish out of order. Deploy only main's newest commit, so staging
+      # never goes back to an older one; the newer commit's CI run deploys it.
+      - name: Check it is main's newest commit
+        id: pick
         env:
-          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
-        run: npx --yes "aws-cdk@${CDK_CLI_VERSION}" diff -c "alarmEmail=${ALARM_EMAIL}"
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          main=$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          if [ "$SHA" = "$main" ]; then
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipped $SHA: main has moved on to $main, which deploys after its own CI."
+          fi
 
-      - name: Deploy
-        working-directory: infra
-        env:
-          ALARM_EMAIL: ${{ vars.ALARM_EMAIL }}
+  deploy:
+    name: Deploy to staging
+    needs: check
+    if: needs.check.outputs.latest == 'true'
+    # Only real deploys queue here, so a skipped run never cancels a pending one.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/deploy-stack.yml
+    with:
+      environment: staging
+      stack: TrainWiseApi-staging
+      sha: ${{ needs.check.outputs.sha }}
+      require-main-head: true
+    secrets: inherit
+
+  # The record promote-production.yml checks: a commit status on the commit, linking
+  # to this run, which keeps the Lambda package production will deploy.
+  record:
+    name: Record the commit as passed on staging
+    needs: [check, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.check.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: >-
-          npx --yes "aws-cdk@${CDK_CLI_VERSION}" deploy
-          -c "alarmEmail=${ALARM_EMAIL}"
-          --require-approval never
-          --outputs-file cdk-outputs.json
-
-      - name: Read stack outputs
-        id: outputs
-        working-directory: infra
-        run: |
-          url=$(python3 -c "import json; print(json.load(open('cdk-outputs.json'))['TrainWiseApi']['FunctionUrl'])")
-          echo "function_url=$url" >> "$GITHUB_OUTPUT"
-          echo "Function URL: $url" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Smoke test
-        env:
-          API_URL: ${{ steps.outputs.outputs.function_url }}
-        run: |
-          for attempt in 1 2 3 4 5; do
-            status=$(curl -s -o response.json -w '%{http_code}' "${API_URL%/}/health" || true)
-            if [ "$status" = "200" ]; then
-              cat response.json
-              exit 0
-            fi
-            echo "Attempt $attempt: /health returned $status"
-            sleep 5
-          done
-          cat response.json || true
-          exit 1
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${SHA}"
+          -f state=success -f context=deploy/staging -f target_url="$RUN_URL"
+          -f description="Deployed to staging and passed the smoke test"

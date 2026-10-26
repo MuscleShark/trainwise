@@ -52,6 +52,8 @@ class ApiStack(Stack):
         clerk_issuer: str,
         ssm_parameter_prefix: str,
         alarm_topic_name: str,
+        metric_namespace: str = "IronSage/Coach",
+        monthly_budget: bool = True,
         alarm_email: str | None = None,
         **kwargs,
     ) -> None:
@@ -130,7 +132,7 @@ class ApiStack(Stack):
             "CoachFailedFilter",
             log_group=coach_logs,
             filter_pattern=logs.FilterPattern.string_value("$.status", "=", "failed"),
-            metric_namespace="IronSage/Coach",
+            metric_namespace=metric_namespace,
             metric_name="FailedAnswers",
             metric_value="1",
         )
@@ -142,7 +144,7 @@ class ApiStack(Stack):
                 f"Coach{metric_name}Filter",
                 log_group=coach_logs,
                 filter_pattern=logs.FilterPattern.number_value(f"$.{field}", ">=", 0),
-                metric_namespace="IronSage/Coach",
+                metric_namespace=metric_namespace,
                 metric_name=metric_name,
                 metric_value=f"$.{field}",
             )
@@ -200,7 +202,7 @@ class ApiStack(Stack):
                 logs.FilterPattern.string_value("$.job", "=", "weekly_summaries"),
                 logs.FilterPattern.number_value("$.failed", ">", 0),
             ),
-            metric_namespace="IronSage/Coach",
+            metric_namespace=metric_namespace,
             metric_name="WeeklyJobFailedUsers",
             metric_value="$.failed",
         )
@@ -308,38 +310,40 @@ class ApiStack(Stack):
             threshold=1,
         )
 
-        # AWS spend for the whole account: an account-level budget, which needs neither
-        # AWS Organizations nor "advanced features" (those remove the project spend limit).
-        budget = budgets.CfnBudget(
-            self,
-            "MonthlyBudget",
-            budget=budgets.CfnBudget.BudgetDataProperty(
-                budget_name=f"{self.stack_name}-monthly-cost",
-                budget_type="COST",
-                time_unit="MONTHLY",
-                budget_limit=budgets.CfnBudget.SpendProperty(
-                    amount=MONTHLY_BUDGET_USD, unit="USD"
-                ),
-            ),
-            notifications_with_subscribers=[
-                budgets.CfnBudget.NotificationWithSubscribersProperty(
-                    notification=budgets.CfnBudget.NotificationProperty(
-                        notification_type=kind,
-                        comparison_operator="GREATER_THAN",
-                        threshold=percent,
-                        threshold_type="PERCENTAGE",
+        if monthly_budget:
+            # AWS spend for the whole account: an account-level budget, which needs neither
+            # AWS Organizations nor "advanced features" (those remove the project spend limit).
+            # Only production has it, so the emails don't come twice.
+            budget = budgets.CfnBudget(
+                self,
+                "MonthlyBudget",
+                budget=budgets.CfnBudget.BudgetDataProperty(
+                    budget_name=f"{self.stack_name}-monthly-cost",
+                    budget_type="COST",
+                    time_unit="MONTHLY",
+                    budget_limit=budgets.CfnBudget.SpendProperty(
+                        amount=MONTHLY_BUDGET_USD, unit="USD"
                     ),
-                    subscribers=[
-                        budgets.CfnBudget.SubscriberProperty(
-                            subscription_type="SNS", address=self.alarm_topic.topic_arn
-                        )
-                    ],
-                )
-                for kind, percent in (("ACTUAL", 80), ("FORECASTED", 100))
-            ],
-        )
-        # Budgets checks that it may publish when it saves the notification.
-        budget.node.add_dependency(self.alarm_topic.node.find_child("Policy"))
+                ),
+                notifications_with_subscribers=[
+                    budgets.CfnBudget.NotificationWithSubscribersProperty(
+                        notification=budgets.CfnBudget.NotificationProperty(
+                            notification_type=kind,
+                            comparison_operator="GREATER_THAN",
+                            threshold=percent,
+                            threshold_type="PERCENTAGE",
+                        ),
+                        subscribers=[
+                            budgets.CfnBudget.SubscriberProperty(
+                                subscription_type="SNS", address=self.alarm_topic.topic_arn
+                            )
+                        ],
+                    )
+                    for kind, percent in (("ACTUAL", 80), ("FORECASTED", 100))
+                ],
+            )
+            # Budgets checks that it may publish when it saves the notification.
+            budget.node.add_dependency(self.alarm_topic.node.find_child("Policy"))
 
         # CORS is handled by FastAPI, so the Function URL must not add its own headers.
         self.function_url = self.function.add_function_url(

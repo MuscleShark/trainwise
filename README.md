@@ -286,7 +286,7 @@ Each feature should include tests for its important behavior before it is merged
 
 ## Deployment
 
-The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via Mangum), with PostgreSQL on Neon. The AWS resources are defined as code with AWS CDK in `infra/`, and secrets live in SSM Parameter Store. After CI passes on `main`, `cdk deploy` runs automatically. See [docs/deployment.md](docs/deployment.md) for the architecture and one-time setup.
+The frontend is hosted on Vercel and the backend runs on AWS Lambda (FastAPI via Mangum), with PostgreSQL on Neon. The AWS resources are defined as code with AWS CDK in `infra/`, and secrets live in SSM Parameter Store. After CI passes on `main`, the backend deploys to a staging stack automatically; production is updated only when you promote a release that passed on staging. See [docs/deployment.md](docs/deployment.md) for the architecture and one-time setup.
 
 ## Roadmap
 

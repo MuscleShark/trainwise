@@ -1,0 +1,159 @@
+name: Promote to production
+
+# Deploys to production a commit that already passed on staging, with the very Lambda
+# package staging ran. Started by hand (Actions → Promote to production → Run workflow,
+# branch main); the production environment's required reviewer approves the deploy.
+# Afterwards the commit gets a tag prod-YYYYMMDD-N. See docs/deployment.md.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit on main to deploy. Blank = what staging runs now.
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Check the commit passed on staging
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
+      actions: read
+    outputs:
+      sha: ${{ steps.pick.outputs.sha }}
+      package-run-id: ${{ steps.pick.outputs.package_run_id }}
+    steps:
+      - name: Check out main with its history and tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # deploy-backend.yml marks each commit it deployed to staging with the commit
+      # status deploy/staging, linking to the run that kept the Lambda package.
+      - name: Pick the commit
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED: ${{ inputs.sha }}
+        run: |
+          # Only a status this repository's workflow set counts (newest first).
+          staging_run() {
+            gh api "repos/${GITHUB_REPOSITORY}/commits/$1/statuses" --jq '[.[]
+              | select(.context == "deploy/staging" and .creator.login == "github-actions[bot]")]
+              | first | select(.state == "success") | .target_url'
+          }
+          if [ -n "$REQUESTED" ]; then
+            if ! sha=$(git rev-parse --verify --quiet "${REQUESTED}^{commit}"); then
+              echo "::error::Unknown commit: $REQUESTED"; exit 1
+            fi
+            if ! git merge-base --is-ancestor "$sha" origin/main; then
+              echo "::error::$sha is not on main."; exit 1
+            fi
+            url=$(staging_run "$sha")
+            if [ -z "$url" ]; then
+              echo "::error::$sha has not passed on staging. Only commits deploy-backend.yml deployed to staging can be promoted."; exit 1
+            fi
+          else
+            # What staging runs now: the newest commit on main that it deployed.
+            url=""
+            for sha in $(git rev-list --first-parent --max-count=100 origin/main); do
+              url=$(staging_run "$sha")
+              [ -n "$url" ] && break
+            done
+            if [ -z "$url" ]; then
+              echo "::error::No commit among main's last 100 has passed on staging."; exit 1
+            fi
+          fi
+          run_id=${url##*/runs/}
+          run_id=${run_id%%/*}
+          # The run must be main's staging deploy, and its package must still be kept.
+          run=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '"\(.path) \(.head_branch)"')
+          if [ "$run" != ".github/workflows/deploy-backend.yml main" ]; then
+            echo "::error::$url is not a staging deploy of main ($run)."; exit 1
+          fi
+          kept=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" \
+            --jq "[.artifacts[] | select(.name == \"lambda-package-${sha}\" and (.expired | not))] | length")
+          if [ "$kept" = "0" ]; then
+            echo "::error::The Lambda package staging ran for $sha has expired (kept 90 days). Merge a new commit (for example a revert) and promote that."; exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "package_run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+          # What the reviewer sees before approving.
+          previous=$(git tag --list 'prod-*' --sort=-creatordate | head -n 1)
+          {
+            echo "### Promote \`${sha:0:7}\` to production"
+            echo
+            echo "$(git log -1 --format='%s' "$sha")"
+            echo
+            echo "Passed on staging: $url"
+            echo
+            if [ -z "$previous" ]; then
+              echo "No earlier promotion (no \`prod-*\` tag)."
+            elif [ "$sha" = "$(git rev-list -n 1 "$previous")" ]; then
+              echo "Production already runs this commit (\`$previous\`): this redeploys it."
+            elif git merge-base --is-ancestor "$sha" "$previous"; then
+              echo "**Rollback**: this is older than production's \`$previous\`. Migrations are not undone, so a deploy across a migration fails (alembic can't find the newer revision) and production keeps its code."
+            else
+              echo "Commits since production's \`$previous\`:"
+              echo
+              git log --format='- %h %s' "$previous..$sha"
+              migrations=$(git diff --name-only "$previous" "$sha" -- backend/migrations/versions)
+              echo
+              if [ -n "$migrations" ]; then
+                echo "Migrations (already applied on staging):"
+                echo
+                echo "$migrations" | sed 's/^/- /'
+              else
+                echo "No migrations."
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to production
+    needs: resolve
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/deploy-stack.yml
+    with:
+      environment: production
+      stack: TrainWiseApi
+      sha: ${{ needs.resolve.outputs.sha }}
+      package-run-id: ${{ needs.resolve.outputs.package-run-id }}
+    secrets: inherit
+
+  tag:
+    name: Tag the release
+    needs: [resolve, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push the prod-YYYYMMDD-N tag
+        env:
+          SHA: ${{ needs.resolve.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          day=$(date -u +%Y%m%d)
+          n=$(( $(git tag --list "prod-${day}-*" | wc -l) + 1 ))
+          tag="prod-${day}-${n}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" "$SHA" -m "Promoted to production by ${GITHUB_ACTOR}" -m "$RUN_URL"
+          git push origin "$tag"
+          echo "Tagged \`$tag\`" >> "$GITHUB_STEP_SUMMARY"
