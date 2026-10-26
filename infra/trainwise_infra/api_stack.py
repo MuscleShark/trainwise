@@ -1,4 +1,4 @@
-from aws_cdk import CfnOutput, Duration, RemovalPolicy, Stack
+from aws_cdk import ArnFormat, CfnOutput, Duration, RemovalPolicy, Stack
 from aws_cdk import aws_budgets as budgets
 from aws_cdk import aws_cloudwatch as cloudwatch
 from aws_cdk import aws_cloudwatch_actions as cloudwatch_actions
@@ -57,13 +57,19 @@ class ApiStack(Stack):
         self.alarm_topic = sns.Topic(self, "AlarmTopic", topic_name=alarm_topic_name)
         if alarm_email:
             self.alarm_topic.add_subscription(subscriptions.EmailSubscription(alarm_email))
-        for service in ("cloudwatch.amazonaws.com", "budgets.amazonaws.com"):
+        budgets_arn = self.format_arn(
+            service="budgets", region="", resource="*", arn_format=ArnFormat.NO_RESOURCE_NAME
+        )
+        for service, extra in (
+            ("cloudwatch.amazonaws.com", {}),
+            ("budgets.amazonaws.com", {"ArnLike": {"aws:SourceArn": budgets_arn}}),
+        ):
             self.alarm_topic.add_to_resource_policy(
                 iam.PolicyStatement(
                     actions=["sns:Publish"],
                     principals=[iam.ServicePrincipal(service)],
                     resources=[self.alarm_topic.topic_arn],
-                    conditions={"StringEquals": {"aws:SourceAccount": self.account}},
+                    conditions={"StringEquals": {"aws:SourceAccount": self.account}, **extra},
                 )
             )
         self._alarm_action = cloudwatch_actions.SnsAction(self.alarm_topic)
@@ -238,9 +244,9 @@ class ApiStack(Stack):
             threshold=1,
         )
 
-        # AWS spend for the whole account. Allowed in the simplified "projects" mode;
-        # never turn on "advanced features" for it, that removes the project spend limit.
-        budgets.CfnBudget(
+        # AWS spend for the whole account: an account-level budget, which needs neither
+        # AWS Organizations nor "advanced features" (those remove the project spend limit).
+        budget = budgets.CfnBudget(
             self,
             "MonthlyBudget",
             budget=budgets.CfnBudget.BudgetDataProperty(
@@ -268,6 +274,8 @@ class ApiStack(Stack):
                 for kind, percent in (("ACTUAL", 80), ("FORECASTED", 100))
             ],
         )
+        # Budgets checks that it may publish when it saves the notification.
+        budget.node.add_dependency(self.alarm_topic.node.find_child("Policy"))
 
         # CORS is handled by FastAPI, so the Function URL must not add its own headers.
         self.function_url = self.function.add_function_url(

@@ -210,9 +210,12 @@ def test_cloudwatch_and_budgets_may_publish_to_the_topic(template):
     assert services == ["budgets.amazonaws.com", "cloudwatch.amazonaws.com"]
     for statement in statements:
         assert statement["Action"] == "sns:Publish"
-        assert statement["Condition"] == {
-            "StringEquals": {"aws:SourceAccount": "123456789012"}
-        }
+        assert statement["Condition"]["StringEquals"] == {"aws:SourceAccount": "123456789012"}
+    (budgets_statement,) = [
+        s for s in statements if s["Principal"]["Service"] == "budgets.amazonaws.com"
+    ]
+    source_arn = json.dumps(budgets_statement["Condition"]["ArnLike"]["aws:SourceArn"])
+    assert ":budgets::123456789012:*" in source_arn
 
 
 def test_api_alarms_watch_5xx_throttles_and_slow_requests(template):
@@ -266,6 +269,10 @@ def test_coach_tokens_are_counted_from_the_log_line(template):
 
 def test_monthly_budget_notifies_the_topic(template):
     (topic_id,) = template.find_resources("AWS::SNS::Topic")
+    (policy_id,) = template.find_resources("AWS::SNS::TopicPolicy")
+    (budget,) = template.find_resources("AWS::Budgets::Budget").values()
+    # Budgets refuses a topic it may not publish to yet.
+    assert policy_id in budget["DependsOn"]
     template.has_resource_properties(
         "AWS::Budgets::Budget",
         {

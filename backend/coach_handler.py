@@ -88,8 +88,9 @@ def handler(event, context):
         recommendation_id = uuid.UUID(event["recommendation_id"])
         status = run(db, recommendation_id, model(DEFAULT_MODEL))
         line["status"] = status
-        if status == "ready":
-            recommendation = db.get(Recommendation, recommendation_id)
+        # The account may have been deleted since the run committed.
+        recommendation = status == "ready" and db.get(Recommendation, recommendation_id)
+        if recommendation:
             line["input_tokens"] = recommendation.input_tokens
             line["output_tokens"] = recommendation.output_tokens
     # One JSON line per run; CloudWatch metric filters count the failed ones and the
