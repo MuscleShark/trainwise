@@ -1,0 +1,165 @@
+"""Scores a coach model on the eval cases: format, safety, coaching rules, language,
+grounded numbers, cost and time."""
+
+import re
+import time
+from dataclasses import dataclass, field
+
+from .eval_cases import Case
+from .providers import CoachModel
+from .schemas import CoachInput, CoachResult
+from .service import CoachError, advise
+
+# US dollars per million input and output tokens, checked 2026-10-25 against
+# Anthropic's model table. Prices for other providers are passed on the command line.
+PRICES = {
+    "anthropic:claude-opus-5-5": (4.00, 20.00),
+    "anthropic:claude-sonnet-5-5": (2.00, 10.00),
+    "anthropic:claude-haiku-5-5": (0.10, 0.50),
+}
+
+CJK = re.compile(r"[一-鿿]")
+NUMBER = re.compile(r"\d+(?:[.,]\d+)?")
+
+
+@dataclass
+class CaseResult:
+    case: str
+    failures: list[str] = field(default_factory=list)
+    seconds: float = 0.0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    result: CoachResult | None = None
+
+    @property
+    def passed(self) -> bool:
+        return not self.failures
+
+
+def allowed_numbers(plan: CoachInput) -> set[float]:
+    """Numbers a reason may mention: everything in the input, weights also in pounds,
+    sleep as hours and minutes, and small counts such as "one more rep"."""
+    numbers: set[float] = set(range(0, 11))
+    for text in NUMBER.findall(plan.model_dump_json()):
+        numbers.add(float(text.replace(",", ".")))
+    weights = [
+        s.weight_kg
+        for e in plan.exercises
+        for s in [*e.planned_sets, *(d for session in e.recent_sessions for d in session.sets)]
+        if s.weight_kg
+    ]
+    for kg in weights:
+        lb = kg / 0.45359237
+        numbers.update({round(lb), round(lb * 2) / 2, round(lb, 1), round(lb / 2.5) * 2.5})
+    sleep = plan.readiness.sleep_minutes
+    for metric in (sleep.value, sleep.usual) if sleep else ():
+        if metric is not None:
+            hours = metric / 60
+            numbers.update({int(hours), round(hours), round(hours, 1), round(metric % 60)})
+            numbers.update({round(hours * 2) / 2})
+    return numbers
+
+
+def check(case: Case, result: CoachResult) -> list[str]:
+    failures = []
+    plan_by_id = {e.exercise_id: e for e in case.plan.exercises}
+    texts = [result.summary, *(e.reason for e in result.exercises)]
+
+    for final in result.exercises:
+        planned = plan_by_id[final.exercise_id]
+        if final.action not in case.allowed[final.exercise_id]:
+            failures.append(f"{final.exercise_id}: {final.action.value} not allowed here")
+        top_planned = max((s.weight_kg or 0 for s in planned.planned_sets), default=0)
+        if any((s.weight_kg or 0) > top_planned + 0.0005 for s in final.sets):
+            failures.append(f"{final.exercise_id}: weight above the rule plan")
+        if not final.reason:
+            failures.append(f"{final.exercise_id}: no reason")
+
+    joined = " ".join(texts)
+    if case.plan.language == "zh" and not CJK.search(joined):
+        failures.append("not in Chinese")
+    if case.plan.language == "en" and CJK.search(joined):
+        failures.append("Chinese in an English answer")
+
+    allowed = allowed_numbers(case.plan)
+    for text in texts:
+        for number in NUMBER.findall(text):
+            value = float(number.replace(",", "."))
+            if not any(abs(value - a) < 0.051 for a in allowed):
+                failures.append(f"number not in the input: {number}")
+
+    for phrase in case.forbidden:
+        if phrase in joined:
+            failures.append(f"repeated {phrase!r}")
+    return failures
+
+
+def run_case(case: Case, model: CoachModel) -> CaseResult:
+    started = time.perf_counter()
+    outcome = CaseResult(case.name)
+    try:
+        result = advise(case.plan, model)
+    except CoachError as error:
+        outcome.failures.append(f"no usable answer: {error}")
+    else:
+        outcome.result = result
+        outcome.input_tokens = result.input_tokens
+        outcome.output_tokens = result.output_tokens
+        outcome.failures = check(case, result)
+    outcome.seconds = time.perf_counter() - started
+    return outcome
+
+
+@dataclass
+class Report:
+    model: str
+    results: list[CaseResult]
+    price: tuple[float, float] | None = None
+
+    @property
+    def pass_rate(self) -> float:
+        return sum(r.passed for r in self.results) / len(self.results) if self.results else 0.0
+
+    @property
+    def cost_per_case(self) -> float | None:
+        if self.price is None or not self.results:
+            return None
+        tokens_in = sum(r.input_tokens for r in self.results)
+        tokens_out = sum(r.output_tokens for r in self.results)
+        total = tokens_in / 1e6 * self.price[0] + tokens_out / 1e6 * self.price[1]
+        return total / len(self.results)
+
+    @property
+    def median_seconds(self) -> float:
+        times = sorted(r.seconds for r in self.results)
+        return times[len(times) // 2] if times else 0.0
+
+
+def evaluate(
+    model: CoachModel, cases: list[Case], price: tuple[float, float] | None = None
+) -> Report:
+    return Report(
+        model.name, [run_case(case, model) for case in cases], price or PRICES.get(model.name)
+    )
+
+
+def markdown(reports: list[Report]) -> str:
+    lines = [
+        "| Model | Passed | Cost per suggestion | Median time |",
+        "|---|---|---|---|",
+    ]
+    for report in reports:
+        cost = (
+            f"${report.cost_per_case:.4f}" if report.cost_per_case is not None else "price not set"
+        )
+        passed = sum(r.passed for r in report.results)
+        lines.append(
+            f"| {report.model} | {passed}/{len(report.results)} ({report.pass_rate:.0%}) "
+            f"| {cost} | {report.median_seconds:.1f} s |"
+        )
+    for report in reports:
+        failed = [r for r in report.results if not r.passed]
+        if failed:
+            lines += ["", f"### Failures: {report.model}", ""]
+            lines += [f"- {r.case}: {'; '.join(r.failures)}" for r in failed]
+    return "\n".join(lines) + "\n"

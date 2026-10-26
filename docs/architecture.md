@@ -106,6 +106,21 @@ Agreed before M2 started:
 
 M2 ships as five pull requests: Apple Health groundwork (permission, import, sync of readiness and body weight); workouts written to Apple Health; exercise detail; the Progress tab; the readiness card on Today.
 
+### M3 decisions
+
+Agreed on 2026-10-25:
+
+| Topic | Decision |
+|---|---|
+| Free and paid | The rule-based weights and reps are free. The AI's reasons, its readiness adjustments and the weekly summary need the subscription |
+| Where the rules run | On the phone (`IronSageCore/NextSession.swift`), so suggestions work offline and cost nothing |
+| When the AI runs | Ahead of time: after a workout syncs, and in the morning once last night's sleep is in. The result is stored and shown offline; nobody waits for it, so no streaming Lambda is needed |
+| What the AI may change | Only one of three actions per exercise: follow the rule plan, hold the weight, or one set fewer. The backend turns the action into sets, so the model never writes a weight |
+| AI provider | Not tied to one. A small adapter per provider (Claude, Gemini, OpenAI); the eval set decides which one runs in production. Changing provider also means updating the privacy policy, the consent text and the App Store privacy label |
+| Price | $4.99 a month or $39.99 a year, with a 7-day free trial |
+| Agent | Not in M3. A chat coach with tools comes after the US launch |
+| Markets | US App Store first. Mainland China later; it needs a mainland filing entity, a China-hosted backend, a filed domestic model and its own sign-in |
+
 ### Languages
 
 - English and Chinese (Simplified). iOS picks the language from the phone's language list, not from the App Store region.
@@ -209,9 +224,10 @@ Notes:
    - Double progression: when every working set reaches the top of the rep range, add load next time.
    - Trend for each exercise over the last sessions.
    - The rules follow [coaching.md](coaching.md).
-2. **Claude adjusts and explains**
-   - Input: the rule-based plan, recent sessions, and readiness (sleep, HRV and resting HR compared with the user's own baseline, heart rate in the last session).
-   - Output: the final suggestion and a short reason. Example: "You slept 5.5 h and HRV is 20% below your usual, so keep 60 kg instead of adding weight."
+2. **The AI adjusts and explains** (`backend/coach/`)
+   - Input: the rule-based plan, the last few sessions of each exercise, and readiness (sleep, HRV and resting HR compared with the user's own baseline).
+   - Output: for each exercise one action (follow, hold the weight, one set fewer) and a one-sentence reason, plus a one-line summary. Example: "You slept 5 h 10 min, so stay at 100 kg today." `coach/guardrails.py` applies the actions; advice that doesn't match the plan is rejected and the app keeps the rule plan.
+   - Instructions are Markdown skills in `coach/skills/` (safety, next session), loaded by task. They work the same with every provider.
 3. **Stored** in `recommendations` with the inputs, so the user and we can see later why a suggestion was made.
 
 Later (version 2), a coach agent can chat and change plans with tools on our API. Tools are read-only by default. Any write (for example changing a plan) needs the user's confirmation. User-written text (notes, exercise names) is treated as data, never as instructions, to guard against prompt injection.
@@ -223,12 +239,12 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
   - **SQS + worker Lambda** for jobs nobody waits for (weekly summary), started by **EventBridge Scheduler**.
 - Every AI endpoint checks the subscription first. Without one it returns `402 Payment Required`.
 - Each user has a daily AI quota. `ai_usage` records tokens so costs can be watched.
-- Model choice, prices and rate limits are checked against Anthropic's current documentation when this is built, not from memory.
+- Model choice, prices and rate limits are checked against each provider's current documentation when this is built, not from memory.
 
 ### Evaluation
 
 - Rules: ordinary unit tests.
-- Claude step: a fixed set of example users and sessions, with checks on output format, safe load changes (no large jumps) and whether the explanation refers to the actual data.
+- AI step: `coach/eval_cases.py` holds example users (12 scenarios, each in English and Chinese). `scripts/coach_eval.py` runs them against real models and reports, per model, how many passed, the cost per suggestion and the time. A case fails on: no usable JSON, an action the coaching rules don't allow there (for example adding weight after a short night, or changing the plan for low HRV alone), a weight above the rule plan, the wrong language, a number that isn't in the input, or repeating instructions hidden in an exercise name.
 
 ## Apple Health
 
