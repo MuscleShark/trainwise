@@ -38,6 +38,16 @@
                ReferencedContainer = "container:IronSage.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8C2E3F4A5B6C7D8E9F0A1B1C"
+               BuildableName = "IronSageUITests.xctest"
+               BlueprintName = "IronSageUITests"
+               ReferencedContainer = "container:IronSage.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

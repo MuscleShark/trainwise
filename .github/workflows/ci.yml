@@ -15,8 +15,53 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Which parts a pull request touches, so each job below runs only when it is
+  # affected. A skipped job counts as passed for the required checks. A push to main
+  # runs everything, because the deploy waits for this workflow.
+  changes:
+    name: Changed parts
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.parts.outputs.frontend }}
+      backend: ${{ steps.parts.outputs.backend }}
+      infra: ${{ steps.parts.outputs.infra }}
+      ios: ${{ steps.parts.outputs.ios }}
+      e2e: ${{ steps.parts.outputs.e2e }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide what to check
+        id: parts
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          all() { for part in frontend backend infra ios e2e; do echo "$part=true" >> "$GITHUB_OUTPUT"; done; }
+          if [ "$EVENT" != "pull_request" ]; then all; exit 0; fi
+          files=$(git diff --name-only "$BASE"...HEAD)
+          echo "$files"
+          touched() { echo "$files" | grep -qE "$1" && echo true || echo false; }
+          # The workflows themselves, or the API contract every client is generated from.
+          if [ "$(touched '^(\.github/|api/openapi\.json$)')" = true ]; then all; exit 0; fi
+          backend=$(touched '^backend/')
+          frontend=$(touched '^frontend/')
+          {
+            echo "frontend=$frontend"
+            echo "backend=$backend"
+            # The CDK app packages the backend, so backend changes are synthesized too.
+            echo "infra=$( [ "$backend" = true ] && echo true || touched '^infra/' )"
+            echo "ios=$(touched '^ios/')"
+            echo "e2e=$( [ "$backend" = true ] || [ "$frontend" = true ] && echo true || echo false )"
+          } >> "$GITHUB_OUTPUT"
+
   frontend:
     name: Frontend checks
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
 
     defaults:
@@ -49,6 +94,8 @@ jobs:
 
   backend:
     name: Backend tests
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
 
     # The tests run on SQLite with coverage, then again on PostgreSQL, the production
@@ -106,6 +153,8 @@ jobs:
 
   infra:
     name: Infrastructure checks
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -141,6 +190,8 @@ jobs:
 
   ios:
     name: iOS build and tests
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
     runs-on: macos-26
     timeout-minutes: 30
 
@@ -172,19 +223,29 @@ jobs:
 
       # The OpenAPI generator runs as a package build plugin; CI has no one to
       # click "Trust & Enable", hence -skipPackagePluginValidation.
-      - name: Build app for the simulator
-        run: >-
-          xcodebuild build
-          -project IronSage.xcodeproj
-          -scheme IronSage
-          -destination 'generic/platform=iOS Simulator'
-          -skipPackagePluginValidation
-          CODE_SIGNING_ALLOWED=NO
+      # Builds the app and runs its tests on a simulator: the StoreKit tests against
+      # IronSage.storekit, and the UI tests, which click through the main flows in
+      # demo mode (no sign-in, no network).
+      - name: Test the app on a simulator
+        run: |
+          set -euo pipefail
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulator: $device"
+          xcodebuild test \
+            -project IronSage.xcodeproj \
+            -scheme IronSage \
+            -destination "id=$device" \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
 
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
+    needs: [changes, frontend, backend]
+    # Runs after the frontend and backend checks pass, or when one was skipped as
+    # unaffected.
+    if: ${{ !cancelled() && !failure() && needs.changes.outputs.e2e == 'true' }}
     timeout-minutes: 20
 
     services:

@@ -251,15 +251,15 @@ Clerk dashboard settings: email address with **verification code**, Google and A
 
 ## Quality Checks
 
-GitHub Actions runs the following checks for every pull request and every push to `main`:
+GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `ios/` the iOS job, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed.
 
 - Frontend ESLint
 - Frontend production build and TypeScript validation
 - Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
-- Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally)
+- Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally); the same tests run again on PostgreSQL (`TEST_DATABASE_URL=postgresql+psycopg://… pytest` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
-- iOS (macOS runner): `swift test` for IronSageKit, then a simulator build of the app
+- iOS (macOS runner): `swift test` for IronSageKit, then the app's tests on a simulator: StoreKit tests against `IronSage.storekit` and UI tests (`ios/IronSageUITests`) that click through the main flows in demo mode
 - End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 
