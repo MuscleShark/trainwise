@@ -29,6 +29,9 @@ def main() -> None:
     )
     parser.add_argument("--only", help="run only cases whose name contains this")
     parser.add_argument("--out", type=Path, help="also write the report to this file")
+    parser.add_argument(
+        "--answers", type=Path, help="write every summary and reason to this file, to read"
+    )
     args = parser.parse_args()
 
     prices = {}
@@ -46,6 +49,8 @@ def main() -> None:
     print(report)
     if args.out:
         args.out.write_text(report, encoding="utf-8")
+    if args.answers:
+        args.answers.write_text(evaluation.answers(reports), encoding="utf-8")
 
 
 if __name__ == "__main__":

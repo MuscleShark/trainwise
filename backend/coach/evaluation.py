@@ -36,10 +36,29 @@ class CaseResult:
         return not self.failures
 
 
+# Plate steps a reason may name ("the 2.5 kg increase"), in kilograms and pounds.
+PLATE_STEPS = {1.25, 2.5, 5.0, 10.0}
+
+
+def minutes_as_text(minutes: float) -> set[float]:
+    """The numbers a duration can be written with: 135 minutes is 135, 2, 15, 2.3 or 2.5."""
+    hours = minutes / 60
+    return {
+        round(minutes),
+        int(hours),
+        round(hours),
+        round(hours, 1),
+        round(minutes % 60),
+        round(hours * 2) / 2,
+    }
+
+
 def allowed_numbers(plan: CoachInput) -> set[float]:
     """Numbers a reason may mention: everything in the input, weights also in pounds,
-    sleep as hours and minutes, and small counts such as "one more rep"."""
-    numbers: set[float] = set(range(0, 11))
+    plate steps and the change between last time and the plan, sleep as hours and
+    minutes, the difference between each readiness value and its usual (also as a
+    percentage), and small counts such as "one more rep"."""
+    numbers: set[float] = set(range(0, 11)) | PLATE_STEPS
     for text in NUMBER.findall(plan.model_dump_json()):
         numbers.add(float(text.replace(",", ".")))
     weights = [
@@ -51,12 +70,25 @@ def allowed_numbers(plan: CoachInput) -> set[float]:
     for kg in weights:
         lb = kg / 0.45359237
         numbers.update({round(lb), round(lb * 2) / 2, round(lb, 1), round(lb / 2.5) * 2.5})
-    sleep = plan.readiness.sleep_minutes
-    for metric in (sleep.value, sleep.usual) if sleep else ():
-        if metric is not None:
-            hours = metric / 60
-            numbers.update({int(hours), round(hours), round(hours, 1), round(metric % 60)})
-            numbers.update({round(hours * 2) / 2})
+    for exercise in plan.exercises:
+        top = max((s.weight_kg or 0 for s in exercise.planned_sets), default=0)
+        if exercise.last_weight_kg and top:
+            change = abs(top - exercise.last_weight_kg)
+            numbers.update(
+                {change, round(change / 0.45359237), round(change / 0.45359237 / 2.5) * 2.5}
+            )
+    readiness = plan.readiness
+    if readiness.sleep_minutes:
+        sleep = readiness.sleep_minutes
+        for minutes in (sleep.value, sleep.usual):
+            if minutes is not None:
+                numbers.update(minutes_as_text(minutes))
+        if sleep.usual is not None:
+            numbers.update(minutes_as_text(abs(sleep.usual - sleep.value)))
+    for metric in (readiness.hrv_ms, readiness.resting_hr_bpm, readiness.sleep_minutes):
+        if metric and metric.usual:
+            difference = abs(metric.usual - metric.value)
+            numbers.update({round(difference), round(difference / metric.usual * 100)})
     return numbers
 
 
@@ -86,7 +118,7 @@ def check(case: Case, result: CoachResult) -> list[str]:
         for number in NUMBER.findall(text):
             value = float(number.replace(",", "."))
             if not any(abs(value - a) < 0.051 for a in allowed):
-                failures.append(f"number not in the input: {number}")
+                failures.append(f"number not in the input: {number} in “{text}”")
 
     for phrase in case.forbidden:
         if phrase in joined:
@@ -141,6 +173,24 @@ def evaluate(
     return Report(
         model.name, [run_case(case, model) for case in cases], price or PRICES.get(model.name)
     )
+
+
+def answers(reports: list[Report]) -> str:
+    """Every summary and reason, by case, so people can judge the wording."""
+    lines = []
+    for report in reports:
+        lines += [f"## {report.model}", ""]
+        for outcome in report.results:
+            mark = "✓" if outcome.passed else "✗"
+            lines.append(f"### {mark} {outcome.case}")
+            if outcome.result is None:
+                lines += ["", f"No answer: {'; '.join(outcome.failures)}", ""]
+                continue
+            lines += ["", f"> {outcome.result.summary}", ""]
+            for item in outcome.result.exercises:
+                lines.append(f"- **{item.exercise_id}** ({item.action.value}): {item.reason}")
+            lines.append("")
+    return "\n".join(lines)
 
 
 def markdown(reports: list[Report]) -> str:

@@ -5,7 +5,7 @@ import pytest
 
 from coach import evaluation, guardrails, prompt, providers
 from coach.eval_cases import bench_increase, cases, curl_first_time, row_add_reps, sleep
-from coach.schemas import Action, CoachInput, CoachOutput, ExerciseAdvice
+from coach.schemas import Action, CoachInput, CoachOutput, ExerciseAdvice, Metric, Readiness
 from coach.service import CoachError, advise
 
 
@@ -261,7 +261,7 @@ def test_checks_catch_wrong_actions_language_invented_numbers_and_injections():
         ),
     )
     assert "not in Chinese" in english.failures
-    assert "number not in the input: 47.5" in english.failures
+    assert any(f.startswith("number not in the input: 47.5 in") for f in english.failures)
 
     injected = next(
         c for c in cases() if c.name.startswith("instructions inside") and c.name.endswith("(en)")
@@ -282,6 +282,34 @@ def test_checks_catch_wrong_actions_language_invented_numbers_and_injections():
     broken = evaluation.run_case(case, FakeModel(answer=lambda _: "nope"))
     assert broken.failures[0].startswith("no usable answer")
     assert "price not set" in evaluation.markdown([evaluation.evaluate(FakeModel(), [case])])
+
+
+def test_differences_from_usual_and_plate_steps_are_allowed_numbers():
+    # 410 min against a usual 450: "40 minutes less"; 310 against 445: "2 h 15 min less".
+    assert 40 in evaluation.allowed_numbers(plan(readiness=sleep(410, 450)))
+    assert {2, 15}.issubset(evaluation.allowed_numbers(plan(readiness=sleep(310, 445))))
+    # "skipped the 2.5 kg increase", and the planned change in pounds.
+    assert {2.5, 6}.issubset(evaluation.allowed_numbers(plan()))
+    # HRV 38 against 52: 14 ms or 27% lower.
+    hrv = plan(readiness=Readiness(hrv_ms=Metric(value=38, usual=52)))
+    assert {14, 27}.issubset(evaluation.allowed_numbers(hrv))
+    assert 47.5 not in evaluation.allowed_numbers(plan())
+
+
+def test_answers_list_every_reason_for_reading():
+    case = next(c for c in cases() if c.name == "increase after a normal night (en)")
+    broken = next(c for c in cases() if c.name == "increase after a normal night (zh)")
+    report = evaluation.Report(
+        "fake:model",
+        [
+            evaluation.run_case(case, FakeModel()),
+            evaluation.run_case(broken, FakeModel(answer=lambda _: "nope")),
+        ],
+    )
+    text = evaluation.answers([report])
+    assert "### ✓ increase after a normal night (en)" in text
+    assert "- **bench** (follow): Follow the plan." in text
+    assert "### ✗ increase after a normal night (zh)" in text and "No answer:" in text
 
 
 def test_sleep_and_pounds_are_allowed_numbers():
