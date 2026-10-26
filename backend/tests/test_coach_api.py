@@ -203,7 +203,7 @@ def test_deleting_the_account_deletes_its_recommendations(client, started):
 
 
 def test_the_lambda_handler_reads_its_secrets_and_runs_the_default_model(
-    client, started, monkeypatch
+    client, started, monkeypatch, capsys
 ):
     enable_coach(client)
     recommendation_id = new_id()
@@ -217,6 +217,10 @@ def test_the_lambda_handler_reads_its_secrets_and_runs_the_default_model(
     result = coach_handler.handler({"recommendation_id": recommendation_id}, None)
     assert result == {"status": "ready"}
     assert loaded == [("/trainwise/prod", ("DATABASE_URL", "ANTHROPIC_API_KEY"))]
+    # The log line the CloudWatch metric filters read.
+    line = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert line["status"] == "ready"
+    assert (line["input_tokens"], line["output_tokens"]) == (1000, 200)
 
 
 def test_the_api_starts_the_worker_lambda_without_waiting(monkeypatch):

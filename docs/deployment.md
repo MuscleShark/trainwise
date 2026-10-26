@@ -31,7 +31,10 @@ The one-time setup below happens in your own AWS, Neon, Vercel and GitHub accoun
 | Migration trigger | CDK trigger that invokes `trainwise-migrate-prod` whenever its code changes, before the API function is updated |
 | Log group | `/aws/lambda/trainwise-api-prod`, kept for 30 days |
 | Lambda `trainwise-coach-prod` | The AI coach worker: same code package, handler `coach_handler.handler`, 60 s. The API starts it without waiting (the API role may invoke it, nothing else). Its role may read `/trainwise/prod/DATABASE_URL` and `/trainwise/prod/ANTHROPIC_API_KEY`. No retries: a failure is stored on the recommendation. Log group kept for 30 days |
-| Alarms | `trainwise-coach-prod-errors` (the worker crashed or timed out), `trainwise-coach-prod-failed-answers` (5 or more failed answers in an hour, counted from the worker's log lines) and `trainwise-coach-prod-daily-calls` (more than 300 calls in a day). Visible in the CloudWatch console; no notifications yet |
+| SNS topic `trainwise-alarms-prod` | Every alarm and the budget notify it. The email subscriber is the `ALARM_EMAIL` variable of the GitHub `production` environment (step 5), so the address is not in the repository. Without it the topic has no subscriber |
+| Alarms | Each one emails when it goes off and again when it clears. Coach worker: `trainwise-coach-prod-errors` (crashed or timed out), `trainwise-coach-prod-failed-answers` (5 or more failed answers in an hour, counted from the worker's log lines), `trainwise-coach-prod-daily-calls` (more than 300 calls in a day). API: `trainwise-api-prod-5xx` (3 or more 5xx responses in 5 minutes, from the Function URL, so it includes errors FastAPI turned into a 500, crashes and timeouts), `trainwise-api-prod-throttles` (any throttled request: the account's concurrency limit was reached), `trainwise-api-prod-slow` (p95 duration above 12 s, close to the 15 s timeout, for 15 minutes). `trainwise-migrate-prod-errors` (a migration failed; the deploy fails too) |
+| AI token metrics | `IronSage/Coach` → `InputTokens` / `OutputTokens`, from the `input_tokens` / `output_tokens` the worker logs for each answer. CloudWatch → Metrics → `IronSage/Coach`, statistic *Sum*, period 1 day shows the tokens per day |
+| Budget `TrainWiseApi-monthly-cost` | AWS Budgets, $10 a month for the whole account: notifies the topic at 80% of actual spend and when the forecast passes 100%. An account-level budget, like the zero-spend budget in step 0: it needs neither AWS Organizations nor "advanced features" (never turn those on: they remove the project spend limit). The AI provider bills separately and is not included: set a monthly spend limit in the Anthropic Console as well |
 
 Settings that are not secret live in [`infra/cdk.json`](../infra/cdk.json) (`frontendUrls`, `clerkIssuer`, `functionName`, `ssmParameterPrefix`, account and Region). To change one, edit the file in a PR. The deploy after merge applies the change.
 
@@ -125,6 +128,23 @@ Repository → **Settings → Environments → New environment** → `production
 
 - Deployment branches and tags: *Selected branches* → `main`.
 - **Environment secrets**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (from step 4).
+- **Environment variables**: `ALARM_EMAIL`, the address that receives the alarm and budget emails. The deploy passes it to CDK as `-c alarmEmail=...`.
+
+### Confirm the alarm email
+
+After the first deploy with `ALARM_EMAIL` set, AWS sends *AWS Notification - Subscription Confirmation* from `no-reply@sns.amazonaws.com` to that address. Open it and click **Confirm subscription**. Until you do, no alarm email arrives. Check the spam folder if it is not there within a few minutes. To check, open **SNS → Topics → `trainwise-alarms-prod` → Subscriptions**: the email row should say *Confirmed*, not *Pending confirmation*. The link expires after 3 days; if it did, delete the pending subscription there and run **Actions → Deploy backend → Run workflow** to send a new one.
+
+To change the address, update `ALARM_EMAIL` and run a deploy. CloudFormation replaces the subscription, and the new address gets its own confirmation email.
+
+To test the notification, in **CloudShell**:
+
+```bash
+aws cloudwatch set-alarm-state --region us-east-2 --alarm-name trainwise-api-prod-throttles --state-value ALARM --state-reason "Testing the alarm email"
+```
+
+An *ALARM* email arrives, then an *OK* email once the alarm is evaluated again (within about 5 minutes).
+
+A deploy that adds or renames an alarm also sends an *OK* email for it a few minutes later, when the new alarm leaves *INSUFFICIENT_DATA*. That is expected.
 
 Run a deploy with **Actions → Deploy backend → Run workflow** (branch `main`). The job summary shows the Function URL, and the smoke test prints `{"status":"ok"}`.
 
