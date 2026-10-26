@@ -23,7 +23,16 @@ final class SubscriptionServiceTests: XCTestCase {
         defaults = UserDefaults(suiteName: "IronSageTests.subscription")
         defaults.removePersistentDomain(forName: "IronSageTests.subscription")
         service = SubscriptionService(api: nil, defaults: defaults)
+        // StoreKit's test service can take a while on a simulator that just booted (on
+        // CI the first request returns no products), so ask again until it answers.
+        let deadline = ContinuousClock.now + .seconds(60)
         await service.loadProducts()
+        while service.products.isEmpty, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .seconds(1))
+            await service.loadProducts()
+        }
+        let products = service.products
+        XCTAssertFalse(products.isEmpty, "StoreKit returned no products from IronSage.storekit")
     }
 
     override func tearDown() async throws {
