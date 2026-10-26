@@ -91,10 +91,12 @@ final class FakeServer: ClientTransport, @unchecked Sendable {
         bodyMeasurements: [String] = [],
         readiness: [String] = [],
         recommendations: [String]? = nil,
+        weeklySummaries: [String]? = nil,
         profile: String = "null"
     ) -> String {
         // Without recommendations, the page looks like one from before the AI coach.
-        let coach = recommendations.map { #", "recommendations": [\#($0.joined(separator: ","))]"# } ?? ""
+        let coach = (recommendations.map { #", "recommendations": [\#($0.joined(separator: ","))]"# } ?? "")
+            + (weeklySummaries.map { #", "weekly_summaries": [\#($0.joined(separator: ","))]"# } ?? "")
         return """
         {"change_seq": \(changeSeq), "has_more": \(hasMore), "profile": \(profile),
          "exercises": [\(exercises.joined(separator: ","))],

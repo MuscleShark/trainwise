@@ -8,12 +8,28 @@ import json
 from functools import cache
 from pathlib import Path
 
-from .schemas import CoachInput, CoachOutput
+from pydantic import BaseModel
+
+from .schemas import CoachInput, CoachOutput, WeeklyInput
 
 SKILLS = Path(__file__).parent / "skills"
 
 # Which skills each task loads, besides safety, which is always loaded.
-TASKS = {"next_session": ["next_session"]}
+TASKS = {"next_session": ["next_session"], "weekly_summary": ["weekly_summary"]}
+
+# What each task is, said first, and what its answer must hold, said last.
+ROLES = {
+    "next_session": "You adjust a rule-based plan for the user's next session and explain "
+    "it in a sentence.",
+    "weekly_summary": "You write the user's weekly training summary from numbers the app "
+    "has already computed.",
+}
+ANSWERS = {
+    "next_session": "Answer with JSON matching the schema you were given: one entry per "
+    "exercise in the input, with its exercise_id, an action and a reason.",
+    "weekly_summary": "Answer with JSON matching the schema you were given: the summary, "
+    "one or two suggestions, and whether one of them is a lighter week.",
+}
 
 LANGUAGES = {"en": "English", "zh": "Simplified Chinese"}
 
@@ -26,28 +42,27 @@ def skill(name: str) -> str:
 def system_prompt(task: str = "next_session") -> str:
     """The same for every request of a task, so providers can cache it."""
     parts = [
-        "You are the IronSage coach. IronSage is a strength-training log. You adjust a "
-        "rule-based plan for the user's next session and explain it in a sentence.",
+        "You are the IronSage coach. IronSage is a strength-training log. " + ROLES[task],
         skill("safety"),
         *(skill(name) for name in TASKS[task]),
-        "Answer with JSON matching the schema you were given: one entry per exercise "
-        "in the input, with its exercise_id, an action and a reason.",
+        ANSWERS[task],
     ]
     return "\n\n".join(parts)
 
 
-def user_message(plan: CoachInput) -> str:
+def user_message(plan: CoachInput | WeeklyInput) -> str:
     language = LANGUAGES[plan.language]
+    what = "summary and suggestions" if isinstance(plan, WeeklyInput) else "reasons and summary"
     data = plan.model_dump(mode="json", exclude_none=True)
     return (
-        f"Write the reasons and summary in {language}. Weights in the input are in "
+        f"Write the {what} in {language}. Weights in the input are in "
         f"kilograms; write them in {plan.unit} (1 kg = 2.2046 lb), rounded as on the "
         "plate.\n\n<input>\n" + json.dumps(data, ensure_ascii=False, indent=1) + "\n</input>"
     )
 
 
-def output_schema() -> dict:
-    """CoachOutput as a plain JSON schema that all three providers accept: no
+def output_schema(output: type[BaseModel] = CoachOutput) -> dict:
+    """The output model as a plain JSON schema that all three providers accept: no
     references or length limits, every property required, no extra properties."""
 
     def strip(node):
@@ -61,7 +76,7 @@ def output_schema() -> dict:
             return [strip(item) for item in node]
         return node
 
-    schema = CoachOutput.model_json_schema()
+    schema = output.model_json_schema()
     defs = schema.pop("$defs", {})
 
     def inline(node):

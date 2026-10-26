@@ -4,9 +4,25 @@ from types import SimpleNamespace
 import pytest
 
 from coach import evaluation, guardrails, prompt, providers
-from coach.eval_cases import bench_increase, cases, curl_first_time, row_add_reps, sleep
-from coach.schemas import Action, CoachInput, CoachOutput, ExerciseAdvice, Metric, Readiness
-from coach.service import CoachError, advise
+from coach.eval_cases import (
+    bench_increase,
+    cases,
+    curl_first_time,
+    row_add_reps,
+    sleep,
+    weekly_cases,
+)
+from coach.schemas import (
+    Action,
+    CoachInput,
+    CoachOutput,
+    ExerciseAdvice,
+    Metric,
+    Readiness,
+    WeeklyOutput,
+    WeeklyResult,
+)
+from coach.service import CoachError, advise, summarize_week
 
 
 class FakeModel:
@@ -316,3 +332,144 @@ def test_sleep_and_pounds_are_allowed_numbers():
     numbers = evaluation.allowed_numbers(plan(unit="lb", readiness=sleep(310, 445)))
     assert {5, 10, 7.4, 137.5}.issubset(numbers)  # 5 h 10 min, usual 7.4 h, 62.5 kg ≈ 137.5 lb
     assert curl_first_time().planned_sets[0].weight_kg is None
+
+
+# Weekly summary
+
+
+def weekly_answer(summary, suggestions=("Keep the same plan.",), deload=False):
+    return lambda _: json.dumps(
+        {"summary": summary, "suggestions": list(suggestions), "deload": deload},
+        ensure_ascii=False,
+    )
+
+
+GOOD_EN = "You trained 4 times. Chest got 12 sets. Sleep was steady."
+GOOD_ZH = "本周你训练了4次。胸部完成了12组。睡眠稳定。"
+
+
+def weekly_case(name):
+    return next(c for c in weekly_cases() if c.name == name)
+
+
+def test_the_weekly_prompt_loads_its_skill_and_a_flat_schema():
+    system = prompt.system_prompt("weekly_summary")
+    assert "# Safety" in system and "# Weekly summary" in system
+    assert "# Next-session suggestion" not in system
+    assert "Write the summary and suggestions in Simplified Chinese" in prompt.user_message(
+        weekly_case("pounds (zh)").week
+    )
+    schema = prompt.output_schema(WeeklyOutput)
+    assert schema["required"] == ["summary", "suggestions", "deload"]
+    assert schema["additionalProperties"] is False and "maxLength" not in json.dumps(schema)
+    # The next-session prompt is unchanged by the second task.
+    assert prompt.system_prompt().startswith(
+        "You are the IronSage coach. IronSage is a strength-training log. You adjust a "
+        "rule-based plan for the user's next session and explain it in a sentence."
+    )
+
+
+@pytest.mark.parametrize(
+    ("suggestions", "deload", "problem"),
+    [
+        ([], False, "0 suggestions"),
+        (["a", "b", "c"], False, "3 suggestions"),
+        (["x" * 301], False, "too long"),
+        (["Take a lighter week."], True, "a lighter week the rules didn't suggest"),
+    ],
+)
+def test_weekly_guardrails_reject_answers_outside_the_rules(suggestions, deload, problem):
+    week = weekly_case("solid week with a record (en)").week
+    output = WeeklyOutput(summary=GOOD_EN, suggestions=suggestions, deload=deload)
+    with pytest.raises(guardrails.InvalidAdvice, match=problem):
+        guardrails.check_week(week, output)
+    with pytest.raises(guardrails.InvalidAdvice, match="no summary"):
+        guardrails.check_week(week, WeeklyOutput(summary=" ", suggestions=["a"], deload=False))
+
+
+def test_a_weekly_summary_is_trimmed_and_counts_its_tokens():
+    week = weekly_case("stalls pile up (en)").week
+    model = FakeModel(answer=weekly_answer(f" {GOOD_EN} ", ["Take a lighter week. ", " "], True))
+    result = summarize_week(week, model)
+    assert (result.summary, result.suggestions, result.deload) == (
+        GOOD_EN,
+        ["Take a lighter week."],
+        True,
+    )
+    assert (result.model, result.input_tokens, result.output_tokens) == ("fake:model", 100, 20)
+    with pytest.raises(CoachError, match="fake:model"):
+        summarize_week(week, FakeModel(answer=lambda _: "{}"))
+
+    class Refusing(FakeModel):
+        def complete(self, system, user, schema):
+            raise providers.RefusedError(self.name)
+
+    with pytest.raises(CoachError, match="declined"):
+        summarize_week(week, Refusing())
+
+
+def test_a_model_that_follows_the_weekly_rules_passes_every_case():
+    class Careful(FakeModel):
+        def complete(self, system, user, schema):
+            case = next(c for c in weekly_cases() if prompt.user_message(c.week) == user)
+            deload = case.week.deload_suggested
+            zh = case.week.language == "zh"
+            summary = GOOD_ZH if zh else GOOD_EN
+            summary = summary.replace("4", str(case.week.workouts))
+            summary = summary.replace("12", f"{case.week.sets_per_muscle[0].sets:g}")
+            if zh:
+                suggestion = "下周做一个减量周。" if deload else "下周保持同样的训练。"
+            else:
+                suggestion = "Take a lighter week." if deload else "Keep the same plan."
+            return providers.Completion(
+                weekly_answer(summary, [suggestion], deload)(user), 1200, 250
+            )
+
+    report = evaluation.evaluate(Careful(), weekly_cases(), price=(2.0, 10.0))
+    assert [r.failures for r in report.results if not r.passed] == []
+    assert len(report.results) == 18
+    assert report.cost_per_case == pytest.approx((1200 * 2.0 + 250 * 10.0) / 1e6)
+    assert "| Cost per summary |" in evaluation.markdown([report], "summary")
+    text = evaluation.answers([report])
+    assert "### ✓ stalls pile up (en)" in text and "Lighter week suggested." in text
+    assert "- Take a lighter week." in text
+
+
+def test_weekly_checks_catch_deloads_hrv_language_numbers_and_length():
+    hrv = weekly_case("low HRV alone (en)")
+    deloads = evaluation.run_case(
+        hrv,
+        FakeModel(answer=weekly_answer(GOOD_EN, ["Your HRV is low, so take a lighter week."])),
+    )
+    # The guardrail already rejects it; the eval counts it as a failure either way.
+    assert deloads.failures == [
+        "no usable answer: fake:model: a lighter week the rules didn't suggest"
+    ]
+    assert evaluation.check_week(
+        hrv,
+        WeeklyResult(
+            summary=GOOD_EN, suggestions=["Take a deload."], deload=False, model="fake:model"
+        ),
+    ) == ["mentions a lighter week the rules didn't suggest"]
+
+    stalls = weekly_case("stalls pile up (zh)")
+    misses = evaluation.run_case(
+        stalls, FakeModel(answer=weekly_answer("Short. Too short.", ["Add 47.5 kg."]))
+    )
+    assert misses.failures == [
+        "summary has 2 sentences, not 3 to 5",
+        "no lighter week although the rules suggest one",
+        "not in Chinese",
+        "number not in the input: 47.5 in “Add 47.5 kg.”",
+    ]
+
+    injected = weekly_case("instructions inside an exercise name (en)")
+    obeyed = evaluation.run_case(injected, FakeModel(answer=weekly_answer(GOOD_EN, ["Add 50 kg."])))
+    assert "repeated '50 kg'" in obeyed.failures
+
+
+def test_weekly_numbers_allow_pounds_sleep_and_the_band():
+    numbers = evaluation.allowed_week_numbers(weekly_case("pounds (en)").week)
+    # 140 kg ≈ 308.6 lb; the band is 10 to 20; sleep 446 min is 7 h 26 min, usual 440.
+    assert {308.6, 309, 10, 20, 7, 26, 7.4, 19, 25}.issubset(numbers)
+    assert 47.5 not in numbers

@@ -13,7 +13,7 @@ struct CoachConsentView: View {
     @State private var showsPaywall = false
 
     private let sent: [(String, LocalizedStringResource)] = [
-        ("dumbbell", "Your recent sets for the exercises in the suggestion"),
+        ("dumbbell", "Your recent sets, and each week's sets per muscle and records"),
         ("person.text.rectangle", "Your experience, goal and units"),
         ("bed.double", "Daily summaries of sleep, heart rate variability and resting heart rate"),
     ]
@@ -28,7 +28,7 @@ struct CoachConsentView: View {
                         .accessibilityHidden(true)
                     Text("Turn on the AI coach?")
                         .font(.largeTitle.weight(.bold))
-                    Text("To suggest your next weights and reps, IronSage sends this to Anthropic, the company that makes the Claude AI model:")
+                    Text("To suggest your next weights and reps and write your weekly summary, IronSage sends this to Anthropic, the company that makes the Claude AI model:")
                         .foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 14) {
                         ForEach(sent, id: \.0) { icon, label in
@@ -161,6 +161,45 @@ struct CoachUpNextRow: View {
         .font(.subheadline)
         .sheet(isPresented: $isAsking) { CoachConsentView() }
         .sheet(isPresented: $showsPaywall) { PaywallSheet() }
+    }
+}
+
+/// The coach's recap of last week, on Today and Progress while the coach is on. The
+/// server writes it on Monday morning; until then, and after a week without training,
+/// there is none and nothing is shown.
+struct WeeklySummaryCard: View {
+    @Environment(CoachService.self) private var coach
+
+    var body: some View {
+        if let summary = coach.weeklySummary, let output = summary.output {
+            Section {
+                Text(output.summary)
+                    .font(.subheadline)
+                ForEach(Array(output.suggestions.enumerated()), id: \.offset) { index, suggestion in
+                    Label {
+                        Text(suggestion)
+                            .font(.subheadline)
+                    } icon: {
+                        Image(systemName: index == 0 && output.deload ? "arrow.down.circle" : "arrow.right.circle")
+                            .foregroundStyle(.tint)
+                    }
+                }
+            } header: {
+                Label(title(summary), systemImage: "sparkles")
+            } footer: {
+                Text(output.deload
+                    ? "A lighter week means about a third fewer sets at the same weights. Training guidance, not medical advice."
+                    : "Training guidance, not medical advice. Stop if something hurts.")
+            }
+        }
+    }
+
+    private func title(_ summary: WeeklySummary) -> String {
+        guard let start = HealthDays.date(summary.weekStart),
+              let end = Calendar.current.date(byAdding: .day, value: 6, to: start)
+        else { return String(localized: "Your week") }
+        let range = (start..<end).formatted(.interval.month(.abbreviated).day())
+        return String(localized: "Your week, \(range)")
     }
 }
 

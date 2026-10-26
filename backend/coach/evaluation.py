@@ -1,14 +1,16 @@
 """Scores a coach model on the eval cases: format, safety, coaching rules, language,
-grounded numbers, cost and time."""
+grounded numbers, cost and time. Next-session cases and weekly-summary cases are scored
+with their own rules, and the same checks on wording."""
 
 import re
 import time
 from dataclasses import dataclass, field
 
-from .eval_cases import Case
+from . import guardrails
+from .eval_cases import Case, WeeklyCase
 from .providers import CoachModel
-from .schemas import CoachInput, CoachResult
-from .service import CoachError, advise
+from .schemas import CoachInput, CoachResult, Readiness, WeeklyInput, WeeklyResult, WeekReadiness
+from .service import CoachError, advise, summarize_week
 
 # US dollars per million input and output tokens, checked 2026-10-25 against
 # Anthropic's model table. Prices for other providers are passed on the command line.
@@ -29,7 +31,7 @@ class CaseResult:
     seconds: float = 0.0
     input_tokens: int = 0
     output_tokens: int = 0
-    result: CoachResult | None = None
+    result: CoachResult | WeeklyResult | None = None
 
     @property
     def passed(self) -> bool:
@@ -77,7 +79,13 @@ def allowed_numbers(plan: CoachInput) -> set[float]:
             numbers.update(
                 {change, round(change / 0.45359237), round(change / 0.45359237 / 2.5) * 2.5}
             )
-    readiness = plan.readiness
+    return numbers | readiness_numbers(plan.readiness)
+
+
+def readiness_numbers(readiness: Readiness | WeekReadiness) -> set[float]:
+    """Sleep as hours and minutes, and the difference between each readiness value and
+    its usual, also as a percentage."""
+    numbers: set[float] = set()
     if readiness.sleep_minutes:
         sleep = readiness.sleep_minutes
         for minutes in (sleep.value, sleep.usual):
@@ -107,37 +115,89 @@ def check(case: Case, result: CoachResult) -> list[str]:
         if not final.reason:
             failures.append(f"{final.exercise_id}: no reason")
 
+    return failures + text_failures(
+        texts, case.plan.language, allowed_numbers(case.plan), case.forbidden
+    )
+
+
+def text_failures(
+    texts: list[str], language: str, allowed: set[float], forbidden: list[str]
+) -> list[str]:
+    """The checks every task's wording gets: language, numbers and forbidden phrases."""
+    failures = []
     joined = " ".join(texts)
-    if case.plan.language == "zh" and not CJK.search(joined):
+    if language == "zh" and not CJK.search(joined):
         failures.append("not in Chinese")
-    if case.plan.language == "en" and CJK.search(joined):
+    if language == "en" and CJK.search(joined):
         failures.append("Chinese in an English answer")
 
-    allowed = allowed_numbers(case.plan)
     for text in texts:
         for number in NUMBER.findall(text):
             value = float(number.replace(",", "."))
             if not any(abs(value - a) < 0.051 for a in allowed):
                 failures.append(f"number not in the input: {number} in “{text}”")
 
-    for phrase in case.forbidden:
+    for phrase in forbidden:
         if phrase in joined:
             failures.append(f"repeated {phrase!r}")
     return failures
 
 
-def run_case(case: Case, model: CoachModel) -> CaseResult:
+DELOAD_WORDS = guardrails.DELOAD_WORDS
+# A sentence ends with one of these, followed by a space or the end of the text.
+SENTENCE_END = re.compile(r"[.!?](?=\s|$)|[。！？]")
+
+
+def allowed_week_numbers(week: WeeklyInput) -> set[float]:
+    """Numbers a weekly summary may mention: everything in the input, record weights
+    also in pounds, sleep as hours and minutes, differences from usual, and small
+    counts such as "two or three more sets"."""
+    numbers: set[float] = set(range(0, 11)) | PLATE_STEPS
+    for text in NUMBER.findall(week.model_dump_json()):
+        numbers.add(float(text.replace(",", ".")))
+    for record in week.records:
+        lb = record.weight_kg / 0.45359237
+        numbers.update({round(lb), round(lb * 2) / 2, round(lb, 1), round(lb / 2.5) * 2.5})
+    return numbers | readiness_numbers(week.readiness)
+
+
+def check_week(case: WeeklyCase, result: WeeklyResult) -> list[str]:
+    failures = []
+    sentences = len(SENTENCE_END.findall(result.summary.strip()))
+    if not 3 <= sentences <= 5:
+        failures.append(f"summary has {sentences} sentences, not 3 to 5")
+    if result.deload != case.week.deload_suggested:
+        failures.append(
+            "no lighter week although the rules suggest one"
+            if case.week.deload_suggested
+            else "a lighter week the rules didn't suggest"
+        )
+    texts = [result.summary, *result.suggestions]
+    lowered = " ".join(texts).lower()
+    if not case.week.deload_suggested and any(word in lowered for word in DELOAD_WORDS):
+        failures.append("mentions a lighter week the rules didn't suggest")
+    return failures + text_failures(
+        texts, case.week.language, allowed_week_numbers(case.week), case.forbidden
+    )
+
+
+def run_case(case: Case | WeeklyCase, model: CoachModel) -> CaseResult:
     started = time.perf_counter()
     outcome = CaseResult(case.name)
     try:
-        result = advise(case.plan, model)
+        if isinstance(case, WeeklyCase):
+            result = summarize_week(case.week, model)
+        else:
+            result = advise(case.plan, model)
     except CoachError as error:
         outcome.failures.append(f"no usable answer: {error}")
     else:
         outcome.result = result
         outcome.input_tokens = result.input_tokens
         outcome.output_tokens = result.output_tokens
-        outcome.failures = check(case, result)
+        outcome.failures = (
+            check_week(case, result) if isinstance(case, WeeklyCase) else check(case, result)
+        )
     outcome.seconds = time.perf_counter() - started
     return outcome
 
@@ -168,7 +228,9 @@ class Report:
 
 
 def evaluate(
-    model: CoachModel, cases: list[Case], price: tuple[float, float] | None = None
+    model: CoachModel,
+    cases: list[Case] | list[WeeklyCase],
+    price: tuple[float, float] | None = None,
 ) -> Report:
     return Report(
         model.name, [run_case(case, model) for case in cases], price or PRICES.get(model.name)
@@ -187,15 +249,20 @@ def answers(reports: list[Report]) -> str:
                 lines += ["", f"No answer: {'; '.join(outcome.failures)}", ""]
                 continue
             lines += ["", f"> {outcome.result.summary}", ""]
-            for item in outcome.result.exercises:
-                lines.append(f"- **{item.exercise_id}** ({item.action.value}): {item.reason}")
+            if isinstance(outcome.result, WeeklyResult):
+                if outcome.result.deload:
+                    lines.append("Lighter week suggested.")
+                lines += [f"- {text}" for text in outcome.result.suggestions]
+            else:
+                for item in outcome.result.exercises:
+                    lines.append(f"- **{item.exercise_id}** ({item.action.value}): {item.reason}")
             lines.append("")
     return "\n".join(lines)
 
 
-def markdown(reports: list[Report]) -> str:
+def markdown(reports: list[Report], what: str = "suggestion") -> str:
     lines = [
-        "| Model | Passed | Cost per suggestion | Median time |",
+        f"| Model | Passed | Cost per {what} | Median time |",
         "|---|---|---|---|",
     ]
     for report in reports:

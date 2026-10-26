@@ -9,7 +9,8 @@ private let log = Logger(subsystem: "app.ironsage.IronSage", category: "coach")
 ///
 /// Nothing is sent until the user turns the coach on (CoachConsentView), and nothing
 /// after they turn it off: requests still queued are cancelled, and the sync checks
-/// again before sending one. While it is on, `refresh()` runs after each sync and asks
+/// again before sending one. The server is told too (`CoachSettings`), since it writes
+/// the weekly summary on its own and only while the coach is on. While it is on, `refresh()` runs after each sync and asks
 /// once per plan (`Coach.planKey`): the template day due next, its planned sets, the
 /// last workout and last night's sleep. It asks on the day of the session, not on the
 /// evening before, so the morning's sleep is known. The answer comes back with a later
@@ -51,6 +52,11 @@ final class CoachService {
         self.defaults = defaults
         isEnabled = defaults.bool(forKey: Keys.enabled)
         hasDecided = defaults.bool(forKey: Keys.decided)
+        // Also for installs that turned it on before the server knew, and after the
+        // app's language changed (iOS restarts the app for that).
+        if hasDecided {
+            reportSetting()
+        }
     }
 
     func turnOn() {
@@ -69,13 +75,24 @@ final class CoachService {
         defaults.set(true, forKey: Keys.decided)
     }
 
-    /// Signing out or switching accounts: ask again.
+    /// Signing out or switching accounts: ask again. The next account to sync is told
+    /// the coach is off on this phone until the user turns it on here.
     func reset() {
         isEnabled = false
         hasDecided = false
         for key in [Keys.enabled, Keys.decided, Keys.applied, Keys.accessSince] {
             defaults.removeObject(forKey: key)
         }
+        reportSetting()
+    }
+
+    /// Before signing out, while the account can still be reached: tells the server the
+    /// coach is off, so no weekly summary is written for an account nobody is signed
+    /// in to here. Best effort; it doesn't change the setting on the phone.
+    func withdrawBeforeSignOut() async {
+        guard isOnline, isEnabled else { return }
+        store.save(CoachSettings(enabled: false, language: AppLanguage.isChinese ? "zh" : "en"))
+        await sync.sync()
     }
 
     private func set(enabled: Bool) {
@@ -83,6 +100,23 @@ final class CoachService {
         hasDecided = true
         defaults.set(enabled, forKey: Keys.enabled)
         defaults.set(true, forKey: Keys.decided)
+        reportSetting()
+        // Turning it off reaches the server before next Monday's summary.
+        if !enabled && isOnline {
+            Task { await sync.sync() }
+        }
+    }
+
+    /// Queues the setting for the server; the store skips it when unchanged.
+    private func reportSetting() {
+        store.save(CoachSettings(enabled: isEnabled, language: AppLanguage.isChinese ? "zh" : "en"))
+    }
+
+    // MARK: Weekly summary
+
+    /// Last week's summary, while the coach is on.
+    var weeklySummary: WeeklySummary? {
+        isEnabled ? Coach.weeklySummary(in: store.weeklySummaries) : nil
     }
 
     /// The account gained access (subscribed or restored): ask again, even today.

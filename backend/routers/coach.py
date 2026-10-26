@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Recommendation, User, utcnow
 from routers.subscription import has_coach_access
-from schemas import RecommendationRead, RecommendationWrite
+from schemas import CoachSettings, RecommendationRead, RecommendationWrite
 from security import get_current_user
 from sync import id_conflict, next_change_seq
 
@@ -47,6 +47,23 @@ def invoke_coach_worker(recommendation_id: uuid.UUID) -> None:
 
 def get_coach_starter() -> Callable[[uuid.UUID], None]:
     return invoke_coach_worker
+
+
+@router.put("/coach/settings", response_model=CoachSettings)
+def put_coach_settings(
+    settings: CoachSettings,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Records whether the user turned the AI coach on in the app, and its language.
+
+    The weekly summary is written only while it is on. Works without a subscription,
+    so turning the coach off always succeeds.
+    """
+    current_user.coach_consent = settings.enabled
+    current_user.coach_language = settings.language
+    db.commit()
+    return settings
 
 
 @router.put("/recommendations/{recommendation_id}", response_model=RecommendationRead)

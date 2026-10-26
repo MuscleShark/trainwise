@@ -11,6 +11,7 @@ struct ProgressTabView: View {
     var body: some View {
         NavigationStack {
             List {
+                WeeklySummaryCard()
                 BodyWeightSection()
                 WeeklySetsSection()
                 WeeklyVolumeSection()

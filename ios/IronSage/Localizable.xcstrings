@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A lighter week means about a third fewer sets at the same weights. Training guidance, not medical advice." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻松一周指重量不变、组数减少约三分之一。仅为训练建议，不构成医疗建议。"
+          }
+        }
+      }
+    },
     "%@ a month, billed yearly" : {
       "localizations" : {
         "zh-Hans" : {
@@ -307,6 +317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这个订阅已关联到另一个 IronSage 账户。请登录那个账户使用。"
+          }
+        }
+      }
+    },
+    "To suggest your next weights and reps and write your weekly summary, IronSage sends this to Anthropic, the company that makes the Claude AI model:" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为了建议你下次的重量和次数并撰写每周总结，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）："
           }
         }
       }
@@ -2361,16 +2381,6 @@
         }
       }
     },
-    "To suggest your next weights and reps, IronSage sends this to Anthropic, the company that makes the Claude AI model:" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "为了建议你下次的重量和次数，IronSage 会把以下数据发给 Anthropic（Claude AI 模型背后的公司）："
-          }
-        }
-      }
-    },
     "Today" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2701,6 +2711,36 @@
         }
       }
     },
+    "Your recent sets, and each week's sets per muscle and records" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你最近的训练组，以及每周各肌群的组数和个人纪录"
+          }
+        }
+      }
+    },
+    "Your week" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的一周"
+          }
+        }
+      }
+    },
+    "Your week, %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的一周，%@"
+          }
+        }
+      }
+    },
     "You slept little last night, so no weight goes up today." : {
       "localizations" : {
         "zh-Hans" : {
@@ -2757,16 +2797,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你的购买正在等待批准。批准后 AI 教练会自动开启。"
-          }
-        }
-      }
-    },
-    "Your recent sets for the exercises in the suggestion" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本次建议涉及动作的最近训练组"
           }
         }
       }

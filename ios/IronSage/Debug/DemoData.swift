@@ -70,6 +70,18 @@ enum DemoData {
         )
         let key = Coach.planKey(day: day, lastWorkout: store.finishedWorkouts.first, readiness: store.readiness[today], request: request)
         store.save(Recommendation(forDate: today, status: .ready, output: advice, request: request, planKey: key, requestedAt: .now))
+
+        guard let week = Coach.lastWeekStart() else { return }
+        let summary = chinese
+            ? "上周你练了 3 次。胸部 9.5 组、股四头肌 8 组，都低于 10 到 20 组的参考范围。深蹲做到了 100 公斤 × 5 次，是新纪录。睡眠平均 7 小时，和平时差不多。"
+            : "You trained 3 times last week. Chest got 9.5 sets and quads 8, both under the 10 to 20 reference band. Your squat hit a new best of 100 kg × 5. Sleep averaged 7 h, about as usual."
+        let suggestions = chinese
+            ? ["下周给胸部和腿各加 2 组。", "卧推最近进步慢，可以试试 6 到 10 次的次数范围。"]
+            : ["Add 2 sets each for chest and legs next week.", "Bench press progress has slowed; try a 6 to 10 rep range."]
+        store.save(WeeklySummary(
+            weekStart: week, status: .ready,
+            output: .init(summary: summary, suggestions: suggestions, deload: false, model: "anthropic:claude-sonnet-5-5")
+        ))
     }
 
     /// Five weeks of nights and morning weights, with a little day-to-day noise.

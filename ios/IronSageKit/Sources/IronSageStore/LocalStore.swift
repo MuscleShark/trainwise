@@ -27,6 +27,8 @@ public final class LocalStore {
     public private(set) var readiness: [String: Readiness] = [:]
     /// The AI coach's requests and advice, newest first.
     public private(set) var recommendations: [Recommendation] = []
+    /// The AI coach's weekly summaries, newest first.
+    public private(set) var weeklySummaries: [WeeklySummary] = []
 
     @ObservationIgnored private let context: ModelContext
 
@@ -136,6 +138,21 @@ public final class LocalStore {
         cacheRecommendation(recommendation)
     }
 
+    /// Tells the server whether the coach is on, and the app's language, when either
+    /// changed since it was last saved. The next sync sends it.
+    public func save(_ settings: CoachSettings) {
+        if let stored = record(.coachSettings, Self.coachSettingsID),
+           (try? Wire.decode(CoachSettings.self, from: stored.payload)) == settings {
+            return
+        }
+        write(.coachSettings, Self.coachSettingsID, settings)
+    }
+
+    /// Keeps a weekly summary as if the server had sent it (demo data); nothing is uploaded.
+    public func save(_ summary: WeeklySummary) {
+        applyRemote(.weeklySummary(summary), id: summary.id, changeSeq: 0, deleted: false)
+    }
+
     /// The newest request for a date, "2026-10-26".
     public func recommendation(for date: String) -> Recommendation? {
         recommendations.first { $0.forDate == date }
@@ -180,6 +197,7 @@ public final class LocalStore {
         bodyMeasurements = []
         readiness = [:]
         recommendations = []
+        weeklySummaries = []
     }
 
     // MARK: Sync
@@ -242,6 +260,7 @@ public final class LocalStore {
         case bodyMeasurement(BodyMeasurement)
         case readiness(Readiness)
         case recommendation(Recommendation)
+        case weeklySummary(WeeklySummary)
     }
 
     /// Applies a change from the server. Local edits not yet uploaded win: they go up on
@@ -322,6 +341,7 @@ public final class LocalStore {
     // MARK: Storage
 
     static let profileID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
+    static let coachSettingsID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2))
 
     private func reload() {
         exercises = [:]
@@ -332,6 +352,7 @@ public final class LocalStore {
         bodyMeasurements = []
         readiness = [:]
         recommendations = []
+        weeklySummaries = []
         let records = (try? context.fetch(FetchDescriptor<StoredRecord>())) ?? []
         for record in records {
             guard let kind = RecordKind(rawValue: record.kind) else { continue }
@@ -359,6 +380,10 @@ public final class LocalStore {
                     readiness[day.date] = day
                 case .recommendation:
                     recommendations.append(try Wire.decode(Recommendation.self, from: record.payload))
+                case .weeklySummary:
+                    weeklySummaries.append(try Wire.decode(WeeklySummary.self, from: record.payload))
+                case .coachSettings:
+                    break  // Only sent, never shown.
                 }
             } catch {
                 log.error("Skipping unreadable \(kind.rawValue, privacy: .public) \(record.recordID, privacy: .public): \(error, privacy: .public)")
@@ -367,6 +392,7 @@ public final class LocalStore {
         workouts.sort { $0.startedAt > $1.startedAt }
         bodyMeasurements.sort { $0.measuredAt > $1.measuredAt }
         recommendations.sort(by: Self.newestFirst)
+        weeklySummaries.sort { $0.weekStart > $1.weekStart }
         sortTemplates()
     }
 
@@ -444,6 +470,10 @@ public final class LocalStore {
             readiness[day.date] = day
         case .recommendation(let recommendation):
             cacheRecommendation(recommendation)
+        case .weeklySummary(let summary):
+            weeklySummaries.removeAll { $0.id == summary.id }
+            weeklySummaries.append(summary)
+            weeklySummaries.sort { $0.weekStart > $1.weekStart }
         }
     }
 
@@ -456,6 +486,8 @@ public final class LocalStore {
         case .bodyMeasurement: bodyMeasurements.removeAll { $0.id == id }
         case .readiness: readiness = readiness.filter { Self.readinessID($0.key) != id }
         case .recommendation: recommendations.removeAll { $0.id == id }
+        case .weeklySummary: weeklySummaries.removeAll { $0.id == id }
+        case .coachSettings: break
         }
     }
 
@@ -502,6 +534,7 @@ extension LocalStore.RemoteValue {
         case .bodyMeasurement: .bodyMeasurement
         case .readiness: .readiness
         case .recommendation: .recommendation
+        case .weeklySummary: .weeklySummary
         }
     }
 
@@ -514,6 +547,7 @@ extension LocalStore.RemoteValue {
         case .bodyMeasurement(let value): value
         case .readiness(let value): value
         case .recommendation(let value): value
+        case .weeklySummary(let value): value
         }
     }
 }

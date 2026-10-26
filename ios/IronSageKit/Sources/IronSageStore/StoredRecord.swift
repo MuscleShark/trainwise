@@ -6,6 +6,8 @@ enum RecordKind: String, Sendable {
     case bodyMeasurement = "body_measurement"
     case readiness
     case recommendation
+    case coachSettings = "coach_settings"
+    case weeklySummary = "weekly_summary"
 
     /// Records that others refer to go up first.
     var uploadOrder: Int {
@@ -16,8 +18,12 @@ enum RecordKind: String, Sendable {
         case .workout: 3
         case .bodyMeasurement: 4
         case .readiness: 5
+        // Whether the coach is on, before a request to it.
+        case .coachSettings: 6
         // After the readiness it may describe.
-        case .recommendation: 6
+        case .recommendation: 7
+        // Only ever downloaded.
+        case .weeklySummary: 8
         }
     }
 }

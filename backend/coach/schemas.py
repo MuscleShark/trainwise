@@ -115,3 +115,80 @@ class CoachResult(BaseModel):
     model: str
     input_tokens: int = 0
     output_tokens: int = 0
+
+
+# Weekly summary: every number is computed by the backend from the synced workouts and
+# readiness (weekly.py); the model only puts them into words.
+
+
+class MuscleSets(BaseModel):
+    # A Muscle in api/openapi.json, such as "chest" or "upper_back".
+    muscle: str
+    # Completed working sets: 1 per primary muscle, 0.5 per secondary one.
+    sets: float
+
+
+class SetsBand(BaseModel):
+    """The light reference band for weekly sets per muscle (docs/coaching.md)."""
+
+    min: int = 10
+    max: int = 20
+
+
+class WeekRecord(BaseModel):
+    name: str
+    # heaviest: the heaviest weight so far; estimated_1rm: the best estimated one-rep max.
+    kind: Literal["heaviest", "estimated_1rm"]
+    weight_kg: float
+    reps: int
+
+
+class WeekReadiness(BaseModel):
+    """The week's nights next to the user's usual (the 28 days before the week)."""
+
+    nights: int = 0
+    # Averages over the nights with data.
+    sleep_minutes: Metric | None = None
+    hrv_ms: Metric | None = None
+    resting_hr_bpm: Metric | None = None
+    # Nights under 6 hours or at least an hour below usual.
+    short_nights: int = 0
+
+
+class WeeklyInput(BaseModel):
+    language: Language = "en"
+    unit: Literal["kg", "lb"] = "kg"
+    goal: Literal["strength", "hypertrophy", "general"] | None = None
+    experience: Literal["beginner", "intermediate", "advanced"] | None = None
+    # Monday and Sunday of the week, local dates.
+    week_start: str
+    week_end: str
+    workouts: int
+    sets_per_muscle: list[MuscleSets] = Field(max_length=19)
+    reference_sets: SetsBand = Field(default_factory=SetsBand)
+    records: list[WeekRecord] = Field(default_factory=list, max_length=5)
+    # Names of lifts without progress across their last three sessions.
+    stalled: list[str] = Field(default_factory=list, max_length=8)
+    readiness: WeekReadiness = Field(default_factory=WeekReadiness)
+    # Computed by the rules: stalls piled up or sleep stayed short. Never from HRV alone.
+    deload_suggested: bool = False
+
+
+class WeeklyOutput(BaseModel):
+    """What the model must return for a weekly summary."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(max_length=900)
+    suggestions: list[str]
+    # True when one suggestion is a lighter week.
+    deload: bool
+
+
+class WeeklyResult(BaseModel):
+    summary: str
+    suggestions: list[str]
+    deload: bool
+    model: str
+    input_tokens: int = 0
+    output_tokens: int = 0

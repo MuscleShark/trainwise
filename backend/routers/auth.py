@@ -15,6 +15,7 @@ from models import (
     TemplateExercise,
     TemplateSet,
     User,
+    WeeklySummary,
     Workout,
     WorkoutExercise,
     WorkoutSet,
@@ -46,6 +47,9 @@ def delete_me(
     `user.delete()`), so the API never needs the Clerk secret key. If that step
     fails, the next sign-in simply starts a new, empty account.
     """
+    # Lock the user first: the weekly job takes this lock before it adds a summary, so
+    # it can't add one between the deletes below and the user's.
+    db.execute(select(User.id).where(User.id == current_user.id).with_for_update())
     # Bulk deletes, children first, so a long history is a handful of queries.
     # Custom exercises go last: workouts and templates use them.
     workouts = select(Workout.id).where(Workout.user_id == current_user.id)
@@ -70,6 +74,7 @@ def delete_me(
     db.execute(
         update(Subscription).where(Subscription.user_id == current_user.id).values(user_id=None)
     )
+    db.execute(delete(WeeklySummary).where(WeeklySummary.user_id == current_user.id))
     db.execute(delete(Profile).where(Profile.user_id == current_user.id))
     db.execute(delete(Exercise).where(Exercise.owner_user_id == current_user.id))
     db.delete(current_user)
