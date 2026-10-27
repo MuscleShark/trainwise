@@ -70,7 +70,8 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(info.waitForExistence(timeout: 10))
         info.tap()
         XCTAssertTrue(app.staticTexts["Raise to shoulder height, no higher."].waitForExistence(timeout: 5))
-        app.buttons["Add"].tap()
+        // The sheet's own Add, not the list's Add exercise underneath it.
+        app.navigationBars["Dumbbell lateral raise"].buttons["Add"].tap()
 
         XCTAssertTrue(app.buttons["How to do Dumbbell lateral raise"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.navigationBars["Workout"].exists)
