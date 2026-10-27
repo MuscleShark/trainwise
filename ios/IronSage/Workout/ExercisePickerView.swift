@@ -13,6 +13,7 @@ struct ExercisePickerView: View {
     @State private var muscle: Muscle?
     @State private var index: ExerciseSearch?
     @State private var isCreating = false
+    @State private var info: Exercise?
     @FocusState private var isSearching: Bool
 
     var body: some View {
@@ -71,6 +72,9 @@ struct ExercisePickerView: View {
             .task(id: store.availableExercises) {
                 index = ExerciseSearch(exercises: store.availableExercises, chinese: AppLanguage.isChinese)
             }
+            .sheet(item: $info) { exercise in
+                ExerciseInfoView(exercise: exercise) { pick(exercise) }
+            }
             .sheet(isPresented: $isCreating) {
                 CreateExerciseView(name: query.trimmingCharacters(in: .whitespaces)) { exercise in
                     store.save(exercise)
@@ -99,26 +103,40 @@ struct ExercisePickerView: View {
     }
 
     private func row(_ result: ExerciseSearch.Result) -> some View {
-        Button {
-            pick(result.exercise)
-        } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(result.exercise.name(chinese: AppLanguage.isChinese))
-                    .foregroundStyle(.primary)
-                Group {
-                    if let matched = result.matched {
-                        Text(matched)
-                    } else if let muscle = result.exercise.primaryMuscles.first {
-                        Text(result.exercise.equipment.label) + Text(verbatim: " · ") + Text(muscle.label)
-                    } else {
-                        Text(result.exercise.equipment.label)
+        let name = result.exercise.name(chinese: AppLanguage.isChinese)
+        return HStack(spacing: 12) {
+            Button {
+                pick(result.exercise)
+            } label: {
+                HStack(spacing: 12) {
+                    ExerciseThumbnail(exercise: result.exercise)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(name)
+                            .foregroundStyle(.primary)
+                        Group {
+                            if let matched = result.matched {
+                                Text(matched)
+                            } else if let muscle = result.exercise.primaryMuscles.first {
+                                Text(result.exercise.equipment.label) + Text(verbatim: " · ") + Text(muscle.label)
+                            } else {
+                                Text(result.exercise.equipment.label)
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
+                    Spacer(minLength: 0)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .contentShape(.rect)
             }
+            .tint(.primary)
+            Button("How to do \(name)", systemImage: "info.circle") {
+                info = result.exercise
+            }
+            .labelStyle(.iconOnly)
+            .font(.title3)
         }
-        .tint(.primary)
+        .buttonStyle(.borderless)
     }
 
     private var filterMenu: some View {

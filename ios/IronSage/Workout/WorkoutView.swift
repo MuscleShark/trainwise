@@ -15,6 +15,7 @@ struct WorkoutView: View {
     @State private var isConfirmingFinish = false
     @State private var isConfirmingDiscard = false
     @State private var finished: Workout?
+    @State private var info: Exercise?
 
     var body: some View {
         NavigationStack {
@@ -38,7 +39,7 @@ struct WorkoutView: View {
                 }
 
                 ForEach(session.workout.exercises) { item in
-                    ExerciseSection(session: session, item: item, focus: $focus)
+                    ExerciseSection(session: session, item: item, focus: $focus) { info = $0 }
                 }
 
                 Section {
@@ -133,6 +134,9 @@ struct WorkoutView: View {
             .sheet(item: $finished, onDismiss: { dismiss() }) { workout in
                 WorkoutSummaryView(workout: workout)
             }
+            .sheet(item: $info) { exercise in
+                ExerciseInfoView(exercise: exercise)
+            }
         }
     }
 
@@ -164,6 +168,7 @@ private struct ExerciseSection: View {
     let session: WorkoutSession
     let item: WorkoutExercise
     var focus: FocusState<SetField?>.Binding
+    let showInfo: (Exercise) -> Void
     @Environment(LocalStore.self) private var store
 
     var body: some View {
@@ -193,7 +198,7 @@ private struct ExerciseSection: View {
             }
             .font(.subheadline)
         } header: {
-            ExerciseHeader(session: session, item: item)
+            ExerciseHeader(session: session, item: item, showInfo: showInfo)
         }
     }
 
@@ -206,6 +211,7 @@ private struct ExerciseSection: View {
 private struct ExerciseHeader: View {
     let session: WorkoutSession
     let item: WorkoutExercise
+    let showInfo: (Exercise) -> Void
     @Environment(LocalStore.self) private var store
     @Environment(CoachService.self) private var coach
 
@@ -213,6 +219,7 @@ private struct ExerciseHeader: View {
 
     var body: some View {
         HStack {
+            ExerciseThumbnail(exercise: store.exercises[item.exerciseId], size: 44, background: Color(.secondarySystemGroupedBackground))
             VStack(alignment: .leading, spacing: 2) {
                 Text(store.exerciseName(item.exerciseId))
                     .font(.headline)
@@ -243,6 +250,15 @@ private struct ExerciseHeader: View {
                 .textCase(nil)
             }
             Spacer()
+            if let exercise = store.exercises[item.exerciseId] {
+                Button("How to do \(exercise.name(chinese: AppLanguage.isChinese))", systemImage: "info.circle") {
+                    showInfo(exercise)
+                }
+                .labelStyle(.iconOnly)
+                .imageScale(.large)
+                .buttonStyle(.borderless)
+                .textCase(nil)
+            }
             Menu {
                 Picker("Rest between sets", selection: Binding(
                     get: { item.restSeconds ?? 120 },

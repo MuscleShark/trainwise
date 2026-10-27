@@ -46,6 +46,36 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testTheWorkoutScreenShowsHowToDoAnExercise() {
+        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+
+        let info = app.buttons["How to do Back squat"]
+        XCTAssertTrue(info.waitForExistence(timeout: 10))
+        info.tap()
+        XCTAssertTrue(app.staticTexts["Brace your core and keep your whole foot on the floor."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Main: Quads"].exists)
+        app.buttons["Close"].tap()
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 5))
+    }
+
+    func testAnExerciseCanBeAddedFromItsHowToSheet() {
+        let empty = app.buttons["Start an empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        app.buttons["Add exercise"].firstMatch.tap()
+
+        let info = app.buttons["How to do Dumbbell lateral raise"]
+        XCTAssertTrue(info.waitForExistence(timeout: 10))
+        info.tap()
+        XCTAssertTrue(app.staticTexts["Raise to shoulder height, no higher."].waitForExistence(timeout: 5))
+        app.buttons["Add"].tap()
+
+        XCTAssertTrue(app.buttons["How to do Dumbbell lateral raise"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Workout"].exists)
+    }
+
     func testTheProgressTabShowsBodyWeightAndVolume() {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
