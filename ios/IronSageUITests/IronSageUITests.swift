@@ -46,12 +46,47 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testTheWorkoutScreenShowsHowToDoAnExercise() {
+        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+
+        let info = app.buttons["How to do Back squat"]
+        XCTAssertTrue(info.waitForExistence(timeout: 10))
+        info.tap()
+        XCTAssertTrue(app.staticTexts["Brace your core and keep your whole foot on the floor."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Main: Quads"].exists)
+        app.buttons["Close"].tap()
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 5))
+    }
+
+    func testAnExerciseCanBeAddedFromItsHowToSheet() {
+        let empty = app.buttons["Start an empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        app.buttons["Add exercise"].firstMatch.tap()
+
+        // It's in both Recent and All exercises.
+        let info = app.buttons["How to do Dumbbell lateral raise"].firstMatch
+        XCTAssertTrue(info.waitForExistence(timeout: 10))
+        info.tap()
+        XCTAssertTrue(app.staticTexts["Raise to shoulder height, no higher."].waitForExistence(timeout: 5))
+        // The sheet's own Add, not the list's Add exercise underneath it.
+        app.navigationBars["Dumbbell lateral raise"].buttons["Add"].tap()
+
+        XCTAssertTrue(app.buttons["How to do Dumbbell lateral raise"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Workout"].exists)
+    }
+
     func testTheProgressTabShowsBodyWeightAndVolume() {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
-        app.swipeUp()
-        XCTAssertTrue(app.staticTexts["Weekly volume"].waitForExistence(timeout: 5))
+        let volume = app.staticTexts["Weekly volume"]
+        for _ in 0..<4 where !volume.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(volume.waitForExistence(timeout: 5))
     }
 
     func testTurningTheCoachOffAsksFirst() {

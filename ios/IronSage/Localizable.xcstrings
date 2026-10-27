@@ -3455,6 +3455,1076 @@
           }
         }
       }
+    },
+    "Add" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加"
+          }
+        }
+      }
+    },
+    "Also works: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辅助：%@"
+          }
+        }
+      }
+    },
+    "Back" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背面"
+          }
+        }
+      }
+    },
+    "Back extension" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背伸"
+          }
+        }
+      }
+    },
+    "Brace your core and keep your whole foot on the floor." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收紧核心，全脚掌踩稳地面。"
+          }
+        }
+      }
+    },
+    "Breathe out as you curl or lift." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卷起或抬起时呼气。"
+          }
+        }
+      }
+    },
+    "Breathe steadily; stop when your form breaks." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "均匀呼吸，动作变形时就停。"
+          }
+        }
+      }
+    },
+    "Bring your hands together in an arc, like a hug." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以弧线把双手合拢，像拥抱一样。"
+          }
+        }
+      }
+    },
+    "Calf raise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提踵"
+          }
+        }
+      }
+    },
+    "Carry" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "负重行走"
+          }
+        }
+      }
+    },
+    "Control the return; don't let the stack slam." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有控制地回位，不要让配重片撞击。"
+          }
+        }
+      }
+    },
+    "Core" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "核心"
+          }
+        }
+      }
+    },
+    "Curl" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "弯举"
+          }
+        }
+      }
+    },
+    "Curl up without swinging your body." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上弯举，身体不要晃动。"
+          }
+        }
+      }
+    },
+    "Dip" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双杠臂屈伸"
+          }
+        }
+      }
+    },
+    "Drive through your heels until your hips are level." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "脚跟发力，把髋部推到与身体成一条线。"
+          }
+        }
+      }
+    },
+    "Drive with your hips and legs; your arms only guide the weight." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用髋和腿爆发发力，手臂只负责引导。"
+          }
+        }
+      }
+    },
+    "Finish with soft knees and a tall chest." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结束时膝盖微屈，挺胸。"
+          }
+        }
+      }
+    },
+    "Fly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "飞鸟"
+          }
+        }
+      }
+    },
+    "Front" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正面"
+          }
+        }
+      }
+    },
+    "Grip hard and don't let the weight swing." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "握紧，不要让重量晃动。"
+          }
+        }
+      }
+    },
+    "Hip hinge" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "髋铰链"
+          }
+        }
+      }
+    },
+    "Hip machine" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "髋部器械"
+          }
+        }
+      }
+    },
+    "Hold" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持"
+          }
+        }
+      }
+    },
+    "Hold the weight at your sides with straight arms." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手臂伸直，重量放在身体两侧。"
+          }
+        }
+      }
+    },
+    "How to do %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 怎么做"
+          }
+        }
+      }
+    },
+    "How to do it" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "动作要点"
+          }
+        }
+      }
+    },
+    "Keep a small bend in your elbows." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手肘微屈。"
+          }
+        }
+      }
+    },
+    "Keep a small, fixed bend in your elbows." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手肘保持固定的微屈。"
+          }
+        }
+      }
+    },
+    "Keep a straight line through your body." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身体保持一条直线。"
+          }
+        }
+      }
+    },
+    "Keep the weight close to your legs the whole way." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重量全程贴近腿部。"
+          }
+        }
+      }
+    },
+    "Keep your elbows still at your sides." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手肘固定在身体两侧。"
+          }
+        }
+      }
+    },
+    "Keep your knees over your toes and drive up through mid-foot." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "膝盖对准脚尖方向，用脚掌中部发力站起。"
+          }
+        }
+      }
+    },
+    "Keep your lower back flat against the pad." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下背始终贴紧靠垫。"
+          }
+        }
+      }
+    },
+    "Keep your lower back neutral or pressed down." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下背保持中立或贴地。"
+          }
+        }
+      }
+    },
+    "Keep your shoulders down, away from your ears." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "肩膀下沉，远离耳朵。"
+          }
+        }
+      }
+    },
+    "Keep your upper arms still." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上臂保持不动。"
+          }
+        }
+      }
+    },
+    "Knee machine" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "膝关节器械"
+          }
+        }
+      }
+    },
+    "Leg press" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "腿举"
+          }
+        }
+      }
+    },
+    "Let the weight back up slowly." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "慢慢放回。"
+          }
+        }
+      }
+    },
+    "Lift your shoulders straight up toward your ears." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "肩膀垂直向上耸向耳朵。"
+          }
+        }
+      }
+    },
+    "Line your knee up with the machine's pivot." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "膝关节对准器械转轴。"
+          }
+        }
+      }
+    },
+    "Lower all the way under control." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有控制地完全放下。"
+          }
+        }
+      }
+    },
+    "Lower slowly without swinging." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "慢慢放下，不要借力摆动。"
+          }
+        }
+      }
+    },
+    "Lower to chin height under control." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有控制地下放到下巴高度。"
+          }
+        }
+      }
+    },
+    "Lower to mid-chest with your elbows about 45° from your body." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下放到胸部中段，手肘与身体约成 45 度。"
+          }
+        }
+      }
+    },
+    "Lower until your knees are bent about 90°." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下放到膝盖弯曲约 90 度。"
+          }
+        }
+      }
+    },
+    "Lower until your upper arms are about parallel to the floor." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下放到上臂大约与地面平行。"
+          }
+        }
+      }
+    },
+    "Lower with a flat back." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背部平直地向下。"
+          }
+        }
+      }
+    },
+    "Lower your back knee straight down toward the floor." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "后侧膝盖垂直向下，接近地面。"
+          }
+        }
+      }
+    },
+    "Lower your chest to just above the floor." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "胸部下放到接近地面。"
+          }
+        }
+      }
+    },
+    "Lunge" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "箭步蹲"
+          }
+        }
+      }
+    },
+    "Main: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主要：%@"
+          }
+        }
+      }
+    },
+    "Make a straight line from head to heels." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "头到脚跟保持一条直线。"
+          }
+        }
+      }
+    },
+    "Move slowly and stop before your back arches." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "动作放慢，腰开始反弓前就停止。"
+          }
+        }
+      }
+    },
+    "Move through the full range." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成完整的动作幅度。"
+          }
+        }
+      }
+    },
+    "Move your knees out or in through the full range." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "膝盖向外或向内完成完整幅度。"
+          }
+        }
+      }
+    },
+    "Muscles" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标肌群"
+          }
+        }
+      }
+    },
+    "No picture for this exercise yet." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个动作暂时没有示意图。"
+          }
+        }
+      }
+    },
+    "Open wide until you feel a stretch across your chest." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向两侧打开，直到胸部有拉伸感。"
+          }
+        }
+      }
+    },
+    "Overhead press" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过头推举"
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
+        }
+      }
+    },
+    "Pause at the hardest point, then lower slowly." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在最吃力的位置停顿，再慢慢放回。"
+          }
+        }
+      }
+    },
+    "Pause at the top, then lower slowly." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶端停顿，再慢慢下放。"
+          }
+        }
+      }
+    },
+    "Pause, then lower all the way." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停顿后完全放下。"
+          }
+        }
+      }
+    },
+    "Play" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
+          }
+        }
+      }
+    },
+    "Power" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "爆发力"
+          }
+        }
+      }
+    },
+    "Press" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推"
+          }
+        }
+      }
+    },
+    "Press back up to straight arms." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推回到手臂伸直。"
+          }
+        }
+      }
+    },
+    "Press straight up; move your head through at the top." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "垂直向上推，顶端头部从手臂间穿过。"
+          }
+        }
+      }
+    },
+    "Press through your whole foot without snapping your knees straight." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全脚掌发力推起，膝盖不要猛地锁死。"
+          }
+        }
+      }
+    },
+    "Press up until your arms are straight, under control." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有控制地推起，直到手臂伸直。"
+          }
+        }
+      }
+    },
+    "Pull your elbows back toward your hips." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手肘向后拉向髋部。"
+          }
+        }
+      }
+    },
+    "Pull your elbows down to your sides with your chest up." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "挺胸，手肘向下拉到身体两侧。"
+          }
+        }
+      }
+    },
+    "Pull your ribs down and squeeze your glutes." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "肋骨下沉，夹紧臀部。"
+          }
+        }
+      }
+    },
+    "Pull your shoulder blades back and keep them there." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "肩胛骨后收下沉并保持。"
+          }
+        }
+      }
+    },
+    "Pull-down" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下拉"
+          }
+        }
+      }
+    },
+    "Push the floor away to straight arms." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推地直到手臂伸直。"
+          }
+        }
+      }
+    },
+    "Push through your front foot to stand back up." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前脚发力，站回起始位置。"
+          }
+        }
+      }
+    },
+    "Push your hips back and keep your back flat." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "臀部向后推，背部保持平直。"
+          }
+        }
+      }
+    },
+    "Push-up" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俯卧撑"
+          }
+        }
+      }
+    },
+    "Raise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平举"
+          }
+        }
+      }
+    },
+    "Raise to shoulder height, no higher." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "举到与肩同高即可，不要更高。"
+          }
+        }
+      }
+    },
+    "Return slowly to a full stretch." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "慢慢回到完全拉伸的位置。"
+          }
+        }
+      }
+    },
+    "Rise as high as you can onto your toes." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尽量踮高脚尖。"
+          }
+        }
+      }
+    },
+    "Rise until your body is straight, not past it." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "起身到身体成一条直线即可，不要过度后仰。"
+          }
+        }
+      }
+    },
+    "Row" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "划船"
+          }
+        }
+      }
+    },
+    "Set your hips at the edge of the pad." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "髋部放在靠垫边缘。"
+          }
+        }
+      }
+    },
+    "Set your torso and keep your back flat." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "固定上身角度，背部平直。"
+          }
+        }
+      }
+    },
+    "Shown as %@, the exercise this is a variation of." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这里显示的是「%@」，这个动作是它的变式。"
+          }
+        }
+      }
+    },
+    "Shrug" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "耸肩"
+          }
+        }
+      }
+    },
+    "Sit down between your hips until your thighs reach parallel or lower." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "臀部向下坐到两腿之间，大腿至少到与地面平行。"
+          }
+        }
+      }
+    },
+    "Sit tall against the back pad." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背部贴紧靠垫坐直。"
+          }
+        }
+      }
+    },
+    "Squat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深蹲"
+          }
+        }
+      }
+    },
+    "Squeeze your glutes and brace your core." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夹紧臀部，收紧核心。"
+          }
+        }
+      }
+    },
+    "Squeeze your glutes at the top without arching your back." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶端夹紧臀部，腰不要过度反弓。"
+          }
+        }
+      }
+    },
+    "Squeeze your shoulder blades, then lower under control." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夹紧肩胛骨，再有控制地放回。"
+          }
+        }
+      }
+    },
+    "Stand tall with your shoulders back." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "站直，肩膀向后打开。"
+          }
+        }
+      }
+    },
+    "Stand up by driving your hips forward; don't lean back at the top." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "髋部向前发力站直，顶端不要后仰。"
+          }
+        }
+      }
+    },
+    "Start from a full stretch at the bottom." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从底部完全拉伸开始。"
+          }
+        }
+      }
+    },
+    "Start from a full stretch with straight arms." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从手臂完全伸直的拉伸位开始。"
+          }
+        }
+      }
+    },
+    "Start with a flat back and the weight close." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "起始时背部平直，重量贴近身体。"
+          }
+        }
+      }
+    },
+    "Straighten your elbows fully." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完全伸直手肘。"
+          }
+        }
+      }
+    },
+    "Take a long enough step that your front heel stays down." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "步幅足够大，前脚脚跟不离地。"
+          }
+        }
+      }
+    },
+    "Take short, quick steps." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小步快走。"
+          }
+        }
+      }
+    },
+    "Triceps extension" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "臂屈伸"
+          }
+        }
+      }
+    },
+    "Tuck your chin and keep your ribs down." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收下巴，肋骨下沉。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

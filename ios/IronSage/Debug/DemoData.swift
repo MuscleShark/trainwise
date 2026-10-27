@@ -7,14 +7,14 @@ import IronSageStore
 @MainActor
 enum DemoData {
     static func fill(_ store: LocalStore, coach: CoachService) {
-        let bench = exercise("Barbell bench press", "杠铃卧推", .barbell, .total, [.chest], [.frontDelts, .triceps], ["bench", "卧推"])
-        let squat = exercise("Back squat", "杠铃深蹲", .barbell, .total, [.quads, .glutes], [.adductors, .lowerBack], ["squat", "深蹲"])
-        let rdl = exercise("Romanian deadlift", "罗马尼亚硬拉", .barbell, .total, [.hamstrings, .glutes], [.lowerBack], ["RDL", "罗马硬拉"])
-        let row = exercise("Barbell row", "杠铃划船", .barbell, .total, [.upperBack, .lats], [.biceps, .rearDelts], ["bent-over row"])
-        let press = exercise("Overhead press", "站姿杠铃推举", .barbell, .total, [.frontDelts], [.triceps, .sideDelts], ["OHP", "推举"])
-        let pulldown = exercise("Lat pulldown", "高位下拉", .cable, .total, [.lats], [.biceps, .upperBack], ["pulldown", "下拉"])
-        let curl = exercise("Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
-        let raise = exercise("Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
+        let bench = exercise("barbell_bench_press", "Barbell bench press", "杠铃卧推", .barbell, .total, [.chest], [.frontDelts, .triceps], ["bench", "卧推"])
+        let squat = exercise("back_squat", "Back squat", "杠铃深蹲", .barbell, .total, [.quads, .glutes], [.adductors, .lowerBack], ["squat", "深蹲"])
+        let rdl = exercise("romanian_deadlift", "Romanian deadlift", "罗马尼亚硬拉", .barbell, .total, [.hamstrings, .glutes], [.lowerBack], ["RDL", "罗马硬拉"])
+        let row = exercise("barbell_row", "Barbell row", "杠铃划船", .barbell, .total, [.upperBack, .lats], [.biceps, .rearDelts], ["bent-over row"])
+        let press = exercise("overhead_press", "Overhead press", "站姿杠铃推举", .barbell, .total, [.frontDelts], [.triceps, .sideDelts], ["OHP", "推举"])
+        let pulldown = exercise("lat_pulldown", "Lat pulldown", "高位下拉", .cable, .total, [.lats], [.biceps, .upperBack], ["pulldown", "下拉"])
+        let curl = exercise("dumbbell_curl", "Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
+        let raise = exercise("lateral_raise", "Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
         store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise])
         let ppl = Template(
             nameEn: "Push / pull / legs", nameZh: "推拉腿", level: .intermediate, daysPerWeek: 6,
@@ -108,8 +108,9 @@ enum DemoData {
         }
     }
 
-    private static func exercise(_ en: String, _ zh: String, _ equipment: Equipment, _ load: LoadType, _ primary: [Muscle], _ secondary: [Muscle], _ aliases: [String]) -> Exercise {
-        Exercise(nameEn: en, nameZh: zh, equipment: equipment, loadType: load, primaryMuscles: primary, secondaryMuscles: secondary, aliases: aliases, isCustom: false)
+    /// A built-in exercise with the ID the API gives it, so its picture shows.
+    private static func exercise(_ slug: String, _ en: String, _ zh: String, _ equipment: Equipment, _ load: LoadType, _ primary: [Muscle], _ secondary: [Muscle], _ aliases: [String]) -> Exercise {
+        Exercise(id: ExerciseVisuals.builtinID(slug: slug), nameEn: en, nameZh: zh, equipment: equipment, loadType: load, primaryMuscles: primary, secondaryMuscles: secondary, aliases: aliases, isCustom: false)
     }
 
     private static func day(_ en: String, _ zh: String, _ items: [(Exercise, Int, Int, Int, Int)]) -> TemplateDay {
