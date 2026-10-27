@@ -4066,16 +4066,6 @@
         }
       }
     },
-    "Pause" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂停"
-          }
-        }
-      }
-    },
     "Pause at the hardest point, then lower slowly." : {
       "localizations" : {
         "zh-Hans" : {
@@ -4102,16 +4092,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "停顿后完全放下。"
-          }
-        }
-      }
-    },
-    "Play" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放"
           }
         }
       }
