@@ -66,7 +66,8 @@ final class IronSageUITests: XCTestCase {
         empty.tap()
         app.buttons["Add exercise"].firstMatch.tap()
 
-        let info = app.buttons["How to do Dumbbell lateral raise"]
+        // It's in both Recent and All exercises.
+        let info = app.buttons["How to do Dumbbell lateral raise"].firstMatch
         XCTAssertTrue(info.waitForExistence(timeout: 10))
         info.tap()
         XCTAssertTrue(app.staticTexts["Raise to shoulder height, no higher."].waitForExistence(timeout: 5))
@@ -81,8 +82,11 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
-        app.swipeUp()
-        XCTAssertTrue(app.staticTexts["Weekly volume"].waitForExistence(timeout: 5))
+        let volume = app.staticTexts["Weekly volume"]
+        for _ in 0..<4 where !volume.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(volume.waitForExistence(timeout: 5))
     }
 
     func testTurningTheCoachOffAsksFirst() {
