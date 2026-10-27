@@ -11,10 +11,8 @@ struct ExerciseInfoView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isPlaying: Bool?
 
     private var movement: Movement? { ExerciseVisuals.movement(for: exercise) }
-    private var playing: Bool { isPlaying ?? !reduceMotion }
 
     var body: some View {
         NavigationStack {
@@ -78,7 +76,7 @@ struct ExerciseInfoView: View {
     @ViewBuilder
     private var stage: some View {
         if let movement {
-            AnimatedFigureView(movement: movement, equipment: exercise.equipment, isPlaying: playing, background: Self.card)
+            AnimatedFigureView(movement: movement, equipment: exercise.equipment, isPlaying: !reduceMotion, background: Self.card)
                 .aspectRatio(1.2, contentMode: .fit)
                 .frame(maxWidth: .infinity)
                 .background(Self.card, in: .rect(cornerRadius: 16))
@@ -91,16 +89,6 @@ struct ExerciseInfoView: View {
                             .background(.tint.opacity(0.15), in: .capsule)
                             .padding(12)
                     }
-                }
-                .overlay(alignment: .bottomTrailing) {
-                    Button(playing ? "Pause" : "Play", systemImage: playing ? "pause.fill" : "play.fill") {
-                        isPlaying = !playing
-                    }
-                    .labelStyle(.iconOnly)
-                    .font(.body)
-                    .frame(width: 44, height: 44)
-                    .background(.regularMaterial, in: .circle)
-                    .padding(10)
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(Text(movement.family.title))
