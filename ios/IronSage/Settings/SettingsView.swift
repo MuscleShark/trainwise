@@ -13,7 +13,6 @@ struct SettingsView: View {
     @Environment(\.services) private var services
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
-    @Environment(\.openURL) private var openURL
     @State private var account: AccountState = .loading
     @State private var isConfirmingSignOut = false
     @State private var signOutFailed = false
@@ -25,65 +24,37 @@ struct SettingsView: View {
         case loading
         case signedIn(email: String)
         case unavailable
+
+        var email: String? {
+            if case .signedIn(let email) = self { email } else { nil }
+        }
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Account") {
-                    switch account {
-                    case .loading:
-                        ProgressView()
-                    case .signedIn(let email):
-                        LabeledContent("Email", value: email)
-                    case .unavailable:
-                        Text("Couldn't load your account. Check your connection, then pull down to try again.")
-                            .foregroundStyle(.secondary)
+                Section {
+                    NavigationLink {
+                        ProfileSettingsView(account: account)
+                    } label: {
+                        ProfileHeader(email: account.email)
                     }
-                    LabeledContent("Sync") {
-                        SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
+                    .accessibilityIdentifier("profile")
+                }
+
+                Section {
+                    NavigationLink {
+                        CoachPlanView()
+                    } label: {
+                        CoachPlanRow()
                     }
+                    .accessibilityIdentifier("coachPlan")
+                }
+
+                Section {
                     Button("Sign out", role: .destructive) {
                         isConfirmingSignOut = true
                     }
-                }
-
-                Section("Training") {
-                    NavigationLink("Profile") {
-                        ProfileSettingsView()
-                    }
-                    LabeledContent("Weights in") {
-                        Picker("Weights in", selection: Binding(
-                            get: { store.profile?.unitSystem ?? (WeightUnit.default() == .lb ? .imperial : .metric) },
-                            set: { system in
-                                var profile = store.profile ?? Profile()
-                                profile.unitSystem = system
-                                store.save(profile)
-                                Task { await sync.sync() }
-                            }
-                        )) {
-                            Text("kg").tag(UnitSystem.metric)
-                            Text("lb").tag(UnitSystem.imperial)
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .fixedSize()
-                    }
-                }
-
-                HealthSettingsSection()
-                CoachSettingsSection()
-
-                Section("App") {
-                    Button("Language") {
-                        // iOS keeps a per-app language setting on the app's page in Settings.
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            openURL(url)
-                        }
-                    }
-                    Link("Privacy policy", destination: Site.page("privacy"))
-                    Link("Support", destination: Site.page("support"))
-                    LabeledContent("Version", value: Self.version)
                 }
 
                 Section {
@@ -176,15 +147,41 @@ struct SettingsView: View {
             deleteFailed = true
             return
         }
+        // The sign-in account and its photo go too, as on the website (routers/auth.py).
+        try? await clerk.user?.delete()
         try? await clerk.auth.signOut()
         services?.removeLocalData()
     }
+}
 
-    private static var version: String {
-        let info = Bundle.main.infoDictionary
-        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "\(version) (\(build))"
+/// The top row of Settings: the photo, name and email, opening the profile.
+struct ProfileHeader: View {
+    let email: String?
+    @Environment(Clerk.self) private var clerk
+    @Environment(SyncEngine.self) private var sync
+
+    var body: some View {
+        HStack(spacing: 14) {
+            AvatarView(url: ProfilePhoto.url(of: clerk.user), email: email)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name ?? String(localized: "Profile"))
+                    .font(.headline)
+                if let email {
+                    Text(email)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var name: String? {
+        let parts = [clerk.user?.firstName, clerk.user?.lastName].compactMap { $0 }.filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
     }
 }
 

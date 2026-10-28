@@ -786,16 +786,6 @@
         }
       }
     },
-    "Couldn't load your account. Check your connection, then pull down to try again." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法加载账号信息。请检查网络，然后下拉重试。"
-          }
-        }
-      }
-    },
     "Couldn't sign out" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4502,6 +4492,196 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收下巴，肋骨下沉。"
+          }
+        }
+      }
+    },
+    "Add photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加照片"
+          }
+        }
+      }
+    },
+    "Change photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更换照片"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除"
+          }
+        }
+      }
+    },
+    "Couldn't update your photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法更新照片"
+          }
+        }
+      }
+    },
+    "Check your connection and try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请检查网络后重试。"
+          }
+        }
+      }
+    },
+    "Couldn't load your account. Check your connection, then pull down on Settings to try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载你的账号。请检查网络，然后在设置页下拉重试。"
+          }
+        }
+      }
+    },
+    "Free" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费"
+          }
+        }
+      }
+    },
+    "Included" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已包含"
+          }
+        }
+      }
+    },
+    "Log workouts, even offline" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录训练，离线也可以"
+          }
+        }
+      }
+    },
+    "History, templates and records" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史、模板和个人纪录"
+          }
+        }
+      }
+    },
+    "Progress charts and Apple Health" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进度图表和 Apple 健康"
+          }
+        }
+      }
+    },
+    "How to do each exercise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个动作的做法"
+          }
+        }
+      }
+    },
+    "Suggested weights and reps for your next session" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一次训练的建议重量和次数"
+          }
+        }
+      }
+    },
+    "A summary of your training every Monday" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周一的训练总结"
+          }
+        }
+      }
+    },
+    "New subscribers get a free trial. Cancel any time in Settings › Apple Account › Subscriptions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新订阅用户可免费试用。可随时在“设置 › Apple 账户 › 订阅”中取消。"
+          }
+        }
+      }
+    },
+    "Your plan" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的方案"
+          }
+        }
+      }
+    },
+    "Your account has the AI coach." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的账号已开通 AI 教练。"
+          }
+        }
+      }
+    },
+    "See plans" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看方案"
+          }
+        }
+      }
+    },
+    "%@ a month or %@ a year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月 %1$@，或每年 %2$@"
           }
         }
       }

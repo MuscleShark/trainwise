@@ -23,7 +23,7 @@ export const CONTACT_EMAIL = "support@ironsage.app";
 export const privacy: Record<Lang, Page> = {
   en: {
     title: "Privacy policy",
-    updated: "Last updated October 26, 2026",
+    updated: "Last updated October 28, 2026",
     intro:
       "IronSage is a strength-training log for iPhone with an optional AI coach. It is run by an individual developer. This page explains what data IronSage keeps, why, who helps process it, and how you can delete it.",
     otherLanguage: { label: "中文", href: "/privacy/zh" },
@@ -32,6 +32,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "What IronSage keeps",
         items: [
           "Account: your email address and the ID of your sign-in account. Sign-in uses an email code, Google or Apple, so IronSage never sees a password.",
+          "Profile photo, if you add one. It is stored with your sign-in account at Clerk and shown in the app.",
           "Profile: birthday, height, gender, where you train, units, experience, goal and training days per week. All are optional except units.",
           "Training: your workouts, exercises, sets, reps, weights, notes, templates and the exercises you create.",
           "Body measurements you enter or allow from Apple Health: weight, body fat and girth measurements.",
@@ -69,7 +70,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "Who helps run IronSage",
         paragraphs: ["These companies process data on IronSage's behalf, only to provide their service:"],
         items: [
-          "Clerk: sign-in and your sign-in account.",
+          "Clerk: sign-in, your sign-in account and your profile photo.",
           "Amazon Web Services: runs the IronSage API (United States).",
           "Neon: hosts the database (United States).",
           "Vercel: hosts the ironsage.app website.",
@@ -88,7 +89,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "How long data is kept, and deleting it",
         items: [
           "Your data is kept while you have an account.",
-          "Delete your account in the app under Settings, or at ironsage.app/account. This immediately deletes your profile, training, measurements, health summaries, AI suggestions and weekly summaries from the database, and your sign-in account.",
+          "Delete your account in the app under Settings, or at ironsage.app/account. This immediately deletes your profile, training, measurements, health summaries, AI suggestions and weekly summaries from the database, and your sign-in account with its photo.",
           "If you subscribed, Apple's record of that purchase (product, transaction ID and dates, without your name or email) is kept but no longer linked to you, so the same purchase can't be claimed by another account. Deleting your account doesn't cancel the subscription; cancel it with Apple.",
           "Database backups expire within 30 days, and server logs after 30 days.",
         ],
@@ -123,7 +124,7 @@ export const privacy: Record<Lang, Page> = {
   },
   zh: {
     title: "隐私政策",
-    updated: "最后更新：2026 年 10 月 26 日",
+    updated: "最后更新：2026 年 10 月 28 日",
     intro:
       "IronSage 是一款 iPhone 力量训练记录 App，附带可选的 AI 教练，由一位个人开发者运营。本页说明 IronSage 保存哪些数据、为什么保存、由谁协助处理，以及如何删除。",
     otherLanguage: { label: "English", href: "/privacy" },
@@ -132,6 +133,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "IronSage 保存哪些数据",
         items: [
           "账号：你的邮箱地址和登录账号的 ID。登录方式是邮箱验证码、Google 或 Apple，IronSage 不会接触到任何密码。",
+          "头像，仅在你添加后：和你的登录账号一起保存在 Clerk，用于在 App 里显示。",
           "档案：生日、身高、性别、训练地点、单位、训练经验、目标和每周训练天数。除单位外都可以不填。",
           "训练：你的训练记录、动作、组数、次数、重量、备注、训练模板，以及你自建的动作。",
           "你手动输入或允许从 Apple 健康读取的身体数据：体重、体脂和围度。",
@@ -169,7 +171,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "协助运营 IronSage 的服务商",
         paragraphs: ["以下公司代表 IronSage 处理数据，仅用于提供它们的服务："],
         items: [
-          "Clerk：登录和你的登录账号。",
+          "Clerk：登录、你的登录账号和头像。",
           "Amazon Web Services：运行 IronSage 接口（美国）。",
           "Neon：托管数据库（美国）。",
           "Vercel：托管 ironsage.app 网站。",
@@ -186,7 +188,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "保存多久，以及如何删除",
         items: [
           "在你的账号存在期间，数据会一直保存。",
-          "在 App 的设置里，或在 ironsage.app/account 删除账号。删除后会立即从数据库中删除你的档案、训练记录、身体数据、健康汇总、AI 建议和每周总结，并删除你的登录账号。",
+          "在 App 的设置里，或在 ironsage.app/account 删除账号。删除后会立即从数据库中删除你的档案、训练记录、身体数据、健康汇总、AI 建议和每周总结，并删除你的登录账号和头像。",
           "如果你订阅过，Apple 提供的那次购买记录（产品、交易编号和日期，不含你的姓名和邮箱）会保留，但不再与你关联，以免同一笔购买被其他账号重复使用。删除账号不会取消订阅，请在 Apple 那里取消。",
           "数据库备份在 30 天内过期，服务器日志保存 30 天。",
         ],

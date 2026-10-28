@@ -91,6 +91,7 @@ final class IronSageUITests: XCTestCase {
 
     func testTurningTheCoachOffAsksFirst() {
         app.tabBars.buttons["Settings"].tap()
+        app.buttons["profile"].tap()
         let coach = app.switches["AI coach"]
         for _ in 0..<4 where !coach.isHittable {
             app.swipeUp()
@@ -104,5 +105,19 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(alert.waitForExistence(timeout: 5))
         alert.buttons["Keep on"].tap()
         XCTAssertEqual(coach.value as? String, "1")
+    }
+
+    func testSettingsShowsWhatTheCoachAddsAndSignOutComesLast() {
+        app.tabBars.buttons["Settings"].tap()
+        app.buttons["coachPlan"].tap()
+        XCTAssertTrue(app.staticTexts["Log workouts, even offline"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["The reason behind each suggested weight and rep"].exists)
+        app.navigationBars.buttons.firstMatch.tap()
+
+        let signOut = app.buttons["Sign out"]
+        let delete = app.buttons["Delete account"]
+        XCTAssertTrue(signOut.waitForExistence(timeout: 5))
+        XCTAssertLessThan(signOut.frame.minY, delete.frame.minY)
+        XCTAssertFalse(app.switches["AI coach"].exists)
     }
 }
