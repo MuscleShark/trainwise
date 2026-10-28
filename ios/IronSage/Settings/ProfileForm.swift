@@ -113,23 +113,64 @@ struct ProfileSetupView: View {
     }
 }
 
-/// Settings → Profile.
+/// Settings → Profile: the photo and email, the profile fields, and the app's settings.
 struct ProfileSettingsView: View {
+    let account: SettingsView.AccountState
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         Form {
+            ProfilePhotoSection(email: account.email)
+
+            Section {
+                switch account {
+                case .loading:
+                    ProgressView()
+                case .signedIn(let email):
+                    LabeledContent("Email", value: email)
+                case .unavailable:
+                    Text("Couldn't load your account. Check your connection, then pull down on Settings to try again.")
+                        .foregroundStyle(.secondary)
+                }
+                LabeledContent("Sync") {
+                    SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
+                }
+            }
+
             ProfileForm(profile: Binding(
                 get: { store.profile ?? Profile(unitSystem: WeightUnit.default() == .lb ? .imperial : .metric) },
                 set: { store.save($0) }
             ))
+
+            HealthSettingsSection()
+            CoachSettingsSection()
+
+            Section("App") {
+                Button("Language") {
+                    // iOS keeps a per-app language setting on the app's page in Settings.
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+                Link("Privacy policy", destination: Site.page("privacy"))
+                Link("Support", destination: Site.page("support"))
+                LabeledContent("Version", value: Self.version)
+            }
         }
         .brandBackground()
         .navigationTitle("Profile")
         .onDisappear {
             Task { await sync.sync() }
         }
+    }
+
+    private static var version: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
     }
 }
 
