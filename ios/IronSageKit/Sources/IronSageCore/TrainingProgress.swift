@@ -85,3 +85,74 @@ public enum BodyWeight {
         latest.source == .healthkit && !confirmed.contains(latest.id)
     }
 }
+
+/// Body measurements over a chosen period, for the body weight and body fat charts.
+public enum BodyTrend {
+    public enum Range: String, CaseIterable, Hashable, Sendable {
+        case week, month, year, all
+
+        /// The first moment shown, or nil for everything.
+        public func start(now: Date = .now, calendar: Calendar = .current) -> Date? {
+            switch self {
+            case .week: calendar.date(byAdding: .day, value: -7, to: now)
+            case .month: calendar.date(byAdding: .month, value: -1, to: now)
+            case .year: calendar.date(byAdding: .year, value: -1, to: now)
+            case .all: nil
+            }
+        }
+    }
+
+    public struct Point: Hashable, Sendable {
+        public let date: Date
+        public let value: Double
+
+        public init(date: Date, value: Double) {
+            self.date = date
+            self.value = value
+        }
+    }
+
+    /// Measurements spread over more than this many days are averaged per week, so a
+    /// year of daily weigh-ins stays a readable line.
+    public static let weeklyAfterDays = 120
+
+    /// The most recent measurement of one kind, from any source.
+    public static func latest(_ measurements: [BodyMeasurement], kind: MeasurementKind) -> BodyMeasurement? {
+        measurements.filter { $0.kind == kind }.max { $0.measuredAt < $1.measuredAt }
+    }
+
+    /// The measurements of one kind in the range, oldest first; one per week (the week's
+    /// average, at the average time) once they span more than `weeklyAfterDays` days.
+    public static func points(
+        _ measurements: [BodyMeasurement],
+        kind: MeasurementKind,
+        range: Range,
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) -> [Point] {
+        let start = range.start(now: now, calendar: calendar)
+        let shown = measurements
+            .filter { $0.kind == kind && $0.measuredAt <= now && $0.measuredAt >= (start ?? .distantPast) }
+            .sorted { $0.measuredAt < $1.measuredAt }
+        guard let first = shown.first, let last = shown.last else { return [] }
+        let points = shown.map { Point(date: $0.measuredAt, value: $0.value) }
+        guard last.measuredAt.timeIntervalSince(first.measuredAt) > Double(weeklyAfterDays) * 86_400 else { return points }
+
+        var weeks: [Date: [Point]] = [:]
+        for point in points {
+            guard let week = calendar.dateInterval(of: .weekOfYear, for: point.date)?.start else { continue }
+            weeks[week, default: []].append(point)
+        }
+        return weeks.keys.sorted().map { week in
+            let inWeek = weeks[week]!
+            let time = inWeek.map(\.date.timeIntervalSince1970).reduce(0, +) / Double(inWeek.count)
+            return Point(date: Date(timeIntervalSince1970: time), value: inWeek.map(\.value).reduce(0, +) / Double(inWeek.count))
+        }
+    }
+}
+
+/// Body fat in percent.
+public enum BodyFat {
+    /// What a typed-in body fat can be.
+    public static let plausible: ClosedRange<Double> = 2...70
+}

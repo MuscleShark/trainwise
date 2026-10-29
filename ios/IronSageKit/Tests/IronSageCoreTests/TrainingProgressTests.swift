@@ -89,4 +89,35 @@ struct TrainingProgressTests {
         let b = BodyMeasurement(measuredAt: day(-10), value: 81.5, source: .healthkit)
         #expect(BodyWeight.trend([a, old, b], days: 30, now: day(0)) == [b, a])
     }
+
+    func fat(_ days: Int, _ percent: Double) -> BodyMeasurement {
+        BodyMeasurement(measuredAt: day(days), kind: .bodyFat, value: percent, source: .healthkit)
+    }
+
+    @Test func bodyTrendShowsOneKindInTheRangeOldestFirst() {
+        let weight = BodyMeasurement(measuredAt: day(-2), value: 80, source: .manual)
+        let measurements = [fat(-1, 18), fat(-10, 19), fat(-40, 20), weight]
+        let week = BodyTrend.points(measurements, kind: .bodyFat, range: .week, now: day(0), calendar: calendar)
+        #expect(week.map(\.value) == [18])
+        let month = BodyTrend.points(measurements, kind: .bodyFat, range: .month, now: day(0), calendar: calendar)
+        #expect(month.map(\.value) == [19, 18])
+        let all = BodyTrend.points(measurements, kind: .bodyFat, range: .all, now: day(0), calendar: calendar)
+        #expect(all.map(\.value) == [20, 19, 18])
+        #expect(BodyTrend.latest(measurements, kind: .bodyFat)?.value == 18)
+        #expect(BodyTrend.latest(measurements, kind: .weight) == weight)
+    }
+
+    @Test func bodyTrendAveragesEachWeekOverLongSpans() {
+        // Monday and Wednesday of one week, half a year before a single later weigh-in.
+        let measurements = [fat(-196, 20), fat(-194, 22), fat(0, 18)]
+        let points = BodyTrend.points(measurements, kind: .bodyFat, range: .year, now: day(1), calendar: calendar)
+        #expect(points.map(\.value) == [21, 18])
+        #expect(points.first?.date == day(-195))
+    }
+
+    @Test func bodyTrendKeepsEachMeasurementOverShortSpans() {
+        let measurements = [fat(-6, 20), fat(-5, 22), fat(0, 18)]
+        let points = BodyTrend.points(measurements, kind: .bodyFat, range: .all, now: day(1), calendar: calendar)
+        #expect(points.map(\.value) == [20, 22, 18])
+    }
 }

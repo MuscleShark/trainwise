@@ -2,6 +2,176 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "%@ over %@, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@的%1$@，单位 %3$@"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部"
+          }
+        }
+      }
+    },
+    "All body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部体脂记录"
+          }
+        }
+      }
+    },
+    "Allow body fat from Apple Health" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许读取 Apple 健康中的体脂"
+          }
+        }
+      }
+    },
+    "Body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体脂"
+          }
+        }
+      }
+    },
+    "Body weight and body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体重和体脂"
+          }
+        }
+      }
+    },
+    "Enter body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填写体脂"
+          }
+        }
+      }
+    },
+    "It saves your workouts, and the body weight and body fat you enter, to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练和你填写的体重、体脂会保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        }
+      }
+    },
+    "No body fat yet. Smart scales usually save it to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有体脂记录。体脂秤通常会把它保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Nothing in this period" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这段时间没有记录"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间范围"
+          }
+        }
+      }
+    },
+    "Year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年"
+          }
+        }
+      }
+    },
+    "all time" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部时间"
+          }
+        }
+      }
+    },
+    "the last 7 days" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
+          }
+        }
+      }
+    },
+    "the last month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近一个月"
+          }
+        }
+      }
+    },
+    "the last year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近一年"
+          }
+        }
+      }
+    },
     "A lighter week means about a third fewer sets at the same weights. Training guidance, not medical advice." : {
       "localizations" : {
         "zh-Hans" : {
@@ -2906,16 +3076,6 @@
         }
       }
     },
-    "It saves your workouts, and the weights you enter, to Apple Health." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的训练和你填写的体重会保存到 Apple 健康。"
-          }
-        }
-      }
-    },
     "Your health data is kept in your IronSage account and is never used for ads. You can change what IronSage may read at any time in the Health settings on your iPhone." : {
       "localizations" : {
         "zh-Hans" : {
@@ -3212,16 +3372,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有体重记录。"
-          }
-        }
-      }
-    },
-    "Body weight over the last 90 days, in %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最近 90 天的体重，单位 %@"
           }
         }
       }

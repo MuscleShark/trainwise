@@ -84,7 +84,7 @@ enum DemoData {
         ))
     }
 
-    /// Five weeks of nights and morning weights, with a little day-to-day noise.
+    /// Five weeks of nights, morning weights and weekly body fat, with a little day-to-day noise.
     private static func fillHealth(_ store: LocalStore) {
         let calendar = Calendar.current
         for daysAgo in 0..<35 {
@@ -104,6 +104,10 @@ enum DemoData {
             if daysAgo % 3 == 0 {
                 let morning = calendar.date(bySettingHour: 7, minute: 30, second: 0, of: date)!
                 store.save(BodyMeasurement(measuredAt: morning, value: 80 - Double(35 - daysAgo) * 0.04 + wobble * 0.1, source: .healthkit))
+            }
+            if daysAgo % 7 == 0 {
+                let morning = calendar.date(bySettingHour: 7, minute: 31, second: 0, of: date)!
+                store.save(BodyMeasurement(measuredAt: morning, kind: .bodyFat, value: 18 + Double(daysAgo) * 0.04 + wobble * 0.05, source: .healthkit))
             }
         }
     }

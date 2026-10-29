@@ -30,8 +30,8 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - History by week: each workout's sets, editing and deleting
 - Templates: four built-in programs (English and Chinese) and the user's own, saved from a finished workout; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; account deletion in Settings
-- Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate and body weight (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
-- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current; typed weights are written back to Apple Health), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
+- Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
+- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current) and body fat, each typed in or from Apple Health (typed ones are written back to it), over a week, month, year or all time (averaged per week once the data spans more than 120 days), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
 - Today shows last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average
 - API client generated from `api/openapi.json`
 
