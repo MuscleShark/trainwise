@@ -25,8 +25,8 @@
 		</dict>
 	</array>
 	<key>NSHealthShareUsageDescription</key>
-	<string>IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, and body weight to show your progress and suggest your next sessions.</string>
+	<string>IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, body weight and body fat to show your progress and suggest your next sessions.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>IronSage saves your strength workouts and the body weight you enter to Apple Health.</string>
+	<string>IronSage saves your strength workouts and the body weight and body fat you enter to Apple Health.</string>
 </dict>
 </plist>

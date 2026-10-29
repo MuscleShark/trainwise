@@ -305,6 +305,8 @@ public struct Profile: Hashable, Codable, Sendable {
     public var gender: String?
     public var trainingLocation: TrainingLocation?
     public var trainingDaysPerWeek: Int?
+    /// Built-in templates the user hid from their list; synced to their other devices.
+    public var hiddenTemplateIds: [UUID]
 
     public init(
         unitSystem: UnitSystem = .metric,
@@ -314,7 +316,8 @@ public struct Profile: Hashable, Codable, Sendable {
         heightCm: Double? = nil,
         gender: String? = nil,
         trainingLocation: TrainingLocation? = nil,
-        trainingDaysPerWeek: Int? = nil
+        trainingDaysPerWeek: Int? = nil,
+        hiddenTemplateIds: [UUID] = []
     ) {
         self.unitSystem = unitSystem
         self.experienceLevel = experienceLevel
@@ -324,6 +327,7 @@ public struct Profile: Hashable, Codable, Sendable {
         self.gender = gender
         self.trainingLocation = trainingLocation
         self.trainingDaysPerWeek = trainingDaysPerWeek
+        self.hiddenTemplateIds = hiddenTemplateIds
     }
 }
 
@@ -388,7 +392,8 @@ extension Profile {
             heightCm: c.decodeIfPresent(Double.self, forKey: .heightCm),
             gender: c.decodeIfPresent(String.self, forKey: .gender),
             trainingLocation: c.decodeIfPresent(TrainingLocation.self, forKey: .trainingLocation),
-            trainingDaysPerWeek: c.decodeIfPresent(Int.self, forKey: .trainingDaysPerWeek)
+            trainingDaysPerWeek: c.decodeIfPresent(Int.self, forKey: .trainingDaysPerWeek),
+            hiddenTemplateIds: c.decodeIfPresent([UUID].self, forKey: .hiddenTemplateIds) ?? []
         )
     }
 }

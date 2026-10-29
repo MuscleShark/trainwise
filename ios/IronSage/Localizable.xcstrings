@@ -2,6 +2,546 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "%@ (my copy)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@（我的副本）"
+          }
+        }
+      }
+    },
+    "Add at least one exercise to each day." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个训练日至少添加一个动作。"
+          }
+        }
+      }
+    },
+    "Add day" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加训练日"
+          }
+        }
+      }
+    },
+    "Copy and edit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制并编辑"
+          }
+        }
+      }
+    },
+    "Create one with +, copy a program, or save a finished workout as a template from History." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点右上角的 + 新建，复制一个计划，或在历史里把完成的训练存为模板。"
+          }
+        }
+      }
+    },
+    "Day %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 天"
+          }
+        }
+      }
+    },
+    "Day name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练日名称"
+          }
+        }
+      }
+    },
+    "Discard changes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放弃修改"
+          }
+        }
+      }
+    },
+    "Discard your changes?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放弃这些修改吗？"
+          }
+        }
+      }
+    },
+    "Each working set aims for this many reps. Reps in reserve is how many more you could have done." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个正式组都以这个次数为目标。保留次数是做完这组后你还能再做几次。"
+          }
+        }
+      }
+    },
+    "Edit template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑模板"
+          }
+        }
+      }
+    },
+    "Fewest reps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最少次数"
+          }
+        }
+      }
+    },
+    "Give each day a name." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给每个训练日起个名字。"
+          }
+        }
+      }
+    },
+    "Give the template a name." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给模板起个名字。"
+          }
+        }
+      }
+    },
+    "Hidden programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已隐藏的计划"
+          }
+        }
+      }
+    },
+    "Hidden programs are hidden on all your devices. Workouts you did with them stay in History." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏的计划在你所有的设备上都会隐藏。用它们做过的训练仍保留在历史里。"
+          }
+        }
+      }
+    },
+    "Hide program" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏这个计划"
+          }
+        }
+      }
+    },
+    "More" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多"
+          }
+        }
+      }
+    },
+    "Most reps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多次数"
+          }
+        }
+      }
+    },
+    "New template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新建模板"
+          }
+        }
+      }
+    },
+    "No hidden programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有隐藏的计划"
+          }
+        }
+      }
+    },
+    "Remove day" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除这个训练日"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示"
+          }
+        }
+      }
+    },
+    "Show program" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示这个计划"
+          }
+        }
+      }
+    },
+    "Usual (%@)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认（%@）"
+          }
+        }
+      }
+    },
+    "%@ over %@, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@的%1$@，单位 %3$@"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部"
+          }
+        }
+      }
+    },
+    "All body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部体脂记录"
+          }
+        }
+      }
+    },
+    "Allow body fat from Apple Health" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许读取 Apple 健康中的体脂"
+          }
+        }
+      }
+    },
+    "Body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体脂"
+          }
+        }
+      }
+    },
+    "Body weight and body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "体重和体脂"
+          }
+        }
+      }
+    },
+    "Enter body fat" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填写体脂"
+          }
+        }
+      }
+    },
+    "It saves your workouts, and the body weight and body fat you enter, to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练和你填写的体重、体脂会保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        }
+      }
+    },
+    "No body fat yet. Smart scales usually save it to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有体脂记录。体脂秤通常会把它保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Nothing in this period" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这段时间没有记录"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间范围"
+          }
+        }
+      }
+    },
+    "Year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年"
+          }
+        }
+      }
+    },
+    "all time" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部时间"
+          }
+        }
+      }
+    },
+    "the last 7 days" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 7 天"
+          }
+        }
+      }
+    },
+    "the last month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近一个月"
+          }
+        }
+      }
+    },
+    "the last year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近一年"
+          }
+        }
+      }
+    },
+    "A few details so weights show in your unit and programs fit you. You can change them in Me › Profile." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填几项信息，重量会用你习惯的单位显示，训练计划也更合适。之后可以在「我 › 个人资料」里修改。"
+          }
+        }
+      }
+    },
+    "Body" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身体"
+          }
+        }
+      }
+    },
+    "Couldn't load your account. Check your connection, then pull down on Me to try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载你的账号。请检查网络，然后在「我」页面下拉重试。"
+          }
+        }
+      }
+    },
+    "Every suggestion shows the data it used. You can turn the AI coach off in Me › Profile at any time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每条建议都会显示它所依据的数据。你可以随时在「我 › 个人资料」中关闭 AI 教练。"
+          }
+        }
+      }
+    },
+    "Me" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我"
+          }
+        }
+      }
+    },
+    "Not entered yet" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未记录"
+          }
+        }
+      }
+    },
+    "Opens Progress" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开进度"
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "Weeks in a row" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续周数"
+          }
+        }
+      }
+    },
+    "Workouts" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练次数"
+          }
+        }
+      }
+    },
+    "Your changes are safe on this iPhone." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的改动已安全保存在这台 iPhone 上。"
+          }
+        }
+      }
+    },
+    "Your changes are saved on this iPhone and upload when you're back online." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的改动已保存在这台 iPhone 上，联网后会自动上传。"
+          }
+        }
+      }
+    },
     "A lighter week means about a third fewer sets at the same weights. Training guidance, not medical advice." : {
       "localizations" : {
         "zh-Hans" : {
@@ -422,16 +962,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "多 15 秒"
-          }
-        }
-      }
-    },
-    "A few details so weights show in your unit and programs fit you. You can change them in Settings." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "填几项信息，重量会用你习惯的单位显示，训练计划也更合适。之后可以在设置里修改。"
           }
         }
       }
@@ -1092,16 +1622,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每组都不到 %1$lld 次，这次减到 %2$@。"
-          }
-        }
-      }
-    },
-    "Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每条建议都会显示它所依据的数据。你可以随时在设置中关闭 AI 教练。"
           }
         }
       }
@@ -1896,26 +2416,6 @@
         }
       }
     },
-    "Rename" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重命名"
-          }
-        }
-      }
-    },
-    "Rename template" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重命名模板"
-          }
-        }
-      }
-    },
     "Reps" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2046,16 +2546,6 @@
         }
       }
     },
-    "Save a finished workout as a template from its page in History." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在“历史”里打开一次训练，可以把它存成模板。"
-          }
-        }
-      }
-    },
     "Save as template" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2112,16 +2602,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有勾选完成的组会被删除。"
-          }
-        }
-      }
-    },
-    "Settings" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设置"
           }
         }
       }
@@ -2282,36 +2762,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "客服支持"
-          }
-        }
-      }
-    },
-    "Sync" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同步"
-          }
-        }
-      }
-    },
-    "Synced %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@同步"
-          }
-        }
-      }
-    },
-    "Syncing…" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在同步…"
           }
         }
       }
@@ -2592,16 +3042,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "热"
-          }
-        }
-      }
-    },
-    "Waiting for a connection" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "等待网络连接"
           }
         }
       }
@@ -2906,16 +3346,6 @@
         }
       }
     },
-    "It saves your workouts, and the weights you enter, to Apple Health." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的训练和你填写的体重会保存到 Apple 健康。"
-          }
-        }
-      }
-    },
     "Your health data is kept in your IronSage account and is never used for ads. You can change what IronSage may read at any time in the Health settings on your iPhone." : {
       "localizations" : {
         "zh-Hans" : {
@@ -3212,16 +3642,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有体重记录。"
-          }
-        }
-      }
-    },
-    "Body weight over the last 90 days, in %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最近 90 天的体重，单位 %@"
           }
         }
       }
@@ -4542,16 +4962,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请检查网络后重试。"
-          }
-        }
-      }
-    },
-    "Couldn't load your account. Check your connection, then pull down on Settings to try again." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法加载你的账号。请检查网络，然后在设置页下拉重试。"
           }
         }
       }

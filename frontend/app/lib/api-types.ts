@@ -723,6 +723,11 @@ export interface components {
             goal?: "strength" | "hypertrophy" | "general" | null;
             /** Height Cm */
             height_cm?: number | null;
+            /**
+             * Hidden Template Ids
+             * @default []
+             */
+            hidden_template_ids: string[];
             /** Training Days Per Week */
             training_days_per_week?: number | null;
             /**
@@ -763,6 +768,11 @@ export interface components {
             goal?: "strength" | "hypertrophy" | "general" | null;
             /** Height Cm */
             height_cm?: number | null;
+            /**
+             * Hidden Template Ids
+             * @default []
+             */
+            hidden_template_ids: string[];
             /** Training Days Per Week */
             training_days_per_week?: number | null;
             /**

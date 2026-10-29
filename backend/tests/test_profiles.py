@@ -1,3 +1,5 @@
+import uuid
+
 from conftest import auth_headers
 
 PROFILE = {
@@ -39,6 +41,34 @@ def test_put_replaces_every_field(client):
     assert profile["unit_system"] == "metric"
 
 
+def test_hidden_templates_are_kept_once_each(client):
+    headers = auth_headers("me@example.com")
+    first, second = str(uuid.uuid4()), str(uuid.uuid4())
+
+    saved = client.put(
+        "/v1/profile",
+        json={**PROFILE, "hidden_template_ids": [first, second, first]},
+        headers=headers,
+    ).json()
+
+    assert saved["hidden_template_ids"] == [first, second]
+    fetched = client.get("/v1/profile", headers=headers).json()
+    assert fetched["hidden_template_ids"] == [first, second]
+    # Like every field, left out means the default.
+    replaced = client.put("/v1/profile", json=PROFILE, headers=headers).json()
+    assert replaced["hidden_template_ids"] == []
+
+
+def test_hidden_templates_reach_other_devices_through_sync(client):
+    headers = auth_headers("me@example.com")
+    hidden = str(uuid.uuid4())
+    client.put("/v1/profile", json={**PROFILE, "hidden_template_ids": [hidden]}, headers=headers)
+
+    changes = client.get("/v1/sync?since=0", headers=headers).json()
+
+    assert changes["profile"]["hidden_template_ids"] == [hidden]
+
+
 def test_invalid_profiles_are_rejected(client):
     headers = auth_headers("me@example.com")
     for body in (
@@ -46,6 +76,8 @@ def test_invalid_profiles_are_rejected(client):
         {"unit_system": "stone"},
         {"goal": "get huge"},
         {"height_cm": 0},
+        {"hidden_template_ids": ["not-a-uuid"]},
+        {"hidden_template_ids": [str(uuid.uuid4()) for _ in range(101)]},
     ):
         assert client.put("/v1/profile", json=body, headers=headers).status_code == 422
 

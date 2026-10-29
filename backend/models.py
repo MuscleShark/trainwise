@@ -128,6 +128,10 @@ class Profile(Base):
     experience_level: Mapped[str | None] = mapped_column(String(20))
     goal: Mapped[str | None] = mapped_column(String(20))
     training_days_per_week: Mapped[int | None] = mapped_column(Integer)
+    # Built-in templates the user hid from their list, as UUID strings.
+    hidden_template_ids: Mapped[list[str]] = mapped_column(
+        JSON, default=list, server_default="[]", nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         UtcDateTime, default=utcnow, onupdate=utcnow, nullable=False

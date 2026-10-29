@@ -3,16 +3,18 @@ import IronSageCore
 import IronSageStore
 import SwiftUI
 
-/// The Progress tab: body weight, weekly sets per muscle, weekly volume, and a way into
-/// each exercise's progress.
+/// The Progress tab: body weight and body fat, weekly sets per muscle, weekly volume,
+/// and a way into each exercise's progress.
 struct ProgressTabView: View {
     @Environment(LocalStore.self) private var store
+    @AppStorage("IronSage.body.range") private var range = BodyTrend.Range.month
 
     var body: some View {
         NavigationStack {
             List {
                 WeeklySummaryCard()
-                BodyWeightSection()
+                BodyWeightSection(range: $range)
+                BodyFatSection(range: range)
                 WeeklySetsSection()
                 WeeklyVolumeSection()
                 ExercisesSection()
@@ -25,20 +27,24 @@ struct ProgressTabView: View {
             .navigationDestination(for: WorkoutRoute.self) { route in
                 WorkoutDetailView(workoutID: route.id)
             }
-            .navigationDestination(for: WeightListRoute.self) { _ in
-                WeightListView()
+            .navigationDestination(for: MeasurementListRoute.self) { route in
+                MeasurementListView(kind: route.kind)
             }
         }
     }
 }
 
-private struct WeightListRoute: Hashable {}
+private struct MeasurementListRoute: Hashable {
+    let kind: MeasurementKind
+}
 
-// MARK: Body weight
+// MARK: Body weight and body fat
 
 /// The latest weight. One from Apple Health is shown with its date and the question
 /// whether it is still current; if it isn't, or there is none, the user types it in.
+/// The period chosen here applies to the body fat chart too.
 private struct BodyWeightSection: View {
+    @Binding var range: BodyTrend.Range
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
     @Environment(SyncEngine.self) private var sync
@@ -51,7 +57,7 @@ private struct BodyWeightSection: View {
 
     var body: some View {
         let unit = store.weightUnit
-        let latest = BodyWeight.latest(store.bodyMeasurements)
+        let latest = BodyTrend.latest(store.bodyMeasurements, kind: .weight)
         Section {
             if let latest {
                 let asking = BodyWeight.needsConfirmation(latest, confirmed: confirmed)
@@ -68,22 +74,16 @@ private struct BodyWeightSection: View {
                     }
                     .padding(.vertical, 4)
                 } else {
-                    LabeledContent {
-                        Text(latest.measuredAt.shortDay)
-                    } label: {
-                        Text(unit.formatWithUnit(kilograms: latest.value))
-                            .font(.title2.weight(.bold))
-                            .monospacedDigit()
-                    }
+                    LatestRow(value: unit.formatWithUnit(kilograms: latest.value), date: latest.measuredAt)
                 }
-                let trend = BodyWeight.trend(store.bodyMeasurements, days: 90)
-                if trend.count >= 2 {
-                    WeightChart(weights: trend, unit: unit)
-                }
+                BodyRangePicker(range: $range)
+                let points = BodyTrend.points(store.bodyMeasurements, kind: .weight, range: range)
+                    .map { BodyTrend.Point(date: $0.date, value: unit.value(fromKilograms: $0.value)) }
+                BodyChart(points: points, range: range, title: "Body weight", unit: String(localized: unit.symbol))
                 if !asking {
                     Button("Enter my weight", systemImage: "plus") { isEntering = true }
                 }
-                NavigationLink("All weights", value: WeightListRoute())
+                NavigationLink("All weights", value: MeasurementListRoute(kind: .weight))
             } else {
                 Text(health.hasAsked
                      ? "Apple Health has no weight for you yet."
@@ -110,38 +110,163 @@ private struct BodyWeightSection: View {
     }
 }
 
-private struct WeightChart: View {
-    let weights: [BodyMeasurement]
-    let unit: WeightUnit
+/// The latest body fat, from Apple Health (smart scales save it there) or typed in.
+private struct BodyFatSection: View {
+    let range: BodyTrend.Range
+    @Environment(LocalStore.self) private var store
+    @Environment(HealthService.self) private var health
+    @Environment(SyncEngine.self) private var sync
+    @State private var isEntering = false
 
     var body: some View {
-        Chart(weights) { weight in
-            LineMark(x: .value("Date", weight.measuredAt), y: .value("Weight", unit.value(fromKilograms: weight.value)))
-                .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                .foregroundStyle(Color.chartMark)
-            if weight.id == weights.last?.id {
-                PointMark(x: .value("Date", weight.measuredAt), y: .value("Weight", unit.value(fromKilograms: weight.value)))
-                    .symbolSize(64)
+        let latest = BodyTrend.latest(store.bodyMeasurements, kind: .bodyFat)
+        Section {
+            if let latest {
+                LatestRow(value: BodyFat.format(latest.value), date: latest.measuredAt)
+                BodyChart(
+                    points: BodyTrend.points(store.bodyMeasurements, kind: .bodyFat, range: range),
+                    range: range,
+                    title: "Body fat",
+                    unit: "%"
+                )
+                Button("Enter body fat", systemImage: "plus") { isEntering = true }
+                NavigationLink("All body fat", value: MeasurementListRoute(kind: .bodyFat))
+            } else {
+                Text("No body fat yet. Smart scales usually save it to Apple Health.")
+                    .foregroundStyle(.secondary)
+                Button("Enter body fat", systemImage: "plus") { isEntering = true }
+            }
+            if health.hasNewTypes {
+                Button("Allow body fat from Apple Health", systemImage: "heart") {
+                    Task { await health.connect() }
+                }
+            }
+        } header: {
+            Text("Body fat")
+        }
+        .task { await health.checkForNewTypes() }
+        .sheet(isPresented: $isEntering) {
+            BodyFatEntryView { bodyFat in
+                store.save(bodyFat)
+                Task {
+                    await health.saveToHealth(bodyFat)
+                    await sync.sync()
+                }
+            }
+        }
+    }
+}
+
+private struct LatestRow: View {
+    let value: String
+    let date: Date
+
+    var body: some View {
+        LabeledContent {
+            Text(date.shortDay)
+        } label: {
+            Text(value)
+                .font(.title2.weight(.bold))
+                .monospacedDigit()
+        }
+    }
+}
+
+/// Week, month, year or everything, for both body charts.
+private struct BodyRangePicker: View {
+    @Binding var range: BodyTrend.Range
+
+    var body: some View {
+        Picker("Period", selection: $range) {
+            ForEach(BodyTrend.Range.allCases, id: \.self) { range in
+                Text(range.label).tag(range)
+            }
+        }
+        .pickerStyle(.segmented)
+        .accessibilityIdentifier("bodyRange")
+    }
+}
+
+extension BodyTrend.Range {
+    var label: LocalizedStringResource {
+        switch self {
+        case .week: "Week"
+        case .month: "Month"
+        case .year: "Year"
+        case .all: "All"
+        }
+    }
+
+    /// "the last month", for VoiceOver.
+    var spoken: LocalizedStringResource {
+        switch self {
+        case .week: "the last 7 days"
+        case .month: "the last month"
+        case .year: "the last year"
+        case .all: "all time"
+        }
+    }
+
+    var axisFormat: Date.FormatStyle {
+        switch self {
+        case .week: .dateTime.weekday(.abbreviated)
+        case .month: .dateTime.month(.abbreviated).day()
+        case .year: .dateTime.month(.abbreviated)
+        case .all: .dateTime.month(.abbreviated).year(.twoDigits)
+        }
+    }
+}
+
+/// A body measurement over the chosen period, already in the unit shown.
+private struct BodyChart: View {
+    let points: [BodyTrend.Point]
+    let range: BodyTrend.Range
+    let title: LocalizedStringResource
+    let unit: String
+
+    var body: some View {
+        if points.isEmpty {
+            Text("Nothing in this period")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        } else {
+            Chart(points, id: \.date) { point in
+                LineMark(x: .value("Date", point.date), y: .value(String(localized: title), point.value))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                     .foregroundStyle(Color.chartMark)
+                if point == points.last {
+                    PointMark(x: .value("Date", point.date), y: .value(String(localized: title), point.value))
+                        .symbolSize(64)
+                        .foregroundStyle(Color.chartMark)
+                }
             }
-        }
-        .chartYScale(domain: .automatic(includesZero: false))
-        .chartXScale(range: .plotDimension(padding: 8))
-        .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+            .chartYScale(domain: .automatic(includesZero: false))
+            .chartXScale(domain: domain, range: .plotDimension(padding: 8))
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    AxisValueLabel(format: range.axisFormat)
+                }
             }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
-                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                AxisValueLabel()
+            .chartYAxis {
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    AxisValueLabel()
+                }
             }
+            .frame(height: 160)
+            .padding(.vertical, 4)
+            .accessibilityLabel(Text("\(String(localized: title)) over \(String(localized: range.spoken)), in \(unit)"))
         }
-        .frame(height: 160)
-        .padding(.vertical, 4)
-        .accessibilityLabel(Text("Body weight over the last 90 days, in \(String(localized: unit.symbol))"))
+    }
+
+    /// The whole period, so a few points don't stretch across the chart; all time spans
+    /// the points themselves.
+    private var domain: ClosedRange<Date> {
+        let first = points.first?.date ?? .now
+        let start = range.start().map { min($0, first) } ?? first
+        let end = max(points.last?.date ?? .now, range == .all ? first : .now)
+        return start...max(end, start.addingTimeInterval(86_400))
     }
 }
 
@@ -199,41 +324,101 @@ private struct WeightEntryView: View {
     }
 }
 
-/// Every weight, newest first. Typed-in ones can be deleted; those from Apple Health
-/// are managed in the Health app.
-private struct WeightListView: View {
+/// Typing in body fat. It is saved to the phone and to Apple Health.
+private struct BodyFatEntryView: View {
+    let onSave: (BodyMeasurement) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var value: Double?
+    @State private var date = Date.now
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                LabeledContent("Body fat") {
+                    HStack(spacing: 4) {
+                        TextField("Body fat", value: $value, format: .number.precision(.fractionLength(0...1)))
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .focused($isFocused)
+                        Text(verbatim: "%")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                DatePicker("Date", selection: $date, in: ...Date.now)
+            }
+            .brandBackground()
+            .navigationTitle("Enter body fat")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        guard let percent else { return }
+                        onSave(BodyMeasurement(measuredAt: date, kind: .bodyFat, value: percent, source: .manual))
+                        dismiss()
+                    }
+                    .disabled(percent == nil)
+                }
+            }
+            .onAppear { isFocused = true }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private var percent: Double? {
+        guard let value, BodyFat.plausible.contains(value) else { return nil }
+        return value
+    }
+}
+
+extension BodyFat {
+    /// "18.5%"
+    static func format(_ percent: Double) -> String {
+        (percent / 100).formatted(.percent.precision(.fractionLength(0...1)))
+    }
+}
+
+/// Every weight or body fat, newest first. Typed-in ones can be deleted; those from
+/// Apple Health are managed in the Health app.
+private struct MeasurementListView: View {
+    let kind: MeasurementKind
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
     @Environment(SyncEngine.self) private var sync
 
     var body: some View {
         let unit = store.weightUnit
-        let weights = store.bodyMeasurements.filter { $0.kind == .weight }
+        let measurements = store.bodyMeasurements
+            .filter { $0.kind == kind }
+            .sorted { $0.measuredAt > $1.measuredAt }
         List {
-            ForEach(weights) { weight in
+            ForEach(measurements) { measurement in
                 LabeledContent {
-                    Text(weight.source == .healthkit ? String(localized: "Apple Health") : String(localized: "Entered"))
+                    Text(measurement.source == .healthkit ? String(localized: "Apple Health") : String(localized: "Entered"))
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(unit.formatWithUnit(kilograms: weight.value))
+                        Text(kind == .bodyFat ? BodyFat.format(measurement.value) : unit.formatWithUnit(kilograms: measurement.value))
                             .monospacedDigit()
-                        Text(weight.measuredAt, format: .dateTime.month().day().year().hour().minute())
+                        Text(measurement.measuredAt, format: .dateTime.month().day().year().hour().minute())
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .deleteDisabled(weight.source == .healthkit)
+                .deleteDisabled(measurement.source == .healthkit)
             }
             .onDelete { offsets in
-                for weight in offsets.map({ weights[$0] }) where weight.source == .manual {
-                    store.deleteBodyMeasurement(id: weight.id)
-                    Task { await health.removeFromHealth(weight) }
+                for measurement in offsets.map({ measurements[$0] }) where measurement.source == .manual {
+                    store.deleteBodyMeasurement(id: measurement.id)
+                    Task { await health.removeFromHealth(measurement) }
                 }
                 Task { await sync.sync() }
             }
         }
         .brandBackground()
-        .navigationTitle("All weights")
+        .navigationTitle(kind == .bodyFat ? LocalizedStringKey("All body fat") : LocalizedStringKey("All weights"))
     }
 }
 
