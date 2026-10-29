@@ -64,7 +64,7 @@ private struct BodyWeightSection: View {
                 if asking {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Apple Health has \(unit.formatWithUnit(kilograms: latest.value)) from \(latest.measuredAt.shortDay). Is that still your weight?")
-                        HStack {
+                        FittingStack {
                             Button("Yes, still current") { confirm(latest) }
                                 .buttonStyle(.borderedProminent)
                             Button("Enter my weight") { isEntering = true }
@@ -223,6 +223,7 @@ private struct BodyChart: View {
     let range: BodyTrend.Range
     let title: LocalizedStringResource
     let unit: String
+    @ChartHeight(160, maximum: 240) private var chartHeight
 
     var body: some View {
         if points.isEmpty {
@@ -254,7 +255,8 @@ private struct BodyChart: View {
                     AxisValueLabel()
                 }
             }
-            .frame(height: 160)
+            .frame(height: chartHeight)
+            .chartTextSize()
             .padding(.vertical, 4)
             .accessibilityLabel(Text("\(String(localized: title)) over \(String(localized: range.spoken)), in \(unit)"))
         }
@@ -427,7 +429,8 @@ private struct MeasurementListView: View {
 private struct WeeklySetsSection: View {
     @Environment(LocalStore.self) private var store
     @State private var weeksBack = 0
-    private let rowHeight: CGFloat = 26
+    /// Each muscle's row, growing with the text so the names don't overlap.
+    @ChartHeight(26, maximum: 42) private var rowHeight
 
     var body: some View {
         let calendar = Calendar.current
@@ -483,6 +486,7 @@ private struct WeeklySetsSection: View {
                     }
                 }
                 .frame(height: CGFloat(sets.count) * rowHeight + 24)
+                .chartTextSize()
                 .accessibilityLabel(Text("Sets per muscle"))
             }
         } header: {
@@ -497,6 +501,7 @@ private struct WeeklySetsSection: View {
 
 private struct WeeklyVolumeSection: View {
     @Environment(LocalStore.self) private var store
+    @ChartHeight(160, maximum: 240) private var chartHeight
 
     var body: some View {
         let unit = store.weightUnit
@@ -530,7 +535,8 @@ private struct WeeklyVolumeSection: View {
                         }
                     }
                 }
-                .frame(height: 160)
+                .frame(height: chartHeight)
+                .chartTextSize()
                 .padding(.vertical, 4)
                 .accessibilityLabel(Text("Volume per week, in \(String(localized: unit.symbol))"))
             }

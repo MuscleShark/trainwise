@@ -2,6 +2,26 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "Last time: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次：%@"
+          }
+        }
+      }
+    },
+    "Value" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数值"
+          }
+        }
+      }
+    },
     "%@ (my copy)" : {
       "localizations" : {
         "zh-Hans" : {

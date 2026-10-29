@@ -47,23 +47,42 @@ struct SyncProblemSection: View {
 /// Workouts in all, this week against the planned training days, and weeks in a row.
 struct TrainingStatsSection: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var size
 
     var body: some View {
         let workouts = store.finishedWorkouts
         let thisWeek = TrainingProgress.workoutsThisWeek(in: workouts)
+        let stats: [(Text, LocalizedStringResource)] = [
+            (Text(workouts.count, format: .number), "Workouts"),
+            (store.profile?.trainingDaysPerWeek.map { Text(verbatim: "\(thisWeek.formatted())/\($0.formatted())") }
+                ?? Text(thisWeek, format: .number), "This week"),
+            (Text(TrainingProgress.weekStreak(in: workouts), format: .number), "Weeks in a row"),
+        ]
         Section("Training") {
-            HStack(spacing: 0) {
-                stat(Text(workouts.count, format: .number), label: "Workouts")
-                Divider()
-                if let planned = store.profile?.trainingDaysPerWeek {
-                    stat(Text(verbatim: "\(thisWeek.formatted())/\(planned.formatted())"), label: "This week")
-                } else {
-                    stat(Text(thisWeek, format: .number), label: "This week")
+            // Three across would break the labels mid-word at the accessibility sizes.
+            if size.isAccessibilitySize {
+                ForEach(stats.indices, id: \.self) { index in
+                    AdaptiveRow {
+                        Text(stats[index].1)
+                            .foregroundStyle(.secondary)
+                    } trailing: {
+                        stats[index].0
+                            .font(.title2.weight(.bold))
+                            .monospacedDigit()
+                    }
+                    .accessibilityElement(children: .combine)
                 }
-                Divider()
-                stat(Text(TrainingProgress.weekStreak(in: workouts), format: .number), label: "Weeks in a row")
+            } else {
+                HStack(spacing: 0) {
+                    ForEach(stats.indices, id: \.self) { index in
+                        if index > 0 {
+                            Divider()
+                        }
+                        stat(stats[index].0, label: stats[index].1)
+                    }
+                }
+                .padding(.vertical, 6)
             }
-            .padding(.vertical, 6)
         }
     }
 
@@ -86,6 +105,7 @@ struct TrainingStatsSection: View {
 struct BodySection: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.selectTab) private var selectTab
+    @Environment(\.dynamicTypeSize) private var size
 
     var body: some View {
         let unit = store.weightUnit
@@ -142,7 +162,8 @@ struct BodySection: View {
                     }
                 }
                 Spacer()
-                if trend.count >= 2 {
+                // The value gets the room at the accessibility sizes.
+                if trend.count >= 2 && !size.isAccessibilitySize {
                     Sparkline(points: trend)
                 }
                 Image(systemName: "chevron.right")

@@ -214,69 +214,95 @@ private struct ExerciseHeader: View {
     let showInfo: (Exercise) -> Void
     @Environment(LocalStore.self) private var store
     @Environment(CoachService.self) private var coach
+    @Environment(\.dynamicTypeSize) private var size
 
     private static let restChoices = [30, 45, 60, 75, 90, 120, 150, 180, 240, 300]
 
     var body: some View {
-        HStack {
-            ExerciseThumbnail(exercise: store.exercises[item.exerciseId], size: 44, background: Color(.secondarySystemGroupedBackground))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(store.exerciseName(item.exerciseId))
-                    .font(.headline)
-                    .foregroundStyle(Color.primary)
-                    .textCase(nil)
-                Group {
-                    if let templateItem {
-                        Text("Target \(TemplateTarget(item: templateItem).summary)")
-                    }
-                    if let rest = item.restSeconds {
-                        Text("Rest \(Duration.clock(TimeInterval(rest)))")
-                    }
-                    if let coachAdvice {
-                        Label(coachAdvice.reason, systemImage: "sparkles")
-                            .padding(.top, 2)
-                            .accessibilityLabel(Text("AI coach: \(coachAdvice.reason)"))
-                    } else if let suggestion {
-                        Label(suggestion.reason(unit: store.weightUnit), systemImage: suggestion.systemImage)
-                            .padding(.top, 2)
-                    }
-                    if let suggestion {
-                        if suggestion.isStalled {
-                            Label(NextSession.Suggestion.stallNote, systemImage: "exclamationmark.circle")
-                        }
-                    }
+        // At the accessibility text sizes the picture and buttons go above the name, so
+        // the name and the notes get the whole width.
+        if size.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    thumbnail
+                    Spacer()
+                    buttons
                 }
-                .font(.caption)
-                .textCase(nil)
+                details
             }
-            Spacer()
-            if let exercise = store.exercises[item.exerciseId] {
-                Button("How to do \(exercise.name(chinese: AppLanguage.isChinese))", systemImage: "info.circle") {
-                    showInfo(exercise)
+        } else {
+            HStack {
+                thumbnail
+                details
+                Spacer()
+                buttons
+            }
+        }
+    }
+
+    private var thumbnail: some View {
+        ExerciseThumbnail(exercise: store.exercises[item.exerciseId], size: 44, background: Color(.secondarySystemGroupedBackground))
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(store.exerciseName(item.exerciseId))
+                .font(.headline)
+                .foregroundStyle(Color.primary)
+                .textCase(nil)
+            Group {
+                if let templateItem {
+                    Text("Target \(TemplateTarget(item: templateItem).summary)")
                 }
-                .labelStyle(.iconOnly)
+                if let rest = item.restSeconds {
+                    Text("Rest \(Duration.clock(TimeInterval(rest)))")
+                }
+                if let coachAdvice {
+                    Label(coachAdvice.reason, systemImage: "sparkles")
+                        .padding(.top, 2)
+                        .accessibilityLabel(Text("AI coach: \(coachAdvice.reason)"))
+                } else if let suggestion {
+                    Label(suggestion.reason(unit: store.weightUnit), systemImage: suggestion.systemImage)
+                        .padding(.top, 2)
+                }
+                if let suggestion {
+                    if suggestion.isStalled {
+                        Label(NextSession.Suggestion.stallNote, systemImage: "exclamationmark.circle")
+                    }
+                }
+            }
+            .font(.caption)
+            .textCase(nil)
+        }
+    }
+
+    @ViewBuilder private var buttons: some View {
+        if let exercise = store.exercises[item.exerciseId] {
+            Button("How to do \(exercise.name(chinese: AppLanguage.isChinese))", systemImage: "info.circle") {
+                showInfo(exercise)
+            }
+            .labelStyle(.iconOnly)
+            .imageScale(.large)
+            .buttonStyle(.borderless)
+            .textCase(nil)
+        }
+        Menu {
+            Picker("Rest between sets", selection: Binding(
+                get: { item.restSeconds ?? 120 },
+                set: { seconds in update { $0.restSeconds = seconds } }
+            )) {
+                ForEach(Self.restChoices, id: \.self) { seconds in
+                    Text(Duration.clock(TimeInterval(seconds))).tag(seconds)
+                }
+            }
+            .pickerStyle(.menu)
+            Button("Remove exercise", systemImage: "trash", role: .destructive) {
+                session.update { $0.exercises.removeAll { $0.id == item.id } }
+            }
+        } label: {
+            Image(systemName: "ellipsis.circle")
                 .imageScale(.large)
-                .buttonStyle(.borderless)
-                .textCase(nil)
-            }
-            Menu {
-                Picker("Rest between sets", selection: Binding(
-                    get: { item.restSeconds ?? 120 },
-                    set: { seconds in update { $0.restSeconds = seconds } }
-                )) {
-                    ForEach(Self.restChoices, id: \.self) { seconds in
-                        Text(Duration.clock(TimeInterval(seconds))).tag(seconds)
-                    }
-                }
-                .pickerStyle(.menu)
-                Button("Remove exercise", systemImage: "trash", role: .destructive) {
-                    session.update { $0.exercises.removeAll { $0.id == item.id } }
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .imageScale(.large)
-                    .accessibilityLabel("Exercise options")
-            }
+                .accessibilityLabel("Exercise options")
         }
     }
 
@@ -307,21 +333,27 @@ private struct ExerciseHeader: View {
     }
 }
 
+/// The column titles above the sets. Not shown from the XXXL text size up, where each
+/// set labels its own fields.
 private struct SetHeader: View {
     let unit: WeightUnit
+    @Environment(\.dynamicTypeSize) private var size
+    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 64
 
     var body: some View {
-        HStack(spacing: 8) {
-            Text("Set").frame(width: 30)
-            Text("Last time").frame(maxWidth: .infinity, alignment: .leading)
-            Text(unit.symbol).frame(width: 64)
-            Text("Reps").frame(width: 48)
-            Text("RIR").frame(width: 40)
-            Image(systemName: "checkmark").frame(width: 32)
-                .accessibilityLabel("Done")
+        if size < SetRow.stackedFrom {
+            HStack(spacing: 8) {
+                Text("Set").frame(width: 30)
+                Text("Last time").frame(maxWidth: .infinity, alignment: .leading)
+                Text(unit.symbol).frame(width: weightWidth)
+                Text("Reps").frame(width: 48)
+                Text("RIR").frame(width: 40)
+                Image(systemName: "checkmark").frame(width: 32)
+                    .accessibilityLabel("Done")
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.secondary)
         }
-        .font(.caption.weight(.medium))
-        .foregroundStyle(.secondary)
     }
 }
 
@@ -333,78 +365,133 @@ private struct SetRow: View {
     let previous: WorkoutSet?
     let unit: WeightUnit
     var focus: FocusState<SetField?>.Binding
+    @Environment(\.dynamicTypeSize) private var size
+    /// The weight field grows with the text, so "220.5" still fits.
+    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .subheadline) private var badgeSide: CGFloat = 30
+
+    /// From this text size a set takes two lines: what it is and last time, then the
+    /// fields, each with its own label.
+    static let stackedFrom = DynamicTypeSize.xxxLarge
 
     var body: some View {
-        HStack(spacing: 8) {
-            Menu {
-                Picker("Set type", selection: binding(\.setType, default: .working)) {
-                    ForEach(SetType.allCases, id: \.self) { type in
-                        Text(type.label).tag(type)
+        Group {
+            if size >= Self.stackedFrom {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        typeMenu
+                        Text("Last time: \(previousText)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-                }
-            } label: {
-                Group {
-                    if let badge = set.setType.badge {
-                        Text(badge)
-                    } else {
-                        Text(number, format: .number)
+                    // Reps and RIR are two digits at most; the weight gets the rest.
+                    HStack(alignment: .bottom, spacing: 8) {
+                        labeled(Text(unit.symbol)) { weightField }
+                        labeled(Text("Reps")) { repsField }
+                            .frame(width: 64)
+                        labeled(Text("RIR")) { rirField }
+                            .frame(width: 56)
+                        doneButton
                     }
+                    // Three numbers and a button fit on one line up to this size; the
+                    // rest of the screen keeps growing.
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                 }
-                .font(.subheadline.weight(.semibold))
-                .frame(width: 30, height: 30)
-                .background(.quaternary, in: .rect(cornerRadius: 6))
-            }
-            .accessibilityLabel(Text(set.setType.label))
-
-            Text(previousText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            NumberField(
-                placeholder: previous?.weightKg.map { unit.format(kilograms: $0) } ?? "–",
-                value: Binding(
-                    get: { set.weightKg.map { unit.rounded(unit.value(fromKilograms: $0)) } },
-                    set: { value in update { $0.weightKg = value.map { min(unit.kilograms(from: $0), Limits.maxWeightKg) } } }
-                ),
-                decimals: true
-            )
-            .focused(focus, equals: .weight(set.id, exercise: exerciseID))
-            .frame(width: 64)
-            .accessibilityLabel(Text("Weight"))
-
-            NumberField(
-                placeholder: previous?.reps.map(String.init) ?? "–",
-                value: intBinding(\.reps, max: Limits.maxReps),
-                decimals: false
-            )
-            .focused(focus, equals: .reps(set.id))
-            .frame(width: 48)
-            .accessibilityLabel(Text("Reps"))
-
-            NumberField(placeholder: "–", value: intBinding(\.rir, max: Limits.maxRir), decimals: false)
-                .focused(focus, equals: .rir(set.id))
-                .frame(width: 40)
-                .accessibilityLabel(Text("Reps in reserve"))
-
-            Button {
-                if !set.isCompleted {
-                    fillFromPrevious()
+            } else {
+                HStack(spacing: 8) {
+                    typeMenu
+                    Text(previousText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    weightField.frame(width: weightWidth)
+                    repsField.frame(width: 48)
+                    rirField.frame(width: 40)
+                    doneButton.frame(width: 32)
                 }
-                session.toggleCompleted(setID: set.id, in: exerciseID)
-            } label: {
-                Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(set.isCompleted ? Color.accentColor : .secondary)
             }
-            .buttonStyle(.plain)
-            .frame(width: 32)
-            .accessibilityLabel(set.isCompleted ? Text("Mark not done") : Text("Mark done"))
-            .sensoryFeedback(.success, trigger: set.isCompleted) { _, done in done }
         }
         .listRowBackground(set.isCompleted ? Color.accentColor.opacity(0.08) : nil)
+    }
+
+    private func labeled(_ label: Text, @ViewBuilder field: () -> some View) -> some View {
+        VStack(spacing: 2) {
+            label
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            field()
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var typeMenu: some View {
+        Menu {
+            Picker("Set type", selection: binding(\.setType, default: .working)) {
+                ForEach(SetType.allCases, id: \.self) { type in
+                    Text(type.label).tag(type)
+                }
+            }
+        } label: {
+            Group {
+                if let badge = set.setType.badge {
+                    Text(badge)
+                } else {
+                    Text(number, format: .number)
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(minWidth: badgeSide, minHeight: badgeSide)
+            .background(.quaternary, in: .rect(cornerRadius: 6))
+        }
+        .accessibilityLabel(Text(set.setType.label))
+    }
+
+    private var weightField: some View {
+        NumberField(
+            placeholder: previous?.weightKg.map { unit.format(kilograms: $0) } ?? "–",
+            value: Binding(
+                get: { set.weightKg.map { unit.rounded(unit.value(fromKilograms: $0)) } },
+                set: { value in update { $0.weightKg = value.map { min(unit.kilograms(from: $0), Limits.maxWeightKg) } } }
+            ),
+            decimals: true
+        )
+        .focused(focus, equals: .weight(set.id, exercise: exerciseID))
+        .accessibilityLabel(Text("Weight"))
+    }
+
+    private var repsField: some View {
+        NumberField(
+            placeholder: previous?.reps.map(String.init) ?? "–",
+            value: intBinding(\.reps, max: Limits.maxReps),
+            decimals: false
+        )
+        .focused(focus, equals: .reps(set.id))
+        .accessibilityLabel(Text("Reps"))
+    }
+
+    private var rirField: some View {
+        NumberField(placeholder: "–", value: intBinding(\.rir, max: Limits.maxRir), decimals: false)
+            .focused(focus, equals: .rir(set.id))
+            .accessibilityLabel(Text("Reps in reserve"))
+    }
+
+    private var doneButton: some View {
+        Button {
+            if !set.isCompleted {
+                fillFromPrevious()
+            }
+            session.toggleCompleted(setID: set.id, in: exerciseID)
+        } label: {
+            Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(set.isCompleted ? Color.accentColor : .secondary)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(set.isCompleted ? Text("Mark not done") : Text("Mark done"))
+        .sensoryFeedback(.success, trigger: set.isCompleted) { _, done in done }
     }
 
     private var previousText: String {

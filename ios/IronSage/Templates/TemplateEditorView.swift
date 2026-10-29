@@ -98,9 +98,9 @@ struct TemplateEditorView: View {
             ))
             ForEach(day.exercises) { item in
                 NavigationLink(value: ExerciseRoute(id: item.id)) {
-                    HStack(alignment: .firstTextBaseline) {
+                    AdaptiveRow {
                         Text(store.exerciseName(item.exerciseId))
-                        Spacer()
+                    } trailing: {
                         Text(TemplateTarget(item: item).summary)
                             .monospacedDigit()
                             .foregroundStyle(.secondary)

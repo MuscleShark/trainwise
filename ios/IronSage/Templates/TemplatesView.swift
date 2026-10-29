@@ -206,9 +206,9 @@ struct TemplateDetailView: View {
             ForEach(template.days) { day in
                 Section {
                     ForEach(day.exercises) { item in
-                        HStack(alignment: .firstTextBaseline) {
+                        AdaptiveRow {
                             Text(store.exerciseName(item.exerciseId))
-                            Spacer()
+                        } trailing: {
                             Text(TemplateTarget(item: item).summary)
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
