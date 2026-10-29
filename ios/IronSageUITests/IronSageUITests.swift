@@ -150,8 +150,31 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(copy.waitForExistence(timeout: 5))
     }
 
+    func testBodyWeightAndBodyFatFollowThePeriod() {
+        app.tabBars.buttons["Progress"].tap()
+        let year = app.segmentedControls["bodyRange"].buttons["Year"]
+        XCTAssertTrue(year.waitForExistence(timeout: 10))
+        year.tap()
+        XCTAssertTrue(year.isSelected)
+
+        let allBodyFat = app.buttons["All body fat"]
+        for _ in 0..<4 where !allBodyFat.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(app.staticTexts["Body fat"].exists)
+        allBodyFat.tap()
+        XCTAssertTrue(app.navigationBars["All body fat"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+
+        // Back to the default for the other tests.
+        for _ in 0..<4 where !year.isHittable {
+            app.swipeDown()
+        }
+        app.segmentedControls["bodyRange"].buttons["Month"].tap()
+    }
+
     func testTurningTheCoachOffAsksFirst() {
-        app.tabBars.buttons["Settings"].tap()
+        app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let coach = app.switches["AI coach"]
         for _ in 0..<4 where !coach.isHittable {
@@ -168,8 +191,20 @@ final class IronSageUITests: XCTestCase {
         XCTAssertEqual(coach.value as? String, "1")
     }
 
-    func testSettingsShowsWhatTheCoachAddsAndSignOutComesLast() {
-        app.tabBars.buttons["Settings"].tap()
+    func testMeShowsTrainingAndBodyWeightThatOpensProgress() {
+        app.tabBars.buttons["Me"].tap()
+        XCTAssertTrue(app.staticTexts["Weeks in a row"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Workouts"].exists)
+        // Syncing that works isn't shown.
+        XCTAssertFalse(app.otherElements["syncProblem"].exists)
+        XCTAssertTrue(app.buttons["bodyFat"].exists)
+
+        app.buttons["bodyWeight"].tap()
+        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 5))
+    }
+
+    func testMeShowsWhatTheCoachAddsAndSignOutComesLast() {
+        app.tabBars.buttons["Me"].tap()
         app.buttons["coachPlan"].tap()
         XCTAssertTrue(app.staticTexts["Log workouts, even offline"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["The reason behind each suggested weight and rep"].exists)
@@ -177,6 +212,9 @@ final class IronSageUITests: XCTestCase {
 
         let signOut = app.buttons["Sign out"]
         let delete = app.buttons["Delete account"]
+        for _ in 0..<4 where !delete.isHittable {
+            app.swipeUp()
+        }
         XCTAssertTrue(signOut.waitForExistence(timeout: 5))
         XCTAssertLessThan(signOut.frame.minY, delete.frame.minY)
         XCTAssertFalse(app.switches["AI coach"].exists)

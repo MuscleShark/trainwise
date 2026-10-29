@@ -44,13 +44,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, and body weight to show your progress and suggest your next sessions."
+            "value" : "IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, body weight and body fat to show your progress and suggest your next sessions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IronSage 读取你的睡眠、心率变异性、静息心率、训练时的心率和活动能量，以及体重，用来展示你的进步并建议下一次怎么练。"
+            "value" : "IronSage 读取你的睡眠、心率变异性、静息心率、训练时的心率和活动能量，以及体重和体脂，用来展示你的进步并建议下一次怎么练。"
           }
         }
       }
@@ -62,13 +62,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IronSage saves your strength workouts and the body weight you enter to Apple Health."
+            "value" : "IronSage saves your strength workouts and the body weight and body fat you enter to Apple Health."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "IronSage 会把你的力量训练和你记录的体重保存到 Apple 健康。"
+            "value" : "IronSage 会把你的力量训练和你记录的体重、体脂保存到 Apple 健康。"
           }
         }
       }

@@ -9,7 +9,7 @@ struct HealthIntroView: View {
         ("bed.double", "Sleep, by stage"),
         ("waveform.path.ecg", "Heart rate variability and resting heart rate"),
         ("heart", "Heart rate and active energy during workouts"),
-        ("scalemass", "Body weight"),
+        ("scalemass", "Body weight and body fat"),
     ]
 
     var body: some View {
@@ -29,7 +29,7 @@ struct HealthIntroView: View {
                             Label { Text(label) } icon: { Image(systemName: icon).foregroundStyle(.tint).frame(width: 28) }
                         }
                     }
-                    Text("It saves your workouts, and the weights you enter, to Apple Health.")
+                    Text("It saves your workouts, and the body weight and body fat you enter, to Apple Health.")
                         .foregroundStyle(.secondary)
                     Text("Your health data is kept in your IronSage account and is never used for ads. You can change what IronSage may read at any time in the Health settings on your iPhone.")
                         .font(.footnote)

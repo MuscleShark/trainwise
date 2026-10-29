@@ -75,7 +75,7 @@ Agreed before M1 started:
 
 | Topic | Decision |
 |---|---|
-| Navigation | Four tabs: Today, History, Templates, Settings |
+| Navigation | Five tabs: Today, History, Progress, Templates, Me (the profile, training and body at a glance, the coach plan and the account) |
 | Account | Sign-in is required. After sign-in the app works offline |
 | Exercise search | Fuzzy, on the phone: typos, English and Chinese names, aliases (RDL, OHP, 卧推) and pinyin (`wotui`, `wt`). Results show the catalog name, with the alias that matched. The last row always offers "Create exercise" with the typed name. Aliases live in the backend catalog |
 | Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked. Without a field for it in the catalog, an exercise counts as compound when it trains three or more muscles, two primary ones, or the quads with the glutes |
@@ -99,6 +99,7 @@ Agreed before M2 started:
 | Asking for access | An explanation page once the profile exists, then Apple's permission sheet. "Not now" keeps it in Settings |
 | First import | The last 90 days, then what changed since the last import (the last two days are always read again) |
 | Body weight | The latest weight from Apple Health is shown with its date and the question whether it is current. If it isn't, or there is none, the user types it in. Typed weights are written back to Apple Health |
+| Body fat | Read from Apple Health (smart scales save it there) or typed in; typed values are written back. Apple Health keeps it as a fraction, IronSage as percent. Body weight and body fat share one period: week, month, year or all time; over more than 120 days the charts show weekly averages. People who connected Apple Health before body fat was read get a button to allow it |
 | Readiness | Last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average. No combined score |
 | Workouts to Apple Health | Written when the workout is finished, as traditional strength training. When a Watch recorded it, active energy and average and maximum heart rate for the workout's time are added |
 | Weekly sets | Per muscle: a primary muscle counts 1, a secondary one 0.5. A light reference band of 10 to 20 sets |
