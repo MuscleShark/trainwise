@@ -9,7 +9,7 @@ TrainWise is an **iOS-first strength-training log with an AI coach**. The produc
 - **Users** lift weights. They log exercises, sets, reps and load, for example a chest press on a specific machine at a specific weight.
 - **Core loop**: log a session, then before the next one the coach suggests what to do (exercise, load, sets and reps) and explains why. The suggestion uses past sessions and Apple Health data (sleep, heart rate variability, resting heart rate, heart rate during earlier workouts).
 - **Business model**: logging, history and charts are free. The AI coach is a subscription.
-- **Platforms**: iPhone app (main product), including the foldable iPhone Duo. The web app shrinks to a landing page plus privacy and support pages. No Android, no iPad or Apple Watch app in version 1.
+- **Platforms**: iPhone app (main product), including the foldable iPhone Duo. The web app is a landing page, privacy and support pages, and a read-only review of the user's training (overview, history, exercises) after sign-in; everything is changed in the iPhone app. No Android, no iPad or Apple Watch app in version 1.
 - **Languages**: English and Chinese.
 - **Constraints**: one developer, costs close to zero until there are paying users.
 
@@ -179,7 +179,7 @@ APNs ◄── coach worker Lambda (weekly summary push, later)
 Sentry ◄── app and Lambdas (errors)
 ```
 
-The web app (Vercel) uses the same API and Clerk instance.
+The web app (Vercel) uses the same API and Clerk instance. Its review pages only read: they load the profile, exercises, body measurements and every workout page (`GET /v1/workouts?limit=100`, following `next_before`) once per visit, in the browser, and work out the numbers with the app's rules (`frontend/app/lib/training.ts`, unit-tested with `npm test`). Editing on the web would need conflict handling with the phone's offline edits, so it waits.
 
 ## Data model (version 1)
 

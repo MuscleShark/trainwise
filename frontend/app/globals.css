@@ -10,6 +10,8 @@
   --steel: #5e5a52;
   --accent: #c8372d;
   --plate-red: #e2412d;
+  /* The chart line and bars, as in the app (Assets: ChartMark). */
+  --chart-mark: #c8372d;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,6 +22,7 @@
     --ink: #f4efe6;
     --steel: #a9a399;
     --accent: #ff6a55;
+    --chart-mark: #e85a48;
   }
 }
 

@@ -2,10 +2,12 @@ import { expect, test } from "@playwright/test";
 
 import { expectAccountFor, signIn, signUpNewUser } from "./helpers";
 
-test("the account page redirects to login when signed out", async ({ page }) => {
-  await page.goto("/account");
-  await expect(page).toHaveURL(/\/login/);
-});
+for (const path of ["/account", "/review"]) {
+  test(`${path} redirects to login when signed out`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/login/);
+  });
+}
 
 // Google and Apple sign-in go through real provider pages, so E2E only checks the
 // buttons are offered; the full OAuth flows are checked by hand.

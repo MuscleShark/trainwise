@@ -40,8 +40,8 @@ export default function RootLayout({
         <ClerkProvider
           signInUrl="/login"
           signUpUrl="/register"
-          signInFallbackRedirectUrl="/account"
-          signUpFallbackRedirectUrl="/account"
+          signInFallbackRedirectUrl="/review"
+          signUpFallbackRedirectUrl="/review"
           // The brand tokens from globals.css, so the card follows the color scheme.
           appearance={{
             variables: {
