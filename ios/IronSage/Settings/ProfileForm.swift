@@ -5,6 +5,7 @@ import SwiftUI
 /// The profile fields, shared by the first-run setup and Settings.
 struct ProfileForm: View {
     @Binding var profile: Profile
+    @ScaledMetric(relativeTo: .body) private var heightWidth: CGFloat = 90
 
     var body: some View {
         Section {
@@ -12,6 +13,7 @@ struct ProfileForm: View {
                 Text("Kilograms (kg)").tag(UnitSystem.metric)
                 Text("Pounds (lb)").tag(UnitSystem.imperial)
             }
+            .adaptivePickerStyle()
         }
 
         Section {
@@ -21,18 +23,21 @@ struct ProfileForm: View {
                     Text(level.label).tag(Level?.some(level))
                 }
             }
+            .adaptivePickerStyle()
             Picker("Goal", selection: $profile.goal) {
                 Text("Not set").tag(Goal?.none)
                 ForEach(Goal.allCases, id: \.self) { goal in
                     Text(goal.label).tag(Goal?.some(goal))
                 }
             }
+            .adaptivePickerStyle()
             Picker("Training days a week", selection: $profile.trainingDaysPerWeek) {
                 Text("Not set").tag(Int?.none)
                 ForEach(1...7, id: \.self) { days in
                     Text(days, format: .number).tag(Int?.some(days))
                 }
             }
+            .adaptivePickerStyle()
         } footer: {
             Text("Beginners usually start with Beginner full body; the coach will use these later to suggest your next sessions.")
         }
@@ -57,7 +62,7 @@ struct ProfileForm: View {
                     ),
                     decimals: true
                 )
-                .frame(width: 90)
+                .frame(width: heightWidth)
             }
             Toggle("Birthday", isOn: Binding(
                 get: { profile.birthday != nil },

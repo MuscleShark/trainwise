@@ -72,9 +72,9 @@ private struct WeekHeader: View {
     let week: WorkoutHistory.Week
 
     var body: some View {
-        HStack {
+        AdaptiveRow {
             Text(title)
-            Spacer()
+        } trailing: {
             Text("^[\(week.workouts.count) workout](inflect: true)")
         }
     }
@@ -100,6 +100,7 @@ struct WorkoutDetailView: View {
     @Environment(SyncEngine.self) private var sync
     @Environment(HealthService.self) private var health
     @Environment(\.dismiss) private var dismiss
+    @ScaledMetric(relativeTo: .subheadline) private var badgeWidth: CGFloat = 28
     @State private var editing: WorkoutSession?
     @State private var isConfirmingDelete = false
     @State private var isSavingTemplate = false
@@ -142,7 +143,7 @@ struct WorkoutDetailView: View {
                             }
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
-                            .frame(width: 28, alignment: .leading)
+                            .frame(minWidth: badgeWidth, alignment: .leading)
                             Text(unit.formatSet(set))
                                 .monospacedDigit()
                             Spacer()

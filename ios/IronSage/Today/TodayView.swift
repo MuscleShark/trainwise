@@ -82,6 +82,7 @@ private struct UpNextSection: View {
     @Binding var session: WorkoutSession?
     @Environment(LocalStore.self) private var store
     @Environment(CoachService.self) private var coach
+    @Environment(\.dynamicTypeSize) private var size
 
     var body: some View {
         let unit = store.weightUnit
@@ -124,20 +125,21 @@ private struct UpNextSection: View {
                     let loadType = store.exercises[item.exerciseId]?.loadType ?? .total
                     let advised = advice?.advice(for: item.exerciseId)
                     VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 8) {
+                        AdaptiveRow {
                             Text(store.exerciseName(item.exerciseId))
-                                .lineLimit(1)
-                            Spacer()
-                            Text(advised.flatMap { topSet($0, unit: unit, loadType: loadType) }
-                                ?? suggestion.topSet(unit: unit, loadType: loadType)
-                                ?? TemplateTarget(item: item).summary)
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
-                            Image(systemName: advised == nil ? suggestion.systemImage : "sparkles")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(advised == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
-                                .frame(width: 16)
-                                .accessibilityHidden(true)
+                                .lineLimit(size.isAccessibilitySize ? nil : 1)
+                        } trailing: {
+                            HStack(spacing: 8) {
+                                Text(advised.flatMap { topSet($0, unit: unit, loadType: loadType) }
+                                    ?? suggestion.topSet(unit: unit, loadType: loadType)
+                                    ?? TemplateTarget(item: item).summary)
+                                    .monospacedDigit()
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: advised == nil ? suggestion.systemImage : "sparkles")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(advised == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                                    .accessibilityHidden(true)
+                            }
                         }
                         if let advised {
                             Text(advised.reason)
@@ -195,10 +197,10 @@ struct WorkoutRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline) {
+            AdaptiveRow {
                 Text(workout.title)
                     .font(.headline)
-                Spacer()
+            } trailing: {
                 Text(workout.startedAt, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

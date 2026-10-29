@@ -46,6 +46,30 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testASetCanBeLoggedAtTheLargestTextSize() {
+        app.terminate()
+        app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        // Up next is further down at this size; the list only makes rows as they scroll in.
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
+        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
+        for _ in 0..<6 where !start.isHittable {
+            app.swipeUp()
+        }
+        start.tap()
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+
+        // Each set takes two lines, so its fields and the done button stay on screen.
+        let markDone = app.buttons["Mark done"].firstMatch
+        for _ in 0..<8 where !markDone.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(markDone.isHittable)
+        XCTAssertTrue(app.textFields["Weight"].firstMatch.isHittable)
+        markDone.tap()
+        XCTAssertTrue(app.buttons["Mark not done"].firstMatch.waitForExistence(timeout: 5))
+    }
+
     func testTheWorkoutScreenShowsHowToDoAnExercise() {
         let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
         XCTAssertTrue(start.waitForExistence(timeout: 15))

@@ -62,6 +62,7 @@ private struct EstimatedMaxChart: View {
     let sessions: [ExerciseProgress.Session]
     let unit: WeightUnit
     @State private var selected: Date?
+    @ChartHeight(200, maximum: 300) private var chartHeight
 
     private struct Point: Identifiable {
         let id: UUID
@@ -124,7 +125,8 @@ private struct EstimatedMaxChart: View {
                     }
                 }
                 .chartXSelection(value: $selected)
-                .frame(height: 200)
+                .frame(height: chartHeight)
+                .chartTextSize()
                 .accessibilityLabel(Text("Estimated 1RM by session, in \(symbol)"))
             }
             .padding(.vertical, 4)
