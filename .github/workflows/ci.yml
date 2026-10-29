@@ -85,6 +85,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Run unit tests
+        run: npm test
+
       # ClerkProvider needs the publishable key to prerender pages. It is public
       # (it ships in the browser bundle), so it is a repository variable.
       - name: Build frontend

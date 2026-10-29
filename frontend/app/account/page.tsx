@@ -40,13 +40,18 @@ export default function AccountPage() {
         <Link href="/" aria-label="IronSage home">
           <Logo height={52} />
         </Link>
-        <button
-          type="button"
-          onClick={() => void signOut({ redirectUrl: "/" })}
-          className="rounded-md px-3 py-2 text-sm font-medium text-steel transition-colors hover:text-ink"
-        >
-          Sign out
-        </button>
+        <nav className="flex items-center gap-1 text-sm font-medium">
+          <Link href="/review" className="rounded-md px-3 py-2 text-steel transition-colors hover:text-ink">
+            Your training
+          </Link>
+          <button
+            type="button"
+            onClick={() => void signOut({ redirectUrl: "/" })}
+            className="rounded-md px-3 py-2 text-steel transition-colors hover:text-ink"
+          >
+            Sign out
+          </button>
+        </nav>
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-8">
@@ -62,7 +67,12 @@ export default function AccountPage() {
               Signed in as <span className="font-semibold">{account.email}</span>
             </p>
             <p className="mt-2 max-w-xl leading-relaxed text-steel">
-              Your training is logged in the IronSage iPhone app, coming soon.
+              Your training is logged in the IronSage iPhone app, coming soon. You can look
+              back at it here under{" "}
+              <Link href="/review" className="font-medium text-accent hover:underline">
+                Your training
+              </Link>
+              .
             </p>
             <DeleteAccount />
           </>

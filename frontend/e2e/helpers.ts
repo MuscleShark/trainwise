@@ -28,7 +28,10 @@ async function enterCode(page: Page, code: string) {
   await page.getByRole("textbox", { name: "Enter verification code" }).pressSequentially(code);
 }
 
+// Signing in opens the training review; the account page shows who is signed in.
 export async function expectAccountFor(page: Page, email: string) {
+  await expect(page).toHaveURL(/\/review$/);
+  await page.getByRole("link", { name: "Account" }).click();
   await expect(page).toHaveURL(/\/account$/);
   await expect(page.getByText(`Signed in as ${email}`)).toBeVisible();
 }

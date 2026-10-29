@@ -21,6 +21,11 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 **Web**
 
 - Landing page, Clerk sign-in, and an account page (sign out, delete account)
+- Training review after sign-in (read-only; the iPhone app is where things change), in English or Chinese following the browser:
+  - Overview (`/review`): workouts in all, this week against the planned days, weeks in a row, weekly volume for 12 weeks, body weight and body fat over a week, month, year or all time, and recent workouts
+  - History (`/review/history`): workouts by week, each opening to its exercises and sets
+  - Exercises (`/review/exercises`): one exercise's records and estimated one-rep max over time
+  - The numbers are worked out in `frontend/app/lib/training.ts` the same way as the app's IronSageCore; the charts are plain SVG with a readout on hover and keyboard focus and a table for screen readers
 
 **iPhone app** (`ios/`)
 
@@ -254,6 +259,7 @@ Clerk dashboard settings: email address with **verification code**, Google and A
 GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `ios/` the iOS job, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed.
 
 - Frontend ESLint
+- Frontend unit tests (`npm test`: Node's own test runner on `app/lib/*.test.ts`)
 - Frontend production build and TypeScript validation
 - Backend linting with Ruff (`ruff check .` in `backend/`; `ruff check --fix .` fixes most issues)
 - Backend Python syntax compilation
