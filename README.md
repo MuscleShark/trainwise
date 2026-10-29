@@ -309,7 +309,7 @@ Next, after version 1:
 
 - [x] Body fat from Apple Health or typed in, with week, month, year and all-time ranges for body weight and body fat
 - [x] The user's own templates built from scratch or copied from a program, and hiding built-in programs (synced across devices)
-- [ ] Reviewing training on the website (read-only)
+- [x] Reviewing training on the website (read-only)
 - [ ] Sharing a template by link
 - [ ] Apple Watch: the workout in progress on the wrist
 

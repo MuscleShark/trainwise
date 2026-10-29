@@ -63,7 +63,7 @@ export const privacy: Record<Lang, Page> = {
         paragraphs: [
           "The AI coach is optional and off until you turn it on. It suggests your next session and, every Monday, writes a summary of your past week. For each, IronSage sends Anthropic, the company behind the Claude AI model, only what it needs: your recent sets for the exercises involved, or for the weekly summary the week's sets per muscle, records and lifts that stalled; your experience, goal, units and language; and daily summaries of sleep, heart rate variability and resting heart rate. Your email address and name are not sent.",
           "Anthropic processes this data to produce the suggestion or summary for IronSage. Its handling of the data is described in Anthropic's privacy policy at anthropic.com/legal/privacy. Each suggestion and summary is saved in your account together with the data it was based on, so you can see why it was made.",
-          "You can turn the AI coach off at any time in Settings. IronSage then stops sending data to Anthropic.",
+          "You can turn the AI coach off at any time in the app under Me › Profile. IronSage then stops sending data to Anthropic.",
         ],
       },
       {
@@ -89,7 +89,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "How long data is kept, and deleting it",
         items: [
           "Your data is kept while you have an account.",
-          "Delete your account in the app under Settings, or at ironsage.app/account. This immediately deletes your profile, training, measurements, health summaries, AI suggestions and weekly summaries from the database, and your sign-in account with its photo.",
+          "Delete your account in the app under Me, or at ironsage.app/account. This immediately deletes your profile, training, measurements, health summaries, AI suggestions and weekly summaries from the database, and your sign-in account with its photo.",
           "If you subscribed, Apple's record of that purchase (product, transaction ID and dates, without your name or email) is kept but no longer linked to you, so the same purchase can't be claimed by another account. Deleting your account doesn't cancel the subscription; cancel it with Apple.",
           "Database backups expire within 30 days, and server logs after 30 days.",
         ],
@@ -99,7 +99,7 @@ export const privacy: Record<Lang, Page> = {
         items: [
           "See and change your data in the app at any time.",
           "Stop Apple Health access in the iPhone Settings app, under Health, Data Access & Devices, IronSage.",
-          "Turn off the AI coach in Settings.",
+          "Turn off the AI coach in the app under Me › Profile.",
           `Ask for a copy of your data, or about any other privacy right you have where you live, by emailing ${CONTACT_EMAIL}. You will get an answer within 30 days.`,
         ],
       },
@@ -164,7 +164,7 @@ export const privacy: Record<Lang, Page> = {
         paragraphs: [
           "AI 教练是可选功能，默认关闭，需要你主动开启。它会建议你下一次怎么练，并在每周一总结你上一周的训练。每次 IronSage 只把需要的数据发给 Anthropic（Claude AI 模型背后的公司）：相关动作最近的训练组，或者在每周总结里，这一周每块肌肉的组数、新纪录和停滞的动作；你的训练经验、目标、单位和语言；以及睡眠、心率变异性和静息心率的每日汇总。不会发送你的邮箱和姓名。",
           "Anthropic 处理这些数据，为 IronSage 生成建议或总结。它如何处理数据，请见 Anthropic 的隐私政策：anthropic.com/legal/privacy。每条建议和总结会和它所依据的数据一起保存在你的账号里，方便你查看理由。",
-          "你可以随时在设置里关闭 AI 教练，之后 IronSage 不再向 Anthropic 发送数据。",
+          "你可以随时在 App 的「我 › 个人资料」里关闭 AI 教练，之后 IronSage 不再向 Anthropic 发送数据。",
         ],
       },
       {
@@ -188,7 +188,7 @@ export const privacy: Record<Lang, Page> = {
         heading: "保存多久，以及如何删除",
         items: [
           "在你的账号存在期间，数据会一直保存。",
-          "在 App 的设置里，或在 ironsage.app/account 删除账号。删除后会立即从数据库中删除你的档案、训练记录、身体数据、健康汇总、AI 建议和每周总结，并删除你的登录账号和头像。",
+          "在 App 的「我」页面，或在 ironsage.app/account 删除账号。删除后会立即从数据库中删除你的档案、训练记录、身体数据、健康汇总、AI 建议和每周总结，并删除你的登录账号和头像。",
           "如果你订阅过，Apple 提供的那次购买记录（产品、交易编号和日期，不含你的姓名和邮箱）会保留，但不再与你关联，以免同一笔购买被其他账号重复使用。删除账号不会取消订阅，请在 Apple 那里取消。",
           "数据库备份在 30 天内过期，服务器日志保存 30 天。",
         ],
@@ -198,7 +198,7 @@ export const privacy: Record<Lang, Page> = {
         items: [
           "随时在 App 里查看和修改你的数据。",
           "在 iPhone 的“设置”App 中，依次进入 健康 › 数据访问与设备 › IronSage，停止 Apple 健康的访问权限。",
-          "在设置里关闭 AI 教练。",
+          "在 App 的「我 › 个人资料」里关闭 AI 教练。",
           `如需获取你的数据副本，或行使你所在地法律赋予你的其他隐私权利，请发邮件到 ${CONTACT_EMAIL}，我们会在 30 天内回复。`,
         ],
       },
@@ -231,7 +231,7 @@ export const support: Record<Lang, Page> = {
       {
         heading: "Delete your account",
         paragraphs: [
-          "In the app, go to Settings and choose Delete account, or sign in at ironsage.app/account. This deletes your data and cannot be undone; only Apple's record of a subscription purchase is kept, unlinked from you (see the privacy policy). Cancel an active subscription separately (see below).",
+          "In the app, go to Me and choose Delete account, or sign in at ironsage.app/account. This deletes your data and cannot be undone; only Apple's record of a subscription purchase is kept, unlinked from you (see the privacy policy). Cancel an active subscription separately (see below).",
         ],
       },
       {
@@ -261,7 +261,7 @@ export const support: Record<Lang, Page> = {
       {
         heading: "删除账号",
         paragraphs: [
-          "在 App 中进入设置，选择“删除账号”；或登录 ironsage.app/account 删除。删除会清除你的数据，且无法恢复；只有 Apple 提供的订阅购买记录会保留，并且不再与你关联（见隐私政策）。如有进行中的订阅，需要另外取消（见下文）。",
+          "在 App 中进入「我」页面，选择“删除账号”；或登录 ironsage.app/account 删除。删除会清除你的数据，且无法恢复；只有 Apple 提供的订阅购买记录会保留，并且不再与你关联（见隐私政策）。如有进行中的订阅，需要另外取消（见下文）。",
         ],
       },
       {
