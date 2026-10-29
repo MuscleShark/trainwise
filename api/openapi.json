@@ -820,6 +820,16 @@
               "null"
             ]
           },
+          "hidden_template_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Hidden Template Ids",
+            "type": "array"
+          },
           "training_days_per_week": {
             "maximum": 7.0,
             "minimum": 1.0,
@@ -916,6 +926,16 @@
               "number",
               "null"
             ]
+          },
+          "hidden_template_ids": {
+            "default": [],
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Hidden Template Ids",
+            "type": "array"
           },
           "training_days_per_week": {
             "maximum": 7.0,

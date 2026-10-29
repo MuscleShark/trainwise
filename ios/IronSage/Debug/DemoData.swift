@@ -25,7 +25,21 @@ enum DemoData {
             ],
             isCustom: false
         )
-        store.replaceBuiltInTemplates([ppl])
+        let fullBody = Template(
+            nameEn: "Beginner full body", nameZh: "新手全身训练", level: .beginner, daysPerWeek: 3,
+            days: [
+                day("Full body A", "全身 A", [(squat, 3, 5, 8, 180), (bench, 3, 5, 8, 180), (row, 3, 8, 10, 120)]),
+                day("Full body B", "全身 B", [(rdl, 3, 8, 10, 180), (press, 3, 6, 10, 180), (pulldown, 3, 8, 12, 120)]),
+            ],
+            isCustom: false
+        )
+        store.replaceBuiltInTemplates([ppl, fullBody])
+        store.save(Profile(
+            unitSystem: WeightUnit.default() == .lb ? .imperial : .metric,
+            experienceLevel: .intermediate,
+            goal: .hypertrophy,
+            trainingDaysPerWeek: 4
+        ))
 
         // The workouts follow the template, so Today suggests the next day.
         func workout(_ day: String, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {

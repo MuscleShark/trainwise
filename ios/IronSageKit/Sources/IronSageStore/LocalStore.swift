@@ -99,6 +99,17 @@ public final class LocalStore {
         cacheTemplate(template)
     }
 
+    /// Hides a built-in template from the user's list, or shows it again. The list is
+    /// kept on the profile, so it follows the user to their other devices.
+    public func setTemplate(_ id: UUID, hidden: Bool) {
+        guard var profile else { return }
+        profile.hiddenTemplateIds.removeAll { $0 == id }
+        if hidden {
+            profile.hiddenTemplateIds.append(id)
+        }
+        save(profile)
+    }
+
     public func deleteTemplate(id: UUID) {
         markDeleted(.template, id)
         templates.removeAll { $0.id == id }

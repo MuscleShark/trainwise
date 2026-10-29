@@ -37,6 +37,8 @@ def put_profile(
         db.add(profile)
     for field, value in profile_data.model_dump().items():
         setattr(profile, field, value)
+    # Stored as JSON: strings, each once.
+    profile.hidden_template_ids = list(dict.fromkeys(map(str, profile_data.hidden_template_ids)))
     profile.change_seq = next_change_seq(db, current_user)
     db.commit()
     db.refresh(profile)
