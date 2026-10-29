@@ -36,7 +36,7 @@ struct CoachConsentView: View {
                         }
                     }
                     Text("Your name and email address are never sent.")
-                    Text("Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time.")
+                    Text("Every suggestion shows the data it used. You can turn the AI coach off in Me › Profile at any time.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     if !subscriptions.hasAccess {

@@ -7,7 +7,9 @@ import SwiftUI
 
 private let log = Logger(subsystem: "app.ironsage.IronSage", category: "settings")
 
-struct SettingsView: View {
+/// The Me tab: the profile, a look at the user's training and body, the coach plan,
+/// and the account.
+struct MeView: View {
     @Environment(Clerk.self) private var clerk
     @Environment(\.api) private var api
     @Environment(\.services) private var services
@@ -42,6 +44,10 @@ struct SettingsView: View {
                     .accessibilityIdentifier("profile")
                 }
 
+                SyncProblemSection()
+                TrainingStatsSection()
+                BodySection()
+
                 Section {
                     NavigationLink {
                         CoachPlanView()
@@ -73,7 +79,7 @@ struct SettingsView: View {
                 }
             }
             .brandBackground()
-            .navigationTitle("Settings")
+            .navigationTitle("Me")
             .task { await loadAccount() }
             .refreshable {
                 await loadAccount()
@@ -154,11 +160,10 @@ struct SettingsView: View {
     }
 }
 
-/// The top row of Settings: the photo, name and email, opening the profile.
+/// The top row of Me: the photo, name and email, opening the profile.
 struct ProfileHeader: View {
     let email: String?
     @Environment(Clerk.self) private var clerk
-    @Environment(SyncEngine.self) private var sync
 
     var body: some View {
         HStack(spacing: 14) {
@@ -171,9 +176,6 @@ struct ProfileHeader: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 4)
@@ -182,29 +184,6 @@ struct ProfileHeader: View {
     private var name: String? {
         let parts = [clerk.user?.firstName, clerk.user?.lastName].compactMap { $0 }.filter { !$0.isEmpty }
         return parts.isEmpty ? nil : parts.joined(separator: " ")
-    }
-}
-
-/// "Synced 2 min ago", or why it isn't.
-struct SyncStatusText: View {
-    let state: SyncEngine.State
-    let lastSyncedAt: Date?
-
-    var body: some View {
-        switch state {
-        case .syncing:
-            Text("Syncing…")
-        case .offline:
-            Text("Waiting for a connection")
-        case .failed:
-            Text("Couldn't sync")
-        case .idle:
-            if let lastSyncedAt {
-                Text("Synced \(lastSyncedAt, format: .relative(presentation: .named))")
-            } else {
-                Text("Not synced yet")
-            }
-        }
     }
 }
 
