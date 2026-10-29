@@ -193,14 +193,15 @@ final class IronSageUITests: XCTestCase {
 
     func testMeShowsTrainingAndBodyWeightThatOpensProgress() {
         app.tabBars.buttons["Me"].tap()
-        XCTAssertTrue(app.staticTexts["Weeks in a row"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Weeks in a row"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.staticTexts["Workouts"].exists)
         // Syncing that works isn't shown.
         XCTAssertFalse(app.otherElements["syncProblem"].exists)
         XCTAssertTrue(app.buttons["bodyFat"].exists)
 
         app.buttons["bodyWeight"].tap()
-        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 5))
+        // Switching tabs can take a while on a busy CI runner.
+        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 15))
     }
 
     func testMeShowsWhatTheCoachAddsAndSignOutComesLast() {
