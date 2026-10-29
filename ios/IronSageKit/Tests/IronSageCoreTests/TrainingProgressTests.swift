@@ -62,6 +62,37 @@ struct TrainingProgressTests {
         #expect(volume.last?.start == calendar.dateInterval(of: .weekOfYear, for: day(0))!.start)
     }
 
+    @Test func workoutsThisWeekCountsOnlyFinishedOnesInTheWeek() {
+        let count = TrainingProgress.workoutsThisWeek(in: [
+            workout(0, [(bench, [set(100, 5)])]),
+            workout(2, [(bench, [set(100, 5)])]),
+            workout(3, [(bench, [set(100, 5)])], finished: false),
+            workout(-1, [(bench, [set(100, 5)])]),  // last Sunday
+        ], now: day(3), calendar: calendar)
+        #expect(count == 2)
+    }
+
+    @Test func weekStreakCountsWeeksInARowWithTraining() {
+        let workouts = [
+            workout(1, [(bench, [set(100, 5)])]),
+            workout(-6, [(bench, [set(100, 5)])]),
+            workout(-5, [(bench, [set(100, 5)])]),
+            workout(-13, [(bench, [set(100, 5)])]),
+            workout(-27, [(bench, [set(100, 5)])]),  // after a week off
+        ]
+        #expect(TrainingProgress.weekStreak(in: workouts, now: day(2), calendar: calendar) == 3)
+    }
+
+    @Test func weekStreakIsNotBrokenBeforeThisWeekEnds() {
+        let workouts = [
+            workout(-6, [(bench, [set(100, 5)])]),
+            workout(-13, [(bench, [set(100, 5)])]),
+        ]
+        #expect(TrainingProgress.weekStreak(in: workouts, now: day(2), calendar: calendar) == 2)
+        #expect(TrainingProgress.weekStreak(in: workouts, now: day(9), calendar: calendar) == 0)
+        #expect(TrainingProgress.weekStreak(in: [], now: day(2), calendar: calendar) == 0)
+    }
+
     @Test func recentExercisesComeFirst() {
         let order = TrainingProgress.recentExercises(in: [
             workout(0, [(bench, [set(80, 5)])]),

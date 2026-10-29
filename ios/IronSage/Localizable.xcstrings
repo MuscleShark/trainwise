@@ -172,6 +172,126 @@
         }
       }
     },
+    "A few details so weights show in your unit and programs fit you. You can change them in Me › Profile." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填几项信息，重量会用你习惯的单位显示，训练计划也更合适。之后可以在「我 › 个人资料」里修改。"
+          }
+        }
+      }
+    },
+    "Body" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "身体"
+          }
+        }
+      }
+    },
+    "Couldn't load your account. Check your connection, then pull down on Me to try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载你的账号。请检查网络，然后在「我」页面下拉重试。"
+          }
+        }
+      }
+    },
+    "Every suggestion shows the data it used. You can turn the AI coach off in Me › Profile at any time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每条建议都会显示它所依据的数据。你可以随时在「我 › 个人资料」中关闭 AI 教练。"
+          }
+        }
+      }
+    },
+    "Me" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我"
+          }
+        }
+      }
+    },
+    "Not entered yet" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未记录"
+          }
+        }
+      }
+    },
+    "Opens Progress" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开进度"
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "Weeks in a row" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续周数"
+          }
+        }
+      }
+    },
+    "Workouts" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练次数"
+          }
+        }
+      }
+    },
+    "Your changes are safe on this iPhone." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的改动已安全保存在这台 iPhone 上。"
+          }
+        }
+      }
+    },
+    "Your changes are saved on this iPhone and upload when you're back online." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的改动已保存在这台 iPhone 上，联网后会自动上传。"
+          }
+        }
+      }
+    },
     "A lighter week means about a third fewer sets at the same weights. Training guidance, not medical advice." : {
       "localizations" : {
         "zh-Hans" : {
@@ -592,16 +712,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "多 15 秒"
-          }
-        }
-      }
-    },
-    "A few details so weights show in your unit and programs fit you. You can change them in Settings." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "填几项信息，重量会用你习惯的单位显示，训练计划也更合适。之后可以在设置里修改。"
           }
         }
       }
@@ -1262,16 +1372,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每组都不到 %1$lld 次，这次减到 %2$@。"
-          }
-        }
-      }
-    },
-    "Every suggestion shows the data it used. You can turn the AI coach off in Settings at any time." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每条建议都会显示它所依据的数据。你可以随时在设置中关闭 AI 教练。"
           }
         }
       }
@@ -2286,16 +2386,6 @@
         }
       }
     },
-    "Settings" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "设置"
-          }
-        }
-      }
-    },
     "Side delts" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2452,36 +2542,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "客服支持"
-          }
-        }
-      }
-    },
-    "Sync" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同步"
-          }
-        }
-      }
-    },
-    "Synced %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@同步"
-          }
-        }
-      }
-    },
-    "Syncing…" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在同步…"
           }
         }
       }
@@ -2762,16 +2822,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "热"
-          }
-        }
-      }
-    },
-    "Waiting for a connection" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "等待网络连接"
           }
         }
       }
@@ -4692,16 +4742,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请检查网络后重试。"
-          }
-        }
-      }
-    },
-    "Couldn't load your account. Check your connection, then pull down on Settings to try again." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法加载你的账号。请检查网络，然后在设置页下拉重试。"
           }
         }
       }

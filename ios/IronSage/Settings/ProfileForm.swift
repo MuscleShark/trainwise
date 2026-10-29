@@ -93,7 +93,7 @@ struct ProfileSetupView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("A few details so weights show in your unit and programs fit you. You can change them in Settings.")
+                    Text("A few details so weights show in your unit and programs fit you. You can change them in Me › Profile.")
                         .foregroundStyle(.secondary)
                 }
                 ProfileForm(profile: $profile)
@@ -113,9 +113,9 @@ struct ProfileSetupView: View {
     }
 }
 
-/// Settings → Profile: the photo and email, the profile fields, and the app's settings.
+/// Me → Profile: the photo and email, the profile fields, and the app's settings.
 struct ProfileSettingsView: View {
-    let account: SettingsView.AccountState
+    let account: MeView.AccountState
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
     @Environment(\.openURL) private var openURL
@@ -131,11 +131,8 @@ struct ProfileSettingsView: View {
                 case .signedIn(let email):
                     LabeledContent("Email", value: email)
                 case .unavailable:
-                    Text("Couldn't load your account. Check your connection, then pull down on Settings to try again.")
+                    Text("Couldn't load your account. Check your connection, then pull down on Me to try again.")
                         .foregroundStyle(.secondary)
-                }
-                LabeledContent("Sync") {
-                    SyncStatusText(state: sync.state, lastSyncedAt: sync.lastSyncedAt)
                 }
             }
 

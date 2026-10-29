@@ -50,6 +50,39 @@ public enum TrainingProgress {
         return starts.map { ($0, volume[$0] ?? 0) }
     }
 
+    /// Finished workouts in the week containing `now`.
+    public static func workoutsThisWeek(
+        in workouts: [Workout],
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) -> Int {
+        guard let week = calendar.dateInterval(of: .weekOfYear, for: now) else { return 0 }
+        return workouts.filter { !$0.isInProgress && week.contains($0.startedAt) && $0.startedAt < week.end }.count
+    }
+
+    /// Weeks in a row with at least one finished workout, counted back from the week
+    /// containing `now`. This week counts once trained in; until then, the streak runs
+    /// up to last week, so it only breaks when a whole week passes without training.
+    public static func weekStreak(
+        in workouts: [Workout],
+        now: Date = .now,
+        calendar: Calendar = .current
+    ) -> Int {
+        let trained = Set(workouts.filter { !$0.isInProgress }.compactMap {
+            calendar.dateInterval(of: .weekOfYear, for: $0.startedAt)?.start
+        })
+        guard var week = calendar.dateInterval(of: .weekOfYear, for: now)?.start else { return 0 }
+        if !trained.contains(week), let previous = calendar.date(byAdding: .weekOfYear, value: -1, to: week) {
+            week = previous
+        }
+        var streak = 0
+        while trained.contains(week), let previous = calendar.date(byAdding: .weekOfYear, value: -1, to: week) {
+            streak += 1
+            week = previous
+        }
+        return streak
+    }
+
     /// The exercises done in finished workouts, most recently done first; within one
     /// workout, in the order they were done.
     public static func recentExercises(in workouts: [Workout]) -> [UUID] {

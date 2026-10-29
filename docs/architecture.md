@@ -75,7 +75,7 @@ Agreed before M1 started:
 
 | Topic | Decision |
 |---|---|
-| Navigation | Four tabs: Today, History, Templates, Settings |
+| Navigation | Five tabs: Today, History, Progress, Templates, Me (the profile, training and body at a glance, the coach plan and the account) |
 | Account | Sign-in is required. After sign-in the app works offline |
 | Exercise search | Fuzzy, on the phone: typos, English and Chinese names, aliases (RDL, OHP, 卧推) and pinyin (`wotui`, `wt`). Results show the catalog name, with the alias that matched. The last row always offers "Create exercise" with the typed name. Aliases live in the backend catalog |
 | Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked. Without a field for it in the catalog, an exercise counts as compound when it trains three or more muscles, two primary ones, or the quads with the glutes |
