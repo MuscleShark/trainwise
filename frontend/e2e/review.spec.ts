@@ -13,9 +13,18 @@ test("the review shows what the app saved, read-only", async ({ page, request })
   });
   expect(profile.ok()).toBeTruthy();
 
-  const exercises = await (await request.get(`${API_URL}/v1/exercises`, { headers: auth })).json();
-  const bench = exercises.find((exercise: { name_en: string }) => exercise.name_en === "Barbell bench press");
-  expect(bench).toBeTruthy();
+  // E2E's database has no built-in catalog, so the workout uses an exercise of the user's own.
+  const bench = { id: crypto.randomUUID() };
+  const exercise = await request.put(`${API_URL}/v1/exercises/${bench.id}`, {
+    headers: auth,
+    data: {
+      name_en: "Barbell bench press",
+      equipment: "barbell",
+      load_type: "total",
+      primary_muscles: ["chest"],
+    },
+  });
+  expect(exercise.ok()).toBeTruthy();
 
   const started = new Date(Date.now() - 2 * 3_600_000);
   const done = new Date(started.getTime() + 600_000).toISOString();
