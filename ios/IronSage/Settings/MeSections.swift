@@ -82,61 +82,87 @@ struct TrainingStatsSection: View {
     }
 }
 
-/// The latest body weight with its recent trend; opens Progress.
+/// The latest body weight and body fat with their recent trend; each opens Progress.
 struct BodySection: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.selectTab) private var selectTab
 
     var body: some View {
         let unit = store.weightUnit
-        let latest = BodyWeight.latest(store.bodyMeasurements)
-        let trend = BodyWeight.trend(store.bodyMeasurements, days: 90)
+        let measurements = store.bodyMeasurements
+        let bodyFat = BodyTrend.latest(measurements, kind: .bodyFat)
+        let since = Date.now.addingTimeInterval(-90 * 86_400)
         Section("Body") {
-            Button {
-                selectTab(.progress)
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Body weight")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        if let latest {
-                            Text(unit.formatWithUnit(kilograms: latest.value))
-                                .font(.title3.weight(.bold))
-                                .monospacedDigit()
-                            Text(latest.measuredAt.shortDay)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("Not entered yet")
-                                .font(.subheadline)
-                        }
-                    }
-                    Spacer()
-                    if trend.count >= 2 {
-                        Sparkline(weights: trend, unit: unit)
-                    }
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+            row(
+                "Body weight",
+                latest: BodyTrend.latest(measurements, kind: .weight),
+                format: { unit.formatWithUnit(kilograms: $0) },
+                trend: BodyWeight.trend(measurements, days: 90).map {
+                    BodyTrend.Point(date: $0.measuredAt, value: unit.value(fromKilograms: $0.value))
                 }
-                .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
+            )
             .accessibilityIdentifier("bodyWeight")
-            .accessibilityHint(Text("Opens Progress"))
+            // Shown once there is one: most people have no body fat to show.
+            if bodyFat != nil {
+                row(
+                    "Body fat",
+                    latest: bodyFat,
+                    format: BodyFat.format,
+                    trend: BodyTrend.points(measurements, kind: .bodyFat, range: .all).filter { $0.date >= since }
+                )
+                .accessibilityIdentifier("bodyFat")
+            }
         }
+    }
+
+    private func row(
+        _ title: LocalizedStringResource,
+        latest: BodyMeasurement?,
+        format: (Double) -> String,
+        trend: [BodyTrend.Point]
+    ) -> some View {
+        Button {
+            selectTab(.progress)
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    if let latest {
+                        Text(format(latest.value))
+                            .font(.title3.weight(.bold))
+                            .monospacedDigit()
+                        Text(latest.measuredAt.shortDay)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Not entered yet")
+                            .font(.subheadline)
+                    }
+                }
+                Spacer()
+                if trend.count >= 2 {
+                    Sparkline(points: trend)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(Text("Opens Progress"))
     }
 }
 
-/// A small line of the last 90 days of weight, without axes.
+/// A small line of the last 90 days, without axes.
 private struct Sparkline: View {
-    let weights: [BodyMeasurement]
-    let unit: WeightUnit
+    let points: [BodyTrend.Point]
 
     var body: some View {
-        Chart(weights) { weight in
-            LineMark(x: .value("Date", weight.measuredAt), y: .value("Weight", unit.value(fromKilograms: weight.value)))
+        Chart(points, id: \.date) { point in
+            LineMark(x: .value("Date", point.date), y: .value("Value", point.value))
                 .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 .foregroundStyle(Color.chartMark)
         }

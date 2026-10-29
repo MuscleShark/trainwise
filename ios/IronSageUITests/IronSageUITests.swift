@@ -89,6 +89,29 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(volume.waitForExistence(timeout: 5))
     }
 
+    func testBodyWeightAndBodyFatFollowThePeriod() {
+        app.tabBars.buttons["Progress"].tap()
+        let year = app.segmentedControls["bodyRange"].buttons["Year"]
+        XCTAssertTrue(year.waitForExistence(timeout: 10))
+        year.tap()
+        XCTAssertTrue(year.isSelected)
+
+        let allBodyFat = app.buttons["All body fat"]
+        for _ in 0..<4 where !allBodyFat.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(app.staticTexts["Body fat"].exists)
+        allBodyFat.tap()
+        XCTAssertTrue(app.navigationBars["All body fat"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.firstMatch.tap()
+
+        // Back to the default for the other tests.
+        for _ in 0..<4 where !year.isHittable {
+            app.swipeDown()
+        }
+        app.segmentedControls["bodyRange"].buttons["Month"].tap()
+    }
+
     func testTurningTheCoachOffAsksFirst() {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
@@ -113,6 +136,7 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Workouts"].exists)
         // Syncing that works isn't shown.
         XCTAssertFalse(app.otherElements["syncProblem"].exists)
+        XCTAssertTrue(app.buttons["bodyFat"].exists)
 
         app.buttons["bodyWeight"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 5))

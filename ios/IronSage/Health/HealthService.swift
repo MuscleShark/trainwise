@@ -6,7 +6,7 @@ import OSLog
 
 private let log = Logger(subsystem: "app.ironsage.IronSage", category: "health")
 
-/// Reads sleep, HRV, resting heart rate and body weight from Apple Health into the
+/// Reads sleep, HRV, resting heart rate, body weight and body fat from Apple Health into the
 /// store, which syncs them like any other record, and saves finished workouts to it.
 ///
 /// Apple Health never says whether reading was allowed (that would itself reveal health
@@ -40,6 +40,7 @@ final class HealthService {
         HKQuantityType(.heartRate),
         HKQuantityType(.activeEnergyBurned),
         HKQuantityType(.bodyMass),
+        HKQuantityType(.bodyFatPercentage),
         HKObjectType.workoutType(),
     ]
 
@@ -47,6 +48,7 @@ final class HealthService {
         HKObjectType.workoutType(),
         HKQuantityType(.activeEnergyBurned),
         HKQuantityType(.bodyMass),
+        HKQuantityType(.bodyFatPercentage),
     ]
 
     /// `enabled` is false in demo mode, which never touches Apple Health.
@@ -83,13 +85,27 @@ final class HealthService {
     /// Changes with every `reset()`, so work started before it can tell it is stale.
     @ObservationIgnored private var generation = 0
 
+    /// Whether Apple's permission sheet has types the user hasn't been asked about yet,
+    /// such as body fat for those who connected before IronSage read it.
+    private(set) var hasNewTypes = false
+
+    func checkForNewTypes() async {
+        guard isAvailable, hasAsked else { return }
+        let status = try? await healthStore.statusForAuthorizationRequest(toShare: Self.writeTypes, read: Self.readTypes)
+        hasNewTypes = status == .shouldRequest
+    }
+
     /// Shows Apple's permission sheet, then imports what was allowed.
     func connect() async {
         guard isAvailable else { return }
         do {
             try await healthStore.requestAuthorization(toShare: Self.writeTypes, read: Self.readTypes)
             hasAsked = true
+            hasNewTypes = false
             defaults.set(true, forKey: Keys.asked)
+            // Read the last 90 days again, for types allowed only now. What is already in
+            // the store is skipped.
+            defaults.removeObject(forKey: Keys.lastImport)
             await importRecent()
         } catch {
             log.error("Asking for Apple Health access failed: \(error, privacy: .public)")
@@ -121,6 +137,7 @@ final class HealthService {
             let hrv = try await values(.heartRateVariabilitySDNN, unit: .secondUnit(with: .milli), from: firstDay)
             let resting = try await values(.restingHeartRate, unit: .count().unitDivided(by: .minute()), from: firstDay)
             let weights = try await quantitySamples(.bodyMass, from: firstDay)
+            let bodyFat = try await quantitySamples(.bodyFatPercentage, from: firstDay)
             // Signed out or switched user while Apple Health was being read.
             guard generation == self.generation else { return }
 
@@ -129,7 +146,8 @@ final class HealthService {
             where day.date >= firstKey && store.readiness[day.date] != day {
                 store.save(day)
             }
-            saveBodyMass(weights)
+            saveMeasurements(weights, kind: .weight)
+            saveMeasurements(bodyFat, kind: .bodyFat)
             defaults.set(now, forKey: Keys.lastImport)
         } catch {
             log.error("Importing from Apple Health failed: \(error, privacy: .public)")
@@ -155,35 +173,48 @@ final class HealthService {
         try await quantitySamples(id, from: start).map { HealthValue(date: $0.startDate, value: $0.quantity.doubleValue(for: unit)) }
     }
 
-    /// Weights from other apps and devices. IronSage's own entries are already in the store.
-    private func saveBodyMass(_ samples: [HKQuantitySample]) {
+    /// Weights or body fat from other apps and devices. IronSage's own entries are
+    /// already in the store.
+    private func saveMeasurements(_ samples: [HKQuantitySample], kind: MeasurementKind) {
+        guard let health = Self.healthType(kind) else { return }
         let known = Set(store.bodyMeasurements.compactMap(\.healthkitSampleId))
         for sample in samples {
             let id = sample.uuid.uuidString
             guard !known.contains(id), sample.sourceRevision.source.bundleIdentifier != Bundle.main.bundleIdentifier else { continue }
-            let kg = (sample.quantity.doubleValue(for: .gramUnit(with: .kilo)) * 1000).rounded() / 1000
-            store.save(BodyMeasurement(id: sample.uuid, measuredAt: sample.endDate, value: kg, source: .healthkit, healthkitSampleId: id))
+            let value = (sample.quantity.doubleValue(for: health.unit) * health.scale * 1000).rounded() / 1000
+            store.save(BodyMeasurement(id: sample.uuid, measuredAt: sample.endDate, kind: kind, value: value, source: .healthkit, healthkitSampleId: id))
         }
     }
 
-    // MARK: Writing body weight
+    /// Apple Health's type for a measurement, its unit, and what turns that unit into the
+    /// stored one: Apple Health keeps body fat as a fraction (0.18), IronSage as percent (18).
+    private static func healthType(_ kind: MeasurementKind) -> (type: HKQuantityType, unit: HKUnit, scale: Double)? {
+        switch kind {
+        case .weight: (HKQuantityType(.bodyMass), .gramUnit(with: .kilo), 1)
+        case .bodyFat: (HKQuantityType(.bodyFatPercentage), .percent(), 100)
+        default: nil
+        }
+    }
 
-    /// Saves a weight the user typed in to Apple Health and keeps the sample's id with it,
-    /// so it can be removed again and isn't imported back.
-    func saveToHealth(_ weight: BodyMeasurement) async {
-        guard isAvailable, hasAsked, weight.kind == .weight, weight.healthkitSampleId == nil,
-              healthStore.authorizationStatus(for: HKQuantityType(.bodyMass)) == .sharingAuthorized
+    // MARK: Writing body measurements
+
+    /// Saves a weight or body fat the user typed in to Apple Health and keeps the sample's
+    /// id with it, so it can be removed again and isn't imported back.
+    func saveToHealth(_ measurement: BodyMeasurement) async {
+        guard isAvailable, hasAsked, measurement.healthkitSampleId == nil,
+              let health = Self.healthType(measurement.kind),
+              healthStore.authorizationStatus(for: health.type) == .sharingAuthorized
         else { return }
         let sample = HKQuantitySample(
-            type: HKQuantityType(.bodyMass),
-            quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weight.value),
-            start: weight.measuredAt,
-            end: weight.measuredAt,
-            metadata: [HKMetadataKeyExternalUUID: weight.id.uuidString]
+            type: health.type,
+            quantity: HKQuantity(unit: health.unit, doubleValue: measurement.value / health.scale),
+            start: measurement.measuredAt,
+            end: measurement.measuredAt,
+            metadata: [HKMetadataKeyExternalUUID: measurement.id.uuidString]
         )
         do {
             try await healthStore.save(sample)
-            guard var latest = store.bodyMeasurements.first(where: { $0.id == weight.id }) else {
+            guard var latest = store.bodyMeasurements.first(where: { $0.id == measurement.id }) else {
                 // Deleted while Apple Health was saving it.
                 try await healthStore.delete(sample)
                 return
@@ -191,19 +222,19 @@ final class HealthService {
             latest.healthkitSampleId = sample.uuid.uuidString
             store.save(latest)
         } catch {
-            log.error("Saving a weight to Apple Health failed: \(error, privacy: .public)")
+            log.error("Saving a body measurement to Apple Health failed: \(error, privacy: .public)")
         }
     }
 
-    /// Removes a weight IronSage wrote to Apple Health. It is found by IronSage's own id,
-    /// so this works from another iPhone too.
-    func removeFromHealth(_ weight: BodyMeasurement) async {
-        guard isAvailable, weight.source == .manual else { return }
+    /// Removes a weight or body fat IronSage wrote to Apple Health. It is found by
+    /// IronSage's own id, so this works from another iPhone too.
+    func removeFromHealth(_ measurement: BodyMeasurement) async {
+        guard isAvailable, measurement.source == .manual, let health = Self.healthType(measurement.kind) else { return }
         do {
-            let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyExternalUUID, allowedValues: [weight.id.uuidString])
-            try await healthStore.deleteObjects(of: HKQuantityType(.bodyMass), predicate: predicate)
+            let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyExternalUUID, allowedValues: [measurement.id.uuidString])
+            try await healthStore.deleteObjects(of: health.type, predicate: predicate)
         } catch {
-            log.error("Removing a weight from Apple Health failed: \(error, privacy: .public)")
+            log.error("Removing a body measurement from Apple Health failed: \(error, privacy: .public)")
         }
     }
 
