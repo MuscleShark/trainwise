@@ -69,6 +69,7 @@ private func pushDay(completed: Bool = true) -> Workout {
 @Test func pullingAppliesEveryPageAndSavesTheCursor() async throws {
     let first = UUID().uuidString.lowercased()
     let second = UUID().uuidString.lowercased()
+    let hidden = UUID().uuidString.lowercased()
     let harness = try Harness { request in
         guard request.path.hasPrefix("/v1/sync") else { return try FakeServer.standard(request) }
         if request.path.contains("since=0") {
@@ -81,7 +82,7 @@ private func pushDay(completed: Bool = true) -> Workout {
         return (200, FakeServer.syncPage(
             changeSeq: 9,
             workouts: [FakeServer.workoutJSON(id: second, title: "Pull", changeSeq: 9)],
-            profile: #"{"unit_system": "imperial", "updated_at": "2026-10-25T10:00:00Z", "change_seq": 7}"#
+            profile: #"{"unit_system": "imperial", "hidden_template_ids": ["\#(hidden)"], "updated_at": "2026-10-25T10:00:00Z", "change_seq": 7}"#
         ))
     }
 
@@ -91,6 +92,7 @@ private func pushDay(completed: Bool = true) -> Workout {
     #expect(Set(harness.store.workouts.map(\.title)) == ["Legs", "Pull"])
     #expect(harness.store.workouts[0].exercises[0].sets[0].weightKg == 61.235)
     #expect(harness.store.profile?.unitSystem == .imperial)
+    #expect(harness.store.profile?.hiddenTemplateIds.map(\.uuidString) == [hidden.uppercased()])
     #expect(harness.defaults.integer(forKey: SyncEngine.Keys.changeSeq) == 9)
 }
 
@@ -306,7 +308,8 @@ private func pushDay(completed: Bool = true) -> Workout {
         primaryMuscles: [.chest], aliases: ["HS press"], baseExerciseId: bench, isCustom: true
     )
     harness.store.save(machine)
-    harness.store.save(Profile(unitSystem: .imperial, experienceLevel: .beginner))
+    let hidden = UUID()
+    harness.store.save(Profile(unitSystem: .imperial, experienceLevel: .beginner, hiddenTemplateIds: [hidden]))
 
     await harness.sync.sync()
 
@@ -317,6 +320,25 @@ private func pushDay(completed: Bool = true) -> Workout {
     let profilePut = try #require(harness.server.requests.first { $0.path == "/v1/profile" })
     #expect(profilePut.json["unit_system"] as? String == "imperial")
     #expect(profilePut.json["experience_level"] as? String == "beginner")
+    #expect(profilePut.json["hidden_template_ids"] as? [String] == [hidden.uuidString])
+}
+
+@MainActor
+@Test func hidingAProgramUploadsTheProfile() async throws {
+    let harness = try Harness()
+    let program = UUID()
+    let other = UUID()
+    harness.store.save(Profile(unitSystem: .metric))
+    harness.store.setTemplate(program, hidden: true)
+    harness.store.setTemplate(other, hidden: true)
+    harness.store.setTemplate(program, hidden: true)
+    harness.store.setTemplate(other, hidden: false)
+
+    await harness.sync.sync()
+
+    #expect(harness.store.profile?.hiddenTemplateIds == [program])
+    let profilePut = try #require(harness.server.requests.last { $0.path == "/v1/profile" })
+    #expect(profilePut.json["hidden_template_ids"] as? [String] == [program.uuidString])
 }
 
 @MainActor
@@ -360,6 +382,7 @@ private func pushDay(completed: Bool = true) -> Workout {
     #expect(harness.store.exercises[bench]?.secondaryMuscles == [])
     #expect(harness.store.workouts.first?.exercises[0].sets[0].setType == .working)
     #expect(harness.store.profile?.unitSystem == .metric)
+    #expect(harness.store.profile?.hiddenTemplateIds == [])
 }
 
 @MainActor

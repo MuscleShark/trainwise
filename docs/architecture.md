@@ -64,7 +64,7 @@ Status (2026-10-25): the code for M1 and M2 is merged. TestFlight and testing on
 4. **History**: workouts by date; view, edit and delete.
 5. **Exercise detail** (M2): all past sets, estimated one-rep max chart, personal records.
 6. **Progress** (M2): body-weight trend from Apple Health, weekly sets per muscle group.
-7. **Templates**: built-in templates from [coaching.md](coaching.md) and the user's own.
+7. **Templates**: built-in templates from [coaching.md](coaching.md) and the user's own. The user builds a template from scratch, copies a program to change it (every day, exercise and set gets a new id, since the server keys them by id), or saves a finished workout. Each exercise has a set count, a rep range, reps in reserve and rest. Programs the user hides are kept on the profile (`hidden_template_ids`, migration 0009), so they are hidden on every device, and Up next skips them.
 8. **Settings**: units, language, Apple Health, subscription, privacy policy, sign out, delete account.
 
 Not in version 1: Apple Watch app, Live Activities and widgets, iPad layout, social features, nutrition, coach chat and plan generation.
@@ -188,7 +188,8 @@ Built in `backend/models.py` (migration `0002`).
 ```text
 users                 id, clerk_user_id, email, created_at, change_seq (per-user sync counter)
 profiles              birthday, height_cm, gender, training_location, unit_system (metric or imperial),
-                      experience_level, goal, training_days_per_week
+                      experience_level, goal, training_days_per_week, hidden_template_ids
+                      (built-in templates hidden from the list, migration 0009)
 exercises             name_en, name_zh, equipment, load_type, primary and secondary muscles,
                       aliases (search names, migration 0004), base_exercise_id (custom exercise →
                       built-in one), owner (null = built-in)

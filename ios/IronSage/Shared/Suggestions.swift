@@ -18,9 +18,10 @@ extension LocalStore {
 
     /// The next day of the template followed most recently.
     var upNext: (template: Template, day: TemplateDay)? {
+        let hidden = Set(profile?.hiddenTemplateIds ?? [])
         for workout in finishedWorkouts {
-            guard let id = workout.templateId else { continue }
-            // A deleted template: look at the workout before.
+            guard let id = workout.templateId, !hidden.contains(id) else { continue }
+            // A deleted or hidden template: look at the workout before.
             guard let template = templates.first(where: { $0.id == id }),
                   let day = NextSession.nextDay(of: template, history: finishedWorkouts)
             else { continue }

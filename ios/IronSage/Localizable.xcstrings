@@ -2,6 +2,256 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "%@ (my copy)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@（我的副本）"
+          }
+        }
+      }
+    },
+    "Add at least one exercise to each day." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个训练日至少添加一个动作。"
+          }
+        }
+      }
+    },
+    "Add day" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加训练日"
+          }
+        }
+      }
+    },
+    "Copy and edit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制并编辑"
+          }
+        }
+      }
+    },
+    "Create one with +, copy a program, or save a finished workout as a template from History." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点右上角的 + 新建，复制一个计划，或在历史里把完成的训练存为模板。"
+          }
+        }
+      }
+    },
+    "Day %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 天"
+          }
+        }
+      }
+    },
+    "Day name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练日名称"
+          }
+        }
+      }
+    },
+    "Discard changes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放弃修改"
+          }
+        }
+      }
+    },
+    "Discard your changes?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放弃这些修改吗？"
+          }
+        }
+      }
+    },
+    "Each working set aims for this many reps. Reps in reserve is how many more you could have done." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个正式组都以这个次数为目标。保留次数是做完这组后你还能再做几次。"
+          }
+        }
+      }
+    },
+    "Edit template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑模板"
+          }
+        }
+      }
+    },
+    "Fewest reps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最少次数"
+          }
+        }
+      }
+    },
+    "Give each day a name." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给每个训练日起个名字。"
+          }
+        }
+      }
+    },
+    "Give the template a name." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给模板起个名字。"
+          }
+        }
+      }
+    },
+    "Hidden programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已隐藏的计划"
+          }
+        }
+      }
+    },
+    "Hidden programs are hidden on all your devices. Workouts you did with them stay in History." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏的计划在你所有的设备上都会隐藏。用它们做过的训练仍保留在历史里。"
+          }
+        }
+      }
+    },
+    "Hide program" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏这个计划"
+          }
+        }
+      }
+    },
+    "More" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多"
+          }
+        }
+      }
+    },
+    "Most reps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多次数"
+          }
+        }
+      }
+    },
+    "New template" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新建模板"
+          }
+        }
+      }
+    },
+    "No hidden programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有隐藏的计划"
+          }
+        }
+      }
+    },
+    "Remove day" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除这个训练日"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示"
+          }
+        }
+      }
+    },
+    "Show program" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示这个计划"
+          }
+        }
+      }
+    },
+    "Usual (%@)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认（%@）"
+          }
+        }
+      }
+    },
     "%@ over %@, in %@" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2166,26 +2416,6 @@
         }
       }
     },
-    "Rename" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重命名"
-          }
-        }
-      }
-    },
-    "Rename template" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重命名模板"
-          }
-        }
-      }
-    },
     "Reps" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2312,16 +2542,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
-          }
-        }
-      }
-    },
-    "Save a finished workout as a template from its page in History." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在“历史”里打开一次训练，可以把它存成模板。"
           }
         }
       }

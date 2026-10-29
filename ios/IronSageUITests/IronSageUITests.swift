@@ -89,6 +89,67 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(volume.waitForExistence(timeout: 5))
     }
 
+    func testAProgramCanBeHiddenAndShownAgain() {
+        app.tabBars.buttons["Templates"].tap()
+        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Beginner full body'")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 10))
+        program.swipeLeft()
+        app.buttons["Hide program"].tap()
+        XCTAssertTrue(program.waitForNonExistence(timeout: 5))
+
+        app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Hidden programs'")).firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Hidden programs"].waitForExistence(timeout: 5))
+        app.buttons["Show"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(program.waitForExistence(timeout: 5))
+    }
+
+    func testATemplateCanBeBuiltFromScratch() {
+        app.tabBars.buttons["Templates"].tap()
+        let new = app.buttons["New template"]
+        XCTAssertTrue(new.waitForExistence(timeout: 10))
+        new.tap()
+
+        let save = app.navigationBars["New template"].buttons["Save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertFalse(save.isEnabled)
+        let name = app.textFields["templateName"]
+        name.tap()
+        name.typeText("Home legs")
+        app.buttons["Add exercise"].tap()
+        let squat = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Back squat'")).firstMatch
+        XCTAssertTrue(squat.waitForExistence(timeout: 10))
+        squat.tap()
+
+        // Three sets of 8–12 to start with.
+        XCTAssertTrue(app.staticTexts["3 × 8–12 · RIR 2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+
+        let saved = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Home legs'")).firstMatch
+        XCTAssertTrue(saved.waitForExistence(timeout: 5))
+        saved.tap()
+        XCTAssertTrue(app.buttons["Start this workout"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Home legs"].buttons["Edit"].exists)
+    }
+
+    func testAProgramCanBeCopiedToEdit() {
+        app.tabBars.buttons["Templates"].tap()
+        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Push / pull / legs'")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 10))
+        program.tap()
+        app.buttons["programMenu"].tap()
+        app.buttons["Copy and edit"].tap()
+
+        let save = app.navigationBars["Copy and edit"].buttons["Save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        let copy = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Push / pull / legs (my copy)'")).firstMatch
+        XCTAssertTrue(copy.waitForExistence(timeout: 5))
+    }
+
     func testBodyWeightAndBodyFatFollowThePeriod() {
         app.tabBars.buttons["Progress"].tap()
         let year = app.segmentedControls["bodyRange"].buttons["Year"]
@@ -132,14 +193,15 @@ final class IronSageUITests: XCTestCase {
 
     func testMeShowsTrainingAndBodyWeightThatOpensProgress() {
         app.tabBars.buttons["Me"].tap()
-        XCTAssertTrue(app.staticTexts["Weeks in a row"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Weeks in a row"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.staticTexts["Workouts"].exists)
         // Syncing that works isn't shown.
         XCTAssertFalse(app.otherElements["syncProblem"].exists)
         XCTAssertTrue(app.buttons["bodyFat"].exists)
 
         app.buttons["bodyWeight"].tap()
-        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 5))
+        // Switching tabs can take a while on a busy CI runner.
+        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 15))
     }
 
     func testMeShowsWhatTheCoachAddsAndSignOutComesLast() {

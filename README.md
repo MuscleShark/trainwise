@@ -28,7 +28,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
-- Templates: four built-in programs (English and Chinese) and the user's own, saved from a finished workout; starting a template day fills in its exercises, sets and targets
+- Templates: four built-in programs (English and Chinese) and the user's own, built from scratch, copied from a program or saved from a finished workout, with each exercise's sets, rep range, reps in reserve and rest; programs can be hidden, on all the user's devices; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday
 - Me tab: profile photo, name and email (opening the profile and the app's settings), workouts in all, this week against the planned training days, weeks in a row with training, the latest body weight and body fat with their trend, what IronSage Coach costs, sign out and account deletion; sync problems are shown only when changes can't reach the server
 - Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
@@ -302,7 +302,7 @@ The iPhone app's version 1 ships in three milestones ([details](docs/architectur
 Next, after version 1:
 
 - [x] Body fat from Apple Health or typed in, with week, month, year and all-time ranges for body weight and body fat
-- [ ] The user's own templates built from scratch or copied from a program, and hiding built-in programs (synced across devices)
+- [x] The user's own templates built from scratch or copied from a program, and hiding built-in programs (synced across devices)
 - [ ] Reviewing training on the website (read-only)
 - [ ] Sharing a template by link
 - [ ] Apple Watch: the workout in progress on the wrist

@@ -124,6 +124,8 @@ class ProfileWrite(BaseModel):
     experience_level: Level | None = None
     goal: Literal["strength", "hypertrophy", "general"] | None = None
     training_days_per_week: Annotated[int, Field(ge=1, le=7)] | None = None
+    # Built-in templates hidden from the user's list. Like every field, replaced on PUT.
+    hidden_template_ids: Annotated[list[uuid.UUID], Field(max_length=100)] = []
 
 
 class ProfileRead(ProfileWrite):
