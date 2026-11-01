@@ -107,6 +107,11 @@ final class CoachService {
         }
     }
 
+    /// Summaries are written in the app's language.
+    func languageChanged() {
+        reportSetting()
+    }
+
     /// Queues the setting for the server; the store skips it when unchanged.
     private func reportSetting() {
         store.save(CoachSettings(enabled: isEnabled, language: AppLanguage.isChinese ? "zh" : "en"))

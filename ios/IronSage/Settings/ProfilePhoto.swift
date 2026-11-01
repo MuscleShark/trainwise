@@ -82,44 +82,98 @@ struct AvatarView: View {
     }
 }
 
-/// The photo at the top of the profile, with buttons to change or remove it.
+/// The top of the profile: the photo with a camera badge, the name and the email.
+/// Tapping the photo offers the library, the camera and removing it.
 struct ProfilePhotoSection: View {
-    let email: String?
+    let account: MeView.AccountState
     @Environment(Clerk.self) private var clerk
+    @State private var isChoosing = false
+    @State private var isPickingPhoto = false
+    @State private var isTakingPhoto = false
     @State private var item: PhotosPickerItem?
     /// Set after a change here, until clerk.user catches up.
     @State private var changedURL: URL??
     @State private var isWorking = false
     @State private var failed = false
 
+    private static let size: CGFloat = 112
+
     private var url: URL? { changedURL ?? ProfilePhoto.url(of: clerk.user) }
 
     var body: some View {
         Section {
-            VStack(spacing: 12) {
-                AvatarView(url: url, email: email, size: 96)
-                    .overlay {
-                        if isWorking {
-                            ProgressView()
-                                .frame(width: 96, height: 96)
-                                .background(.regularMaterial, in: .circle)
-                        }
-                    }
-                if clerk.user != nil {
-                    HStack(spacing: 20) {
-                        PhotosPicker(url == nil ? "Add photo" : "Change photo", selection: $item, matching: .images)
-                        if url != nil {
-                            Button("Remove", role: .destructive) {
-                                Task { await remove() }
+            VStack(spacing: 4) {
+                Button {
+                    isChoosing = true
+                } label: {
+                    AvatarView(url: url, email: account.email, size: Self.size)
+                        .overlay {
+                            if isWorking {
+                                ProgressView()
+                                    .frame(width: Self.size, height: Self.size)
+                                    .background(.regularMaterial, in: .circle)
                             }
                         }
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(isWorking)
+                        .overlay(alignment: .bottomTrailing) {
+                            if clerk.user != nil {
+                                Image(systemName: "camera.fill")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 34, height: 34)
+                                    .background(Color.accentColor, in: .circle)
+                                    .overlay { Circle().stroke(Color.appBackground, lineWidth: 3) }
+                                    .offset(x: 2, y: -2)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+                .disabled(clerk.user == nil || isWorking)
+                .accessibilityLabel(url == nil ? "Add profile photo" : "Change profile photo")
+                .accessibilityIdentifier("profilePhoto")
+
+                if let name = clerk.user?.displayName {
+                    Text(name)
+                        .font(.title2.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 10)
+                }
+                switch account {
+                case .loading:
+                    ProgressView()
+                        .padding(.top, 4)
+                case .signedIn(let email):
+                    Text(email)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, clerk.user?.displayName == nil ? 10 : 0)
+                case .unavailable:
+                    Text("Couldn't load your account. Check your connection, then pull down on Me to try again.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 10)
                 }
             }
             .frame(maxWidth: .infinity)
             .listRowBackground(Color.clear)
+        }
+        .confirmationDialog("Profile photo", isPresented: $isChoosing, titleVisibility: .visible) {
+            Button("Choose from library") { isPickingPhoto = true }
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("Take photo") { isTakingPhoto = true }
+            }
+            if url != nil {
+                Button("Remove photo", role: .destructive) {
+                    Task { await remove() }
+                }
+            }
+        }
+        .photosPicker(isPresented: $isPickingPhoto, selection: $item, matching: .images)
+        .fullScreenCover(isPresented: $isTakingPhoto) {
+            CameraPicker { data in
+                Task { await upload(data) }
+            }
+            .ignoresSafeArea()
         }
         .onChange(of: item) {
             guard let item else { return }
@@ -134,11 +188,15 @@ struct ProfilePhotoSection: View {
 
     private func upload(_ item: PhotosPickerItem) async {
         defer { self.item = nil }
+        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+        await upload(data)
+    }
+
+    private func upload(_ data: Data) async {
         guard let user = clerk.user else { return }
         isWorking = true
         defer { isWorking = false }
         do {
-            guard let data = try await item.loadTransferable(type: Data.self) else { return }
             changedURL = .some(try await ProfilePhoto.upload(data, for: user))
         } catch {
             failed = true
@@ -154,6 +212,58 @@ struct ProfilePhotoSection: View {
             changedURL = .some(nil)
         } catch {
             failed = true
+        }
+    }
+}
+
+extension User {
+    /// First and last name, when the account has them.
+    var displayName: String? {
+        let parts = [firstName, lastName].compactMap { $0 }.filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: " ")
+    }
+}
+
+/// The camera, for a new profile photo. Returns the photo as JPEG data.
+private struct CameraPicker: UIViewControllerRepresentable {
+    let onPhoto: (Data) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.cameraDevice = .front
+        picker.allowsEditing = true
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ picker: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+
+        init(_ parent: CameraPicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+        ) {
+            let image = (info[.editedImage] ?? info[.originalImage]) as? UIImage
+            if let data = image?.jpegData(compressionQuality: 0.9) {
+                parent.onPhoto(data)
+            }
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
         }
     }
 }

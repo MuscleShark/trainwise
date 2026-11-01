@@ -89,7 +89,7 @@ private struct WeekHeader: View {
             return String(localized: "Last week")
         }
         let end = calendar.date(byAdding: .day, value: 6, to: week.start) ?? week.start
-        return (week.start..<end).formatted(.interval.month(.abbreviated).day())
+        return (week.start..<end).formatted(.interval.month(.abbreviated).day().locale(AppLanguage.locale))
     }
 }
 

@@ -57,25 +57,32 @@ struct MeView: View {
                     .accessibilityIdentifier("coachPlan")
                 }
 
+                // Last on the page and kept quiet: red only in the confirmations.
                 Section {
-                    Button("Sign out", role: .destructive) {
-                        isConfirmingSignOut = true
-                    }
-                }
-
-                Section {
-                    Button(role: .destructive) {
-                        isConfirmingDelete = true
-                    } label: {
-                        if isDeleting {
-                            ProgressView()
-                        } else {
-                            Text("Delete account")
+                    VStack(spacing: 0) {
+                        Button("Sign out") {
+                            isConfirmingSignOut = true
                         }
+                        .foregroundStyle(.primary)
+                        .frame(minHeight: 44)
+                        Button {
+                            isConfirmingDelete = true
+                        } label: {
+                            if isDeleting {
+                                ProgressView()
+                            } else {
+                                Text("Delete account")
+                            }
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(minHeight: 44)
+                        .disabled(isDeleting)
                     }
-                    .disabled(isDeleting)
-                } footer: {
-                    Text("Deletes your account and all your training data from IronSage. This can't be undone.")
+                    .buttonStyle(.borderless)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 24)
+                    .listRowBackground(Color.clear)
                 }
             }
             .brandBackground()
@@ -118,7 +125,7 @@ struct MeView: View {
                     Task { await deleteAccount() }
                 }
             } message: {
-                Text("Your workouts, templates and profile are deleted from IronSage, and you are signed out.")
+                Text("Your workouts, templates and profile are deleted from IronSage, and you are signed out. This can't be undone.")
             }
             .alert("Couldn't delete your account", isPresented: $deleteFailed) {
                 Button("OK", role: .cancel) {}
@@ -169,7 +176,7 @@ struct ProfileHeader: View {
         HStack(spacing: 14) {
             AvatarView(url: ProfilePhoto.url(of: clerk.user), email: email)
             VStack(alignment: .leading, spacing: 2) {
-                Text(name ?? String(localized: "Profile"))
+                Text(clerk.user?.displayName ?? String(localized: "Profile"))
                     .font(.headline)
                 if let email {
                     Text(email)
@@ -179,11 +186,6 @@ struct ProfileHeader: View {
             }
         }
         .padding(.vertical, 4)
-    }
-
-    private var name: String? {
-        let parts = [clerk.user?.firstName, clerk.user?.lastName].compactMap { $0 }.filter { !$0.isEmpty }
-        return parts.isEmpty ? nil : parts.joined(separator: " ")
     }
 }
 

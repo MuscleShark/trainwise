@@ -203,7 +203,7 @@ private struct TemplateExerciseEditor: View {
     }
 
     private static func duration(_ seconds: Int) -> String {
-        Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated))
+        Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated).locale(AppLanguage.locale))
     }
 }
 
