@@ -2,6 +2,96 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "Version %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本 %@"
+          }
+        }
+      }
+    },
+    "Same as iPhone" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随 iPhone"
+          }
+        }
+      }
+    },
+    "Remove photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除头像"
+          }
+        }
+      }
+    },
+    "Profile photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "头像"
+          }
+        }
+      }
+    },
+    "Add profile photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加头像"
+          }
+        }
+      }
+    },
+    "Your workouts, templates and profile are deleted from IronSage, and you are signed out. This can't be undone." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练记录、模板和个人资料会从 IronSage 删除，并退出登录。此操作无法撤销。"
+          }
+        }
+      }
+    },
+    "Choose from library" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从相册选择"
+          }
+        }
+      }
+    },
+    "Take photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照"
+          }
+        }
+      }
+    },
+    "Change profile photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更换头像"
+          }
+        }
+      }
+    },
     "Level" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1316,16 +1406,6 @@
         }
       }
     },
-    "App" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "应用"
-          }
-        }
-      }
-    },
     "Assistance" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1656,16 +1736,6 @@
         }
       }
     },
-    "Deletes your account and all your training data from IronSage. This can't be undone." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "从 IronSage 删除你的账号和所有训练数据，无法恢复。"
-          }
-        }
-      }
-    },
     "Discard this workout?" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1742,16 +1812,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑训练"
-          }
-        }
-      }
-    },
-    "Email" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "邮箱"
           }
         }
       }
@@ -3136,16 +3196,6 @@
         }
       }
     },
-    "Version" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "版本"
-          }
-        }
-      }
-    },
     "Volume" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3402,16 +3452,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已找到你的订阅，但 IronSage 暂时无法确认。请检查网络后重试。"
-          }
-        }
-      }
-    },
-    "Your workouts, templates and profile are deleted from IronSage, and you are signed out." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的训练、模板和个人资料会从 IronSage 删除，并退出登录。"
           }
         }
       }
@@ -5042,36 +5082,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收下巴，肋骨下沉。"
-          }
-        }
-      }
-    },
-    "Add photo" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加照片"
-          }
-        }
-      }
-    },
-    "Change photo" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更换照片"
-          }
-        }
-      }
-    },
-    "Remove" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "移除"
           }
         }
       }

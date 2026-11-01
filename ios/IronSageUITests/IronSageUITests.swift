@@ -10,7 +10,7 @@ final class IronSageUITests: XCTestCase {
     override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["-demo", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["-demo", "-resetLanguage", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
     }
 
@@ -265,5 +265,30 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(signOut.waitForExistence(timeout: 5))
         XCTAssertLessThan(signOut.frame.minY, delete.frame.minY)
         XCTAssertFalse(app.switches["AI coach"].exists)
+    }
+
+    func testTheLanguageCanBeChangedInTheApp() {
+        app.tabBars.buttons["Me"].tap()
+        app.buttons["profile"].tap()
+        let language = app.buttons["language"]
+        for _ in 0..<6 where !language.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(language.waitForExistence(timeout: 5))
+        language.tap()
+        app.buttons["简体中文"].tap()
+
+        // The app switches at once and stays on Me.
+        XCTAssertTrue(app.tabBars.buttons["我"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["连续周数"].exists)
+
+        // Back to the phone's language for the other tests.
+        app.buttons["profile"].tap()
+        for _ in 0..<6 where !language.isHittable {
+            app.swipeUp()
+        }
+        language.tap()
+        app.buttons["跟随 iPhone"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Me"].waitForExistence(timeout: 10))
     }
 }

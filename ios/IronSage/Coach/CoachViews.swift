@@ -198,7 +198,7 @@ struct WeeklySummaryCard: View {
         guard let start = HealthDays.date(summary.weekStart),
               let end = Calendar.current.date(byAdding: .day, value: 6, to: start)
         else { return String(localized: "Your week") }
-        let range = (start..<end).formatted(.interval.month(.abbreviated).day())
+        let range = (start..<end).formatted(.interval.month(.abbreviated).day().locale(AppLanguage.locale))
         return String(localized: "Your week, \(range)")
     }
 }
@@ -248,7 +248,7 @@ struct CoachDataView: View {
                                 Text(session.sets.map { unit.formatSet(WorkoutSet(reps: $0.reps, weightKg: $0.weightKg)) }.joined(separator: ", "))
                                     .multilineTextAlignment(.trailing)
                             } label: {
-                                Text(HealthDays.date(session.date).map { $0.formatted(.dateTime.month(.abbreviated).day()) } ?? session.date)
+                                Text(HealthDays.date(session.date).map { $0.formatted(.dateTime.month(.abbreviated).day().locale(AppLanguage.locale)) } ?? session.date)
                             }
                         }
                     }

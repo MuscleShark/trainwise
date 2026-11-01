@@ -116,7 +116,7 @@ struct ReadinessCard: View {
     /// "7 hr, 5 min"
     static func duration(_ minutes: Double) -> String {
         Duration.seconds((minutes.rounded()) * 60)
-            .formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
+            .formatted(.units(allowed: [.hours, .minutes], width: .abbreviated).locale(AppLanguage.locale))
     }
 
     static func milliseconds(_ value: Double) -> String {
