@@ -70,10 +70,13 @@ E = CatalogExercise
 BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     # Chest
     E("barbell_bench_press", "Barbell bench press", "杠铃卧推", "barbell", "total", ("chest",), ("front_delts", "triceps")),
+    E("paused_bench_press", "Paused bench press", "暂停卧推", "barbell", "total", ("chest",), ("front_delts", "triceps")),
+    E("pin_press", "Pin press", "架上卧推", "barbell", "total", ("chest", "triceps"), ("front_delts",)),
     E("incline_barbell_bench_press", "Incline barbell bench press", "上斜杠铃卧推", "barbell", "total", ("chest",), ("front_delts", "triceps")),
     E("decline_barbell_bench_press", "Decline barbell bench press", "下斜杠铃卧推", "barbell", "total", ("chest",), ("triceps",)),
     E("close_grip_bench_press", "Close-grip bench press", "窄距卧推", "barbell", "total", ("triceps",), ("chest", "front_delts")),
     E("floor_press", "Floor press", "地板卧推", "barbell", "total", ("chest", "triceps"), ("front_delts",)),
+    E("dumbbell_floor_press", "Dumbbell floor press", "哑铃地板卧推", "dumbbell", "per_side", ("chest", "triceps"), ("front_delts",)),
     E("dumbbell_bench_press", "Dumbbell bench press", "哑铃卧推", "dumbbell", "per_side", ("chest",), ("front_delts", "triceps")),
     E("incline_dumbbell_bench_press", "Incline dumbbell bench press", "上斜哑铃卧推", "dumbbell", "per_side", ("chest",), ("front_delts", "triceps")),
     E("decline_dumbbell_bench_press", "Decline dumbbell bench press", "下斜哑铃卧推", "dumbbell", "per_side", ("chest",), ("triceps",)),
@@ -91,6 +94,7 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     E("chest_dip", "Chest dip", "双杠臂屈伸（练胸）", "bodyweight", "bodyweight_plus", ("chest",), ("triceps", "front_delts")),
     # Back
     E("deadlift", "Deadlift", "硬拉", "barbell", "total", ("hamstrings", "glutes", "lower_back"), ("quads", "traps", "forearms")),
+    E("deficit_deadlift", "Deficit deadlift", "赤字硬拉", "barbell", "total", ("hamstrings", "glutes", "lower_back"), ("quads", "traps", "forearms")),
     E("sumo_deadlift", "Sumo deadlift", "相扑硬拉", "barbell", "total", ("glutes", "quads", "adductors"), ("hamstrings", "lower_back", "traps")),
     E("trap_bar_deadlift", "Trap bar deadlift", "六角杠硬拉", "barbell", "total", ("quads", "glutes"), ("hamstrings", "traps", "lower_back")),
     E("romanian_deadlift", "Romanian deadlift", "罗马尼亚硬拉", "barbell", "total", ("hamstrings", "glutes"), ("lower_back",)),
@@ -167,6 +171,7 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     E("bench_dip", "Bench dip", "凳上臂屈伸", "bodyweight", "bodyweight_plus", ("triceps",), ("front_delts",)),
     # Quads, glutes and hamstrings
     E("back_squat", "Back squat", "杠铃深蹲", "barbell", "total", ("quads", "glutes"), ("adductors", "lower_back")),
+    E("pause_squat", "Pause squat", "暂停深蹲", "barbell", "total", ("quads", "glutes"), ("adductors", "lower_back")),
     E("front_squat", "Front squat", "杠铃前蹲", "barbell", "total", ("quads",), ("glutes", "upper_back")),
     E("box_squat", "Box squat", "箱式深蹲", "barbell", "total", ("quads", "glutes"), ("hamstrings",)),
     E("safety_bar_squat", "Safety bar squat", "安全杠深蹲", "barbell", "total", ("quads", "glutes"), ("upper_back",)),
@@ -192,6 +197,7 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     E("hip_thrust", "Barbell hip thrust", "杠铃臀推", "barbell", "total", ("glutes",), ("hamstrings",)),
     E("machine_hip_thrust", "Machine hip thrust", "器械臀推", "machine", "total", ("glutes",), ("hamstrings",)),
     E("glute_bridge", "Barbell glute bridge", "杠铃臀桥", "barbell", "total", ("glutes",), ("hamstrings",)),
+    E("bodyweight_glute_bridge", "Glute bridge", "徒手臀桥", "bodyweight", "bodyweight_plus", ("glutes",), ("hamstrings",)),
     E("cable_glute_kickback", "Cable glute kickback", "绳索后踢腿", "cable", "per_side", ("glutes",)),
     E("machine_glute_kickback", "Machine glute kickback", "器械后踢腿", "machine", "total", ("glutes",)),
     E("hip_abduction", "Hip abduction machine", "髋外展机", "machine", "total", ("abductors",), ("glutes",)),
@@ -230,6 +236,8 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
 # not derive from name_en or name_zh.
 ALIASES: dict[str, tuple[str, ...]] = {
     "barbell_bench_press": ("bench", "bench press", "BP", "卧推", "平板卧推"),
+    "paused_bench_press": ("pause bench", "停顿卧推"),
+    "pin_press": ("pin bench", "rack press"),
     "incline_barbell_bench_press": ("incline bench", "上斜卧推"),
     "close_grip_bench_press": ("CGBP", "窄卧"),
     "dumbbell_bench_press": ("DB bench", "DB press"),
@@ -241,6 +249,7 @@ ALIASES: dict[str, tuple[str, ...]] = {
     "push_up": ("pushup", "press-up"),
     "chest_dip": ("dips", "双杠"),
     "deadlift": ("DL", "conventional deadlift", "传统硬拉"),
+    "deficit_deadlift": ("deficit pull",),
     "sumo_deadlift": ("sumo",),
     "trap_bar_deadlift": ("hex bar deadlift",),
     "romanian_deadlift": ("RDL", "罗马硬拉"),
@@ -265,6 +274,7 @@ ALIASES: dict[str, tuple[str, ...]] = {
     "tricep_pushdown": ("pushdown", "三头下压"),
     "tricep_dip": ("dips",),
     "back_squat": ("squat", "深蹲", "后蹲"),
+    "pause_squat": ("paused squat", "停顿深蹲"),
     "front_squat": ("前蹲",),
     "goblet_squat": ("杯式深蹲",),
     "smith_squat": ("史密斯蹲",),
@@ -277,6 +287,7 @@ ALIASES: dict[str, tuple[str, ...]] = {
     "seated_leg_curl": ("leg curl",),
     "hip_thrust": ("臀推",),
     "glute_bridge": ("臀桥",),
+    "bodyweight_glute_bridge": ("hip bridge",),
     "hip_abduction": ("abductor machine", "外展"),
     "hip_adduction": ("adductor machine", "内收"),
     "standing_calf_raise": ("calf raise", "提踵"),

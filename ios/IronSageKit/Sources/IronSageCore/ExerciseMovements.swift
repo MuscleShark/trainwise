@@ -8,14 +8,14 @@ extension ExerciseVisuals {
     /// Built-in exercise slug (backend/catalog.py) → movement.
     static let movementBySlug: [String: String] = [
         // Chest
-        "barbell_bench_press": "bench", "dumbbell_bench_press": "bench", "smith_bench_press": "bench", "close_grip_bench_press": "bench",
+        "barbell_bench_press": "bench", "paused_bench_press": "bench", "pin_press": "bench", "dumbbell_bench_press": "bench", "smith_bench_press": "bench", "close_grip_bench_press": "bench",
         "incline_barbell_bench_press": "incline_bench", "incline_dumbbell_bench_press": "incline_bench", "smith_incline_bench_press": "incline_bench",
-        "decline_barbell_bench_press": "decline_bench", "decline_dumbbell_bench_press": "decline_bench", "floor_press": "floor_press",
+        "decline_barbell_bench_press": "decline_bench", "decline_dumbbell_bench_press": "decline_bench", "floor_press": "floor_press", "dumbbell_floor_press": "floor_press",
         "machine_chest_press": "chest_press", "incline_machine_chest_press": "chest_press", "iso_lateral_chest_press": "chest_press",
         "dumbbell_fly": "fly", "incline_dumbbell_fly": "incline_fly", "pec_deck": "pec_deck", "cable_fly": "cable_fly",
         "low_to_high_cable_fly": "low_cable_fly", "push_up": "push_up", "chest_dip": "chest_dip",
         // Back
-        "deadlift": "deadlift", "trap_bar_deadlift": "deadlift", "sumo_deadlift": "sumo", "rack_pull": "rack_pull",
+        "deadlift": "deadlift", "deficit_deadlift": "deadlift", "trap_bar_deadlift": "deadlift", "sumo_deadlift": "sumo", "rack_pull": "rack_pull",
         "romanian_deadlift": "rdl", "stiff_leg_deadlift": "rdl", "good_morning": "good_morning",
         "barbell_row": "row", "pendlay_row": "row", "t_bar_row": "row", "meadows_row": "row", "dumbbell_row": "row",
         "chest_supported_dumbbell_row": "row_pad", "seal_row": "row_pad",
@@ -42,14 +42,14 @@ extension ExerciseVisuals {
         "skull_crusher": "skull_crusher", "dumbbell_skull_crusher": "skull_crusher", "dumbbell_kickback": "kickback",
         "tricep_dip": "dip", "bench_dip": "bench_dip",
         // Quads, glutes and hamstrings
-        "back_squat": "squat", "safety_bar_squat": "squat", "smith_squat": "squat", "box_squat": "box_squat",
+        "back_squat": "squat", "pause_squat": "squat", "safety_bar_squat": "squat", "smith_squat": "squat", "box_squat": "box_squat",
         "front_squat": "front_squat", "goblet_squat": "goblet_squat", "hack_squat": "machine_squat", "pendulum_squat": "machine_squat",
         "belt_squat": "belt_squat", "leg_press": "leg_press", "single_leg_press": "leg_press",
         "bulgarian_split_squat": "bulgarian_split_squat", "walking_lunge": "lunge", "reverse_lunge": "lunge", "smith_lunge": "lunge",
         "step_up": "step_up", "leg_extension": "leg_extension", "lying_leg_curl": "lying_leg_curl", "seated_leg_curl": "seated_leg_curl",
         "nordic_curl": "nordic", "glute_ham_raise": "nordic",
         "dumbbell_romanian_deadlift": "rdl", "single_leg_romanian_deadlift": "single_leg_rdl",
-        "hip_thrust": "hip_thrust", "machine_hip_thrust": "hip_thrust", "glute_bridge": "glute_bridge",
+        "hip_thrust": "hip_thrust", "machine_hip_thrust": "hip_thrust", "glute_bridge": "glute_bridge", "bodyweight_glute_bridge": "glute_bridge",
         "cable_glute_kickback": "glute_kickback", "machine_glute_kickback": "glute_kickback",
         "hip_abduction": "hip_abduction", "hip_adduction": "hip_adduction", "kettlebell_swing": "kettlebell_swing", "sled_push": "sled_push",
         // Calves

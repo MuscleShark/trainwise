@@ -14,7 +14,7 @@ final class ExerciseVisualsTests: XCTestCase {
             .deletingLastPathComponent().appendingPathComponent("../../../../backend/catalog.py").standardized
         let source = try String(contentsOf: catalog, encoding: .utf8)
         let slugs = source.matches(of: /\n\s+E\("(\w+)"/).map { String($0.output.1) }
-        XCTAssertEqual(slugs.count, 145)
+        XCTAssertEqual(slugs.count, 151)
         XCTAssertEqual(Set(slugs), Set(ExerciseVisuals.movementBySlug.keys))
         for slug in slugs {
             XCTAssertNotNil(ExerciseVisuals.movement(forID: ExerciseVisuals.builtinID(slug: slug)), slug)

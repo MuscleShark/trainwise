@@ -63,7 +63,7 @@ struct TemplateEditingTests {
 
     @Test func aNewExerciseHasThreeSetsOfEightToTwelve() {
         let item = TemplateExercise.standard(curl)
-        #expect(item.targets == TemplateTargets(sets: 3, repMin: 8, repMax: 12, rir: 2))
+        #expect(item.targets == TemplateTargets(sets: 3, repMin: 8, repMax: 12, rir: nil))
     }
 
     @Test func changingTargetsKeepsWarmupsAndExistingSets() {

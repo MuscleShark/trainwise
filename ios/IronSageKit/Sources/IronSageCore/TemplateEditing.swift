@@ -80,11 +80,11 @@ public struct TemplateTargets: Hashable, Sendable {
 }
 
 extension TemplateExercise {
-    /// A new exercise in a template: three working sets of 8–12 reps, two short of failure.
+    /// A new exercise in a template: three working sets of 8–12 reps.
     public static func standard(_ exerciseId: UUID) -> TemplateExercise {
         TemplateExercise(
             exerciseId: exerciseId,
-            sets: (0..<3).map { _ in TemplateSet(repMin: 8, repMax: 12, targetRir: 2) }
+            sets: (0..<3).map { _ in TemplateSet(repMin: 8, repMax: 12) }
         )
     }
 

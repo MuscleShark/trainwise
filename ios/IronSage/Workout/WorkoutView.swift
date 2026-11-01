@@ -155,13 +155,11 @@ struct WorkoutView: View {
 enum Limits {
     static let maxWeightKg = 2000.0
     static let maxReps = 1000
-    static let maxRir = 10
 }
 
 enum SetField: Hashable {
     case weight(UUID, exercise: UUID)
     case reps(UUID)
-    case rir(UUID)
 }
 
 private struct ExerciseSection: View {
@@ -347,7 +345,6 @@ private struct SetHeader: View {
                 Text("Last time").frame(maxWidth: .infinity, alignment: .leading)
                 Text(unit.symbol).frame(width: weightWidth)
                 Text("Reps").frame(width: 48)
-                Text("RIR").frame(width: 40)
                 Image(systemName: "checkmark").frame(width: 32)
                     .accessibilityLabel("Done")
             }
@@ -384,16 +381,14 @@ private struct SetRow: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    // Reps and RIR are two digits at most; the weight gets the rest.
+                    // Reps are a few digits at most; the weight gets the rest.
                     HStack(alignment: .bottom, spacing: 8) {
                         labeled(Text(unit.symbol)) { weightField }
                         labeled(Text("Reps")) { repsField }
                             .frame(width: 64)
-                        labeled(Text("RIR")) { rirField }
-                            .frame(width: 56)
                         doneButton
                     }
-                    // Three numbers and a button fit on one line up to this size; the
+                    // Two numbers and a button fit on one line up to this size; the
                     // rest of the screen keeps growing.
                     .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                 }
@@ -408,7 +403,6 @@ private struct SetRow: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     weightField.frame(width: weightWidth)
                     repsField.frame(width: 48)
-                    rirField.frame(width: 40)
                     doneButton.frame(width: 32)
                 }
             }
@@ -470,12 +464,6 @@ private struct SetRow: View {
         )
         .focused(focus, equals: .reps(set.id))
         .accessibilityLabel(Text("Reps"))
-    }
-
-    private var rirField: some View {
-        NumberField(placeholder: "–", value: intBinding(\.rir, max: Limits.maxRir), decimals: false)
-            .focused(focus, equals: .rir(set.id))
-            .accessibilityLabel(Text("Reps in reserve"))
     }
 
     private var doneButton: some View {

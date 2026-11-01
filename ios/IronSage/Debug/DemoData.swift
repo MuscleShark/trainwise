@@ -16,8 +16,10 @@ enum DemoData {
         let curl = exercise("dumbbell_curl", "Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
         let raise = exercise("lateral_raise", "Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
         store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise])
+        // Built-in IDs, so each program's guide shows. The days are shortened.
         let ppl = Template(
-            nameEn: "Push / pull / legs", nameZh: "推拉腿", level: .intermediate, daysPerWeek: 6,
+            id: ProgramGuide.builtinID(slug: "push_pull_legs"),
+            nameEn: "Push / pull / legs ×2", nameZh: "推拉腿 ×2", level: .advanced, daysPerWeek: 6,
             days: [
                 day("Push", "推", [(bench, 4, 5, 8, 180), (press, 3, 6, 10, 180), (raise, 3, 12, 20, 90)]),
                 day("Pull", "拉", [(row, 4, 6, 10, 180), (pulldown, 3, 8, 12, 180), (curl, 3, 10, 12, 90)]),
@@ -26,14 +28,26 @@ enum DemoData {
             isCustom: false
         )
         let fullBody = Template(
-            nameEn: "Beginner full body", nameZh: "新手全身训练", level: .beginner, daysPerWeek: 3,
+            id: ProgramGuide.builtinID(slug: "beginner_full_body"),
+            nameEn: "Barbell basics", nameZh: "杠铃基础", level: .beginner, daysPerWeek: 3,
             days: [
-                day("Full body A", "全身 A", [(squat, 3, 5, 8, 180), (bench, 3, 5, 8, 180), (row, 3, 8, 10, 120)]),
-                day("Full body B", "全身 B", [(rdl, 3, 8, 10, 180), (press, 3, 6, 10, 180), (pulldown, 3, 8, 12, 120)]),
+                day("Day A", "A 日", [(squat, 3, 5, 5, 180), (bench, 3, 5, 5, 180), (row, 3, 5, 8, 180)]),
+                day("Day B", "B 日", [(rdl, 3, 8, 10, 180), (press, 3, 5, 5, 180), (pulldown, 3, 8, 10, 120)]),
             ],
             isCustom: false
         )
-        store.replaceBuiltInTemplates([ppl, fullBody])
+        let upperLower = Template(
+            id: ProgramGuide.builtinID(slug: "upper_lower"),
+            nameEn: "Upper / lower: strength and size", nameZh: "上下肢：力量与增肌", level: .intermediate, daysPerWeek: 4,
+            days: [
+                day("Upper heavy", "上肢大重量", [(bench, 4, 4, 6, 180), (row, 4, 5, 8, 180), (press, 3, 6, 8, 180), (pulldown, 3, 8, 10, 120), (curl, 2, 8, 12, 90)]),
+                day("Lower heavy", "下肢大重量", [(squat, 4, 4, 6, 180), (rdl, 3, 8, 10, 180)]),
+                day("Upper volume", "上肢容量", [(bench, 3, 8, 12, 120), (pulldown, 3, 8, 12, 120), (raise, 3, 12, 20, 90)]),
+                day("Lower volume", "下肢容量", [(squat, 3, 8, 10, 180), (rdl, 3, 8, 10, 180)]),
+            ],
+            isCustom: false
+        )
+        store.replaceBuiltInTemplates([ppl, fullBody, upperLower])
         store.save(Profile(
             unitSystem: WeightUnit.default() == .lb ? .imperial : .metric,
             experienceLevel: .intermediate,
@@ -136,7 +150,7 @@ enum DemoData {
             TemplateExercise(
                 exerciseId: exercise.id,
                 restSeconds: rest,
-                sets: (0..<sets).map { _ in TemplateSet(repMin: low, repMax: high, targetRir: rest > 90 ? 2 : 1) }
+                sets: (0..<sets).map { _ in TemplateSet(repMin: low, repMax: high) }
             )
         })
     }
@@ -152,7 +166,7 @@ enum DemoData {
                 WorkoutExercise(
                     exerciseId: exercise.id,
                     restSeconds: rest,
-                    sets: sets.map { WorkoutSet(reps: $0.1, weightKg: $0.0, rir: 2, completedAt: start) }
+                    sets: sets.map { WorkoutSet(reps: $0.1, weightKg: $0.0, completedAt: start) }
                 )
             }
         )

@@ -11,17 +11,23 @@ struct TemplatesView: View {
     }
 }
 
-/// Built-in programs and the user's own templates. Also pushed from Today.
+/// Built-in programs, one experience level at a time, and the user's own templates.
+/// Also pushed from Today.
 struct TemplateList: View {
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
     @State private var pendingDelete: Template?
     @State private var creating: Template?
+    /// The level picked here; until then the profile's, or beginner.
+    @State private var pickedLevel: Level?
+
+    private var profileLevel: Level? { store.profile?.experienceLevel }
+    private var level: Level { pickedLevel ?? profileLevel ?? .beginner }
 
     var body: some View {
         let hiddenIDs = Set(store.profile?.hiddenTemplateIds ?? [])
         let builtIn = store.templates.filter { !$0.isCustom }
-        let shown = builtIn.filter { !hiddenIDs.contains($0.id) }
+        let shown = builtIn.filter { !hiddenIDs.contains($0.id) && ($0.level ?? .beginner) == level }
         let hidden = builtIn.filter { hiddenIDs.contains($0.id) }
         let own = store.templates.filter(\.isCustom)
         List {
@@ -44,9 +50,27 @@ struct TemplateList: View {
 
             if !builtIn.isEmpty {
                 Section {
+                    Picker("Level", selection: Binding(get: { level }, set: { pickedLevel = $0 })) {
+                        ForEach(Level.allCases, id: \.self) { level in
+                            Text(level.label).tag(level)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("programLevel")
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                } header: {
+                    Text("IronSage programs")
+                } footer: {
+                    if let note = levelNote {
+                        Text(note)
+                    }
+                }
+
+                Section {
                     ForEach(shown) { template in
                         NavigationLink(value: TemplateRoute(id: template.id)) {
-                            TemplateRow(template: template)
+                            ProgramRow(template: template, plannedDays: store.profile?.trainingDaysPerWeek)
                         }
                         .swipeActions {
                             Button("Hide program", systemImage: "eye.slash") {
@@ -60,10 +84,8 @@ struct TemplateList: View {
                             LabeledContent("Hidden programs", value: hidden.count.formatted())
                         }
                     }
-                } header: {
-                    Text("IronSage programs")
                 } footer: {
-                    Text("Each muscle is trained at least twice a week: heavy compound lifts at lower reps, accessories at higher reps, most sets one to three reps short of failure.")
+                    Text("Each muscle is trained at least twice a week: heavy compound lifts at lower reps, accessories at higher reps.")
                 }
             }
         }
@@ -110,6 +132,13 @@ struct TemplateList: View {
         } message: { _ in
             Text("Workouts you did with it stay in History.")
         }
+    }
+
+    private var levelNote: LocalizedStringResource? {
+        guard let profileLevel else {
+            return "Set your experience in Me › Profile to start on your level."
+        }
+        return profileLevel == level ? "Your level, from Me › Profile." : nil
     }
 
     private func hide(_ template: Template) {
@@ -179,8 +208,57 @@ private struct TemplateRow: View {
     }
 }
 
-/// A template's days; each can start a workout. A program can be copied to edit, or
-/// hidden; the user's own templates can be edited.
+/// A built-in program in the list: its name, days, goal and who it suits.
+private struct ProgramRow: View {
+    let template: Template
+    let plannedDays: Int?
+
+    var body: some View {
+        let guide = ProgramGuide.forTemplate(template.id)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(template.name(chinese: AppLanguage.isChinese))
+                .font(.headline)
+            if let days = template.daysPerWeek {
+                Text("\(days) days a week")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            FittingStack(spacing: 6) {
+                if let guide {
+                    Chip(text: Text(guide.goal.label))
+                }
+                if let days = template.daysPerWeek, days == plannedDays {
+                    Chip(text: Text("Fits your \(days) days"), tinted: true)
+                }
+            }
+            if let guide {
+                Text(guide.who(chinese: AppLanguage.isChinese))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+/// A small label with a rounded background.
+private struct Chip: View {
+    let text: Text
+    var tinted = false
+
+    var body: some View {
+        text
+            .font(.caption)
+            .foregroundStyle(tinted ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(tinted ? AnyShapeStyle(.tint.opacity(0.14)) : AnyShapeStyle(.quaternary), in: .capsule)
+    }
+}
+
+/// A template, one day at a time; each day can start a workout. A program also says
+/// who it suits and how to progress on it, and can be copied to edit, or hidden; the
+/// user's own templates can be edited.
 struct TemplateDetailView: View {
     let templateID: UUID
     @Environment(LocalStore.self) private var store
@@ -190,6 +268,7 @@ struct TemplateDetailView: View {
     @State private var session: WorkoutSession?
     @State private var editing: Template?
     @State private var isBlockedByActiveWorkout = false
+    @State private var dayIndex = 0
 
     var body: some View {
         if let template = store.templates.first(where: { $0.id == templateID }) {
@@ -200,26 +279,102 @@ struct TemplateDetailView: View {
     }
 
     private func content(_ template: Template) -> some View {
-        let name = template.name(chinese: AppLanguage.isChinese)
+        let chinese = AppLanguage.isChinese
+        let name = template.name(chinese: chinese)
         let isHidden = store.profile?.hiddenTemplateIds.contains(template.id) ?? false
+        let guide = template.isCustom ? nil : ProgramGuide.forTemplate(template.id)
+        let days = template.days
+        let day = days.isEmpty ? nil : days[min(dayIndex, days.count - 1)]
         return List {
-            ForEach(template.days) { day in
+            if !template.isCustom {
+                Section {
+                    VStack(alignment: .leading, spacing: 10) {
+                        FittingStack(spacing: 6) {
+                            if let level = template.level {
+                                Chip(text: Text(level.label))
+                            }
+                            if let count = template.daysPerWeek {
+                                Chip(text: Text("\(count) days a week"))
+                            }
+                            if let guide {
+                                Chip(text: Text(guide.goal.label))
+                            }
+                        }
+                        if let guide {
+                            Text(guide.who(chinese: chinese))
+                        }
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
+                }
+                if let guide {
+                    Section {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("How to progress")
+                                    .font(.subheadline.weight(.semibold))
+                                Text(guide.progress(chinese: chinese))
+                                    .font(.subheadline)
+                            }
+                        } icon: {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                }
+            }
+
+            if days.count > 1 {
+                Section {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(days.enumerated()), id: \.element.id) { index, item in
+                                Button(item.name(chinese: chinese)) { dayIndex = index }
+                                    .buttonStyle(DayChipStyle(isSelected: index == min(dayIndex, days.count - 1)))
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                }
+            }
+
+            if let day {
                 Section {
                     ForEach(day.exercises) { item in
                         AdaptiveRow {
-                            Text(store.exerciseName(item.exerciseId))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(store.exerciseName(item.exerciseId))
+                                if let rest = TemplateTarget(item: item).rest {
+                                    Text(rest)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         } trailing: {
                             Text(TemplateTarget(item: item).summary)
                                 .monospacedDigit()
-                                .foregroundStyle(.secondary)
+                                .fontWeight(.semibold)
                         }
                     }
-                    Button("Start this workout", systemImage: "play.fill") {
+                    Button {
                         start(day, of: template)
+                    } label: {
+                        Label("Start \(day.name(chinese: chinese))", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
                     }
-                    .fontWeight(.semibold)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
+                    .accessibilityIdentifier("startDay")
                 } header: {
-                    Text(day.name(chinese: AppLanguage.isChinese))
+                    if days.count == 1 {
+                        Text(day.name(chinese: chinese))
+                    }
+                } footer: {
+                    Text("Sets × reps. Sets start from what you did last time.")
                 }
             }
         }
@@ -232,7 +387,7 @@ struct TemplateDetailView: View {
                 } else {
                     Menu("More", systemImage: "ellipsis.circle") {
                         Button("Copy and edit", systemImage: "doc.on.doc") {
-                            editing = template.copy(named: String(localized: "\(name) (my copy)"), chinese: AppLanguage.isChinese)
+                            editing = template.copy(named: String(localized: "\(name) (my copy)"), chinese: chinese)
                         }
                         if isHidden {
                             Button("Show program", systemImage: "eye") {
@@ -284,18 +439,45 @@ struct TemplateDetailView: View {
     }
 }
 
-/// "3 × 5–8 · RIR 2"
+/// A day's name as a pill; the picked one is filled.
+private struct DayChipStyle: ButtonStyle {
+    let isSelected: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(isSelected ? .semibold : .regular))
+            .foregroundStyle(isSelected ? Color.appBackground : Color.primary)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 36)
+            .background(isSelected ? AnyShapeStyle(.primary) : AnyShapeStyle(.clear), in: .capsule)
+            .overlay {
+                if !isSelected {
+                    Capsule().stroke(.secondary.opacity(0.4))
+                }
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// "3 × 5–8", and the rest after the exercise.
 struct TemplateTarget {
     let item: TemplateExercise
 
     var summary: String {
         let working = item.sets.filter { $0.setType != .warmup }
         guard let first = working.first else { return "" }
-        var text = "\(working.count) × \(Self.reps(first))"
-        if let rir = first.targetRir {
-            text += " · RIR \(rir)"
+        return "\(working.count) × \(Self.reps(first))"
+    }
+
+    /// "Rest 3 min", or that a superset goes straight on; nil when the exercise's usual
+    /// rest applies.
+    var rest: LocalizedStringResource? {
+        guard let seconds = item.restSeconds else { return nil }
+        if seconds == 0 {
+            return item.supersetGroup == nil ? "No rest" : "Then straight to the next exercise"
         }
-        return text
+        return seconds % 60 == 0 ? "Rest \(seconds / 60) min" : "Rest \(seconds) s"
     }
 
     static func reps(_ set: TemplateSet) -> String {
@@ -304,6 +486,18 @@ struct TemplateTarget {
         case let (min?, _): "\(min)"
         case let (nil, max?): "\(max)"
         default: "–"
+        }
+    }
+}
+
+extension ProgramGuide.Goal {
+    var label: LocalizedStringResource {
+        switch self {
+        case .strength: "Strength"
+        case .muscle: "Build muscle"
+        case .strengthAndMuscle: "Strength + muscle"
+        case .allRound: "All-round"
+        case .quick: "Quick"
         }
     }
 }

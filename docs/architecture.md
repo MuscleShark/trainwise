@@ -64,7 +64,7 @@ Status (2026-10-25): the code for M1 and M2 is merged. TestFlight and testing on
 4. **History**: workouts by date; view, edit and delete.
 5. **Exercise detail** (M2): all past sets, estimated one-rep max chart, personal records.
 6. **Progress** (M2): body-weight trend from Apple Health, weekly sets per muscle group.
-7. **Templates**: built-in templates from [coaching.md](coaching.md) and the user's own. The user builds a template from scratch, copies a program to change it (every day, exercise and set gets a new id, since the server keys them by id), or saves a finished workout. Each exercise has a set count, a rep range, reps in reserve and rest. Programs the user hides are kept on the profile (`hidden_template_ids`, migration 0009), so they are hidden on every device, and Up next skips them.
+7. **Templates**: built-in templates from [coaching.md](coaching.md) and the user's own. The user builds a template from scratch, copies a program to change it (every day, exercise and set gets a new id, since the server keys them by id), or saves a finished workout. Each exercise has a set count, a rep range and rest (reps in reserve is no longer asked for). Programs the user hides are kept on the profile (`hidden_template_ids`, migration 0009), so they are hidden on every device, and Up next skips them.
 8. **Settings**: units, language, Apple Health, subscription, privacy policy, sign out, delete account.
 
 Not in version 1: Apple Watch app, Live Activities and widgets, iPad layout, social features, nutrition, coach chat and plan generation.
@@ -80,7 +80,7 @@ Agreed before M1 started:
 | Exercise search | Fuzzy, on the phone: typos, English and Chinese names, aliases (RDL, OHP, 卧推) and pinyin (`wotui`, `wt`). Results show the catalog name, with the alias that matched. The last row always offers "Create exercise" with the typed name. Aliases live in the backend catalog |
 | Rest timer | 3 minutes for compound lifts, 90 seconds for isolation, editable per exercise; a local notification when the phone is locked. Without a field for it in the catalog, an exercise counts as compound when it trains three or more muscles, two primary ones, or the quads with the glutes |
 | Supersets | In the data model, not in the M1 interface |
-| Built-in templates | The four in [coaching.md](coaching.md), in English and Chinese |
+| Built-in templates | Five per experience level, in [coaching.md](coaching.md), in English and Chinese |
 | Progression | None in M1: sets are prefilled with last time's load and reps. Suggestions come with the coach in M3 |
 | Units | Stored in kg. Shown in lb when chosen. The + and − buttons move by 2.5 kg or 5 lb (1.25 kg or 2.5 lb per dumbbell or side); typed weights are kept as typed |
 | Hardware | The simulator during development; Apple Developer Program and TestFlight at the end of M1 for a real gym session |
@@ -217,8 +217,8 @@ Notes:
 - **Offline logging**: the app creates records with its own UUIDs and saves each workout as a whole (`PUT`, safe to retry; last write wins). Every write takes the next value of the user's `change_seq`. The update locks the user's row until commit, so `GET /v1/sync?since=N` never skips a change, and users never wait for each other.
 - **History instead of snapshots**: weight, body fat and sleep live in dated tables, so trends can be charted.
 - **Derived values are not stored**: personal records, estimated one-rep max and weekly sets are computed from sets.
-- **Exercise catalog**: 145 exercises written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
-- **Built-in templates**: the four programs from [coaching.md](coaching.md) in `backend/template_catalog.py`, synced the same way after the exercises.
+- **Exercise catalog**: 151 exercises written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
+- **Built-in templates**: fifteen programs, five per experience level (see [coaching.md](coaching.md)), in `backend/template_catalog.py`, synced the same way after the exercises. Who each suits and how to progress on it live in the app (`ProgramGuide.swift`), keyed by slug like the exercise figures.
 
 ## AI coach
 

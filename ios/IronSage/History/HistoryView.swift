@@ -147,11 +147,6 @@ struct WorkoutDetailView: View {
                             Text(unit.formatSet(set))
                                 .monospacedDigit()
                             Spacer()
-                            if let rir = set.rir {
-                                Text("RIR \(rir)")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
                         }
                     }
                 } header: {
