@@ -123,23 +123,10 @@ struct ProfileSettingsView: View {
     let account: MeView.AccountState
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         Form {
-            ProfilePhotoSection(email: account.email)
-
-            Section {
-                switch account {
-                case .loading:
-                    ProgressView()
-                case .signedIn(let email):
-                    LabeledContent("Email", value: email)
-                case .unavailable:
-                    Text("Couldn't load your account. Check your connection, then pull down on Me to try again.")
-                        .foregroundStyle(.secondary)
-                }
-            }
+            ProfilePhotoSection(account: account)
 
             ProfileForm(profile: Binding(
                 get: { store.profile ?? Profile(unitSystem: WeightUnit.default() == .lb ? .imperial : .metric) },
@@ -148,23 +135,74 @@ struct ProfileSettingsView: View {
 
             HealthSettingsSection()
             CoachSettingsSection()
-
-            Section("App") {
-                Button("Language") {
-                    // iOS keeps a per-app language setting on the app's page in Settings.
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        openURL(url)
-                    }
-                }
-                Link("Privacy policy", destination: Site.page("privacy"))
-                Link("Support", destination: Site.page("support"))
-                LabeledContent("Version", value: Self.version)
-            }
+            AppFooter()
         }
         .brandBackground()
         .navigationTitle("Profile")
         .onDisappear {
             Task { await sync.sync() }
+        }
+    }
+}
+
+/// The end of the profile, without a card: the app's language, the website's pages,
+/// and the version.
+private struct AppFooter: View {
+    @Environment(CoachService.self) private var coach
+
+    var body: some View {
+        Section {
+            VStack(spacing: 18) {
+                Menu {
+                    Picker("Language", selection: Binding(
+                        get: { AppLanguage.choice },
+                        set: { choice in
+                            AppLanguage.choose(choice)
+                            coach.languageChanged()
+                        }
+                    )) {
+                        Text("Same as iPhone").tag(AppLanguage.Choice.system)
+                        // Each language in its own words, as iOS lists them.
+                        Text(verbatim: "English").tag(AppLanguage.Choice.english)
+                        Text(verbatim: "简体中文").tag(AppLanguage.Choice.chinese)
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "globe")
+                        Text(verbatim: AppLanguage.isChinese ? "简体中文" : "English")
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 36)
+                    .overlay { Capsule().stroke(Color.secondary.opacity(0.35)) }
+                }
+                .tint(.primary)
+                .accessibilityLabel("Language")
+                .accessibilityValue(Text(verbatim: AppLanguage.isChinese ? "简体中文" : "English"))
+                .accessibilityIdentifier("language")
+
+                FittingStack(spacing: 28) {
+                    Link("Privacy policy", destination: Site.page("privacy"))
+                    Link("Support", destination: Site.page("support"))
+                }
+                .font(.subheadline)
+
+                VStack(spacing: 2) {
+                    Text(verbatim: "IronSage")
+                        .font(.subheadline.weight(.bold))
+                    Text("Version \(Self.version)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.borderless)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 24)
+            .listRowBackground(Color.clear)
         }
     }
 

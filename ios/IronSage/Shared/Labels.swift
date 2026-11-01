@@ -2,13 +2,6 @@ import Foundation
 import IronSageCore
 import IronSageStore
 
-/// The language the app runs in (iOS picks it from the phone's language list).
-enum AppLanguage {
-    static var isChinese: Bool {
-        Bundle.main.preferredLocalizations.first?.hasPrefix("zh") == true
-    }
-}
-
 extension LocalStore {
     /// The user's unit, or the region's until a profile exists.
     var weightUnit: WeightUnit {
@@ -133,14 +126,14 @@ extension Date {
     /// "Oct 21", with the year only when it isn't this year: "Oct 21, 2025".
     var shortDay: String {
         Calendar.current.isDate(self, equalTo: .now, toGranularity: .year)
-            ? formatted(.dateTime.month().day())
-            : formatted(.dateTime.month().day().year())
+            ? formatted(.dateTime.month().day().locale(AppLanguage.locale))
+            : formatted(.dateTime.month().day().year().locale(AppLanguage.locale))
     }
 
     /// "Sat, Oct 24", with the year only when it isn't this year.
     var shortDayWithWeekday: String {
         Calendar.current.isDate(self, equalTo: .now, toGranularity: .year)
-            ? formatted(.dateTime.weekday(.abbreviated).month().day())
-            : formatted(.dateTime.weekday(.abbreviated).month().day().year())
+            ? formatted(.dateTime.weekday(.abbreviated).month().day().locale(AppLanguage.locale))
+            : formatted(.dateTime.weekday(.abbreviated).month().day().year().locale(AppLanguage.locale))
     }
 }

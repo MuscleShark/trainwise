@@ -6,13 +6,22 @@ import SwiftUI
 
 @main
 struct IronSageApp: App {
-    private let setup = Result { try AppServices() }
+    private let setup: Result<AppServices, Error>
+    /// Changing it rebuilds the views in the new language.
+    @AppStorage(AppLanguage.key) private var language = AppLanguage.Choice.system
+
+    init() {
+        AppLanguage.start()
+        setup = Result { try AppServices() }
+    }
 
     var body: some Scene {
         WindowGroup {
             switch setup {
             case .success(let services):
                 RootView()
+                    .id(language)
+                    .appLanguage(language)
                     .environment(Clerk.shared)
                     .environment(\.api, services.api)
                     .environment(services.store)
@@ -96,6 +105,18 @@ final class AppServices {
         let defaults = UserDefaults(suiteName: "IronSage.demo")!
         defaults.removePersistentDomain(forName: "IronSage.demo")
         return defaults
+    }
+}
+
+private extension View {
+    /// The picked language's locale. Left alone otherwise, so the views keep the
+    /// phone's own locale.
+    @ViewBuilder func appLanguage(_ choice: AppLanguage.Choice) -> some View {
+        if choice == .system {
+            self
+        } else {
+            environment(\.locale, AppLanguage.locale)
+        }
     }
 }
 

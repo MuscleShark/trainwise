@@ -10,7 +10,10 @@ extension EnvironmentValues {
 }
 
 struct MainTabView: View {
-    @State private var tab = AppTab.today
+    @State private var tab = Self.lastTab
+    /// The open tab, so it stays open when the views are rebuilt in another language
+    /// (picked on Me). A new launch starts on Today.
+    private static var lastTab = AppTab.today
 
     var body: some View {
         TabView(selection: $tab) {
@@ -31,6 +34,7 @@ struct MainTabView: View {
             }
         }
         .environment(\.selectTab) { tab = $0 }
+        .onChange(of: tab) { Self.lastTab = tab }
     }
 }
 

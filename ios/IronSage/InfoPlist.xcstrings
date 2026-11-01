@@ -37,6 +37,24 @@
         }
       }
     },
+    "NSCameraUsageDescription" : {
+      "comment" : "Why IronSage uses the camera.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage uses the camera when you take a new profile photo."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IronSage 会在你拍摄新头像时使用相机。"
+          }
+        }
+      }
+    },
     "NSHealthShareUsageDescription" : {
       "comment" : "Why IronSage reads Apple Health data.",
       "extractionState" : "extracted_with_value",
