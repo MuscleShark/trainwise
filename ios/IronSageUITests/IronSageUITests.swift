@@ -115,7 +115,8 @@ final class IronSageUITests: XCTestCase {
 
     func testAProgramCanBeHiddenAndShownAgain() {
         app.tabBars.buttons["Templates"].tap()
-        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Beginner full body'")).firstMatch
+        // The demo profile is intermediate, so the list opens on that level.
+        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Upper / lower: strength and size'")).firstMatch
         XCTAssertTrue(program.waitForExistence(timeout: 10))
         program.swipeLeft()
         app.buttons["Hide program"].tap()
@@ -146,19 +147,40 @@ final class IronSageUITests: XCTestCase {
         squat.tap()
 
         // Three sets of 8–12 to start with.
-        XCTAssertTrue(app.staticTexts["3 × 8–12 · RIR 2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["3 × 8–12"].waitForExistence(timeout: 5))
         XCTAssertTrue(save.isEnabled)
         save.tap()
 
         let saved = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Home legs'")).firstMatch
         XCTAssertTrue(saved.waitForExistence(timeout: 5))
         saved.tap()
-        XCTAssertTrue(app.buttons["Start this workout"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["startDay"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.navigationBars["Home legs"].buttons["Edit"].exists)
+    }
+
+    func testProgramsAreShownByLevelWithTheirGuide() {
+        app.tabBars.buttons["Templates"].tap()
+        let level = app.segmentedControls["programLevel"]
+        XCTAssertTrue(level.waitForExistence(timeout: 10))
+        XCTAssertTrue(level.buttons["Intermediate"].isSelected)
+        XCTAssertFalse(app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Barbell basics'")).firstMatch.exists)
+
+        level.buttons["Beginner"].tap()
+        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Barbell basics'")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 5))
+        program.tap()
+        XCTAssertTrue(app.staticTexts["How to progress"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["3 × 5"].exists)
+        XCTAssertTrue(app.staticTexts["Rest 3 min"].exists)
+
+        app.buttons["Day B"].tap()
+        XCTAssertTrue(app.staticTexts["Romanian deadlift"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["startDay"].exists)
     }
 
     func testAProgramCanBeCopiedToEdit() {
         app.tabBars.buttons["Templates"].tap()
+        app.segmentedControls["programLevel"].buttons["Advanced"].tap()
         let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Push / pull / legs'")).firstMatch
         XCTAssertTrue(program.waitForExistence(timeout: 10))
         program.tap()
@@ -170,7 +192,7 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(save.isEnabled)
         save.tap()
         app.navigationBars.buttons.firstMatch.tap()
-        let copy = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Push / pull / legs (my copy)'")).firstMatch
+        let copy = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Push / pull / legs ×2 (my copy)'")).firstMatch
         XCTAssertTrue(copy.waitForExistence(timeout: 5))
     }
 

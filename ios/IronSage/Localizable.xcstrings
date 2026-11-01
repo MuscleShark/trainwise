@@ -2,22 +2,32 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
-    "Add profile photo" : {
+    "Version %@" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加头像"
+            "value" : "版本 %@"
           }
         }
       }
     },
-    "Change profile photo" : {
+    "Same as iPhone" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更换头像"
+            "value" : "跟随 iPhone"
+          }
+        }
+      }
+    },
+    "Remove photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除头像"
           }
         }
       }
@@ -28,6 +38,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "头像"
+          }
+        }
+      }
+    },
+    "Add profile photo" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加头像"
+          }
+        }
+      }
+    },
+    "Your workouts, templates and profile are deleted from IronSage, and you are signed out. This can't be undone." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的训练记录、模板和个人资料会从 IronSage 删除，并退出登录。此操作无法撤销。"
           }
         }
       }
@@ -52,42 +82,192 @@
         }
       }
     },
-    "Remove photo" : {
+    "Change profile photo" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "删除头像"
+            "value" : "更换头像"
           }
         }
       }
     },
-    "Same as iPhone" : {
+    "Level" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "跟随 iPhone"
+            "value" : "水平"
           }
         }
       }
     },
-    "Version %@" : {
+    "Set your experience in Me › Profile to start on your level." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "版本 %@"
+            "value" : "在「我 › 个人资料」里设置训练经验，就会先显示适合你水平的计划。"
           }
         }
       }
     },
-    "Your workouts, templates and profile are deleted from IronSage, and you are signed out. This can't be undone." : {
+    "Your level, from Me › Profile." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的训练记录、模板和个人资料会从 IronSage 删除，并退出登录。此操作无法撤销。"
+            "value" : "你的水平，来自「我 › 个人资料」。"
+          }
+        }
+      }
+    },
+    "Each muscle is trained at least twice a week: heavy compound lifts at lower reps, accessories at higher reps." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每块肌肉每周至少练两次：复合动作用大重量、低次数，辅助动作用高次数。"
+          }
+        }
+      }
+    },
+    "Fits your %lld days" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "符合你每周 %lld 天"
+          }
+        }
+      }
+    },
+    "How to progress" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如何进步"
+          }
+        }
+      }
+    },
+    "Start %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始 %@"
+          }
+        }
+      }
+    },
+    "Sets × reps. Sets start from what you did last time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "组数 × 次数。每组会从你上次的成绩开始。"
+          }
+        }
+      }
+    },
+    "No rest" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不休息"
+          }
+        }
+      }
+    },
+    "Then straight to the next exercise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "紧接着做下一个动作"
+          }
+        }
+      }
+    },
+    "Rest %lld min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "休息 %lld 分钟"
+          }
+        }
+      }
+    },
+    "Rest %lld s" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "休息 %lld 秒"
+          }
+        }
+      }
+    },
+    "Strength" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "力量"
+          }
+        }
+      }
+    },
+    "Strength + muscle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "力量 + 增肌"
+          }
+        }
+      }
+    },
+    "All-round" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全面"
+          }
+        }
+      }
+    },
+    "Quick" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省时"
+          }
+        }
+      }
+    },
+    "Each working set aims for this many reps." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个正式组的目标次数。"
+          }
+        }
+      }
+    },
+    "Templates opens on the programs for your experience, beginner until you set it. The coach uses these to suggest your next sessions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「模板」会先显示适合你训练经验的计划，没设置时显示新手计划。教练也会参考这些来建议下次训练。"
           }
         }
       }
@@ -198,16 +378,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "放弃这些修改吗？"
-          }
-        }
-      }
-    },
-    "Each working set aims for this many reps. Reps in reserve is how many more you could have done." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每个正式组都以这个次数为目标。保留次数是做完这组后你还能再做几次。"
           }
         }
       }
@@ -1276,16 +1446,6 @@
         }
       }
     },
-    "Beginners usually start with Beginner full body; the coach will use these later to suggest your next sessions." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新手通常从“新手全身训练”开始；之后 AI 教练会参考这些信息来建议你下一次怎么练。"
-          }
-        }
-      }
-    },
     "Biceps" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1632,16 +1792,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "时长"
-          }
-        }
-      }
-    },
-    "Each muscle is trained at least twice a week: heavy compound lifts at lower reps, accessories at higher reps, most sets one to three reps short of failure." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每块肌肉每周至少练两次：复合动作大重量、低次数，辅助动作较高次数，多数组离力竭还差 1 到 3 次。"
           }
         }
       }
@@ -2506,16 +2656,6 @@
         }
       }
     },
-    "Reps in reserve" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保留次数（RIR）"
-          }
-        }
-      }
-    },
     "Rest" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2572,26 +2712,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "继续"
-          }
-        }
-      }
-    },
-    "RIR" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RIR"
-          }
-        }
-      }
-    },
-    "RIR %lld" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RIR %lld"
           }
         }
       }
@@ -2782,16 +2902,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "从模板开始"
-          }
-        }
-      }
-    },
-    "Start this workout" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "开始这次训练"
           }
         }
       }

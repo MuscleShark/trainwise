@@ -177,14 +177,8 @@ private struct TemplateExerciseEditor: View {
                 Stepper(value: Binding(get: { repMax }, set: { item.targets.repMax = $0; item.targets.repMin = min($0, repMin) }), in: 1...100) {
                     LabeledContent("Most reps", value: repMax.formatted())
                 }
-                Picker("Reps in reserve", selection: $item.targets.rir) {
-                    Text("Not set").tag(Int?.none)
-                    ForEach(0...5, id: \.self) { rir in
-                        Text(rir, format: .number).tag(Int?.some(rir))
-                    }
-                }
             } footer: {
-                Text("Each working set aims for this many reps. Reps in reserve is how many more you could have done.")
+                Text("Each working set aims for this many reps.")
             }
 
             Section {

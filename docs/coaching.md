@@ -44,12 +44,13 @@ The iPhone app computes these suggestions itself (`ios/IronSageKit/Sources/IronS
 
 IronSage writes its own templates from these principles. Programs such as 5/3/1, Starting Strength and StrongLifts are trademarks or copyrighted works, so their names and exact programs are not used.
 
-| Experience and days | Template | Progression |
+Five programs per experience level (`backend/template_catalog.py`); the Templates tab opens on the user's level, or on beginner when it isn't set. Targets are sets and a rep range only: the programs don't ask for reps in reserve, and the workout screen no longer logs it. Rest is 3 minutes for barbell lifts, 2 for other compound lifts, 90 seconds for isolation work and 4 before the heaviest peak sets. Each program's page says who it is for and how to progress (`ProgramGuide.swift`).
+
+| Level | Programs (days a week) | Progression |
 |---|---|---|
-| Beginner, 3 days | Full body, alternating days A and B | Linear |
-| Intermediate, 4 days | Upper / lower, each twice a week (one heavy day, one moderate day) | Double progression with RIR |
-| Intermediate to advanced, 5–6 days | Push / pull / legs | Double progression; deloads when needed |
-| Strength focus | Upper / lower with undulating heavy and moderate days | RIR-based load selection, e1RM tracking |
+| Beginner | Barbell basics (3), Machine starter (3), Home dumbbells (3), Two-day full body (2), Upper / lower starter (4) | Linear on the barbell lifts of Barbell basics; double progression elsewhere |
+| Intermediate | Upper / lower: strength and size (4), Heavy, light, volume (3), Tiered strength (4), Upper / lower + push / pull / legs (5), 45-minute supersets (3) | Weekly on the volume day; linear on the 5 × 3 lifts; double progression elsewhere |
+| Advanced | Push / pull / legs ×2 (6), Powerbuilding (5), Strength block 1: build (4), Strength block 2: peak (4), Upper-body focus (5) | Double progression with a lighter week every 6–8 weeks; blocks that go from volume to a peak |
 
 ## Sources
 

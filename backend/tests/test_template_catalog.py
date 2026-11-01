@@ -15,8 +15,27 @@ def test_templates_only_use_catalog_exercises_and_sensible_ranges():
             for item in day.items:
                 assert item.exercise in slugs, item.exercise
                 assert 1 <= item.rep_min <= item.rep_max <= 20
-                assert 0 <= item.rir <= 3
                 assert 1 <= item.sets <= 5
+                assert item.rest in (0, 60, 90, 120, 180, 240)
+
+
+def test_five_programs_for_each_level():
+    levels = [template.level for template in BUILTIN_TEMPLATES]
+    assert {level: levels.count(level) for level in set(levels)} == {
+        "beginner": 5,
+        "intermediate": 5,
+        "advanced": 5,
+    }
+
+
+def test_supersets_come_in_pairs_and_the_first_has_no_rest():
+    for template in BUILTIN_TEMPLATES:
+        for day in template.days:
+            groups = [item.superset for item in day.items if item.superset is not None]
+            assert all(groups.count(group) == 2 for group in groups), (template.slug, day.slug)
+            for first, second in zip(day.items, day.items[1:]):
+                if first.superset is not None and first.superset == second.superset:
+                    assert first.rest == 0 and second.rest > 0
 
 
 def test_built_in_templates_are_served_in_both_languages(client):
@@ -25,15 +44,23 @@ def test_built_in_templates_are_served_in_both_languages(client):
     built_in = {t["id"]: t for t in templates if not t["is_custom"]}
     assert len(built_in) == len(BUILTIN_TEMPLATES)
     ppl = built_in[str(template_id("push_pull_legs"))]
-    assert ppl["name_zh"] == "推拉腿"
-    assert [(d["name"], d["name_zh"]) for d in ppl["days"]] == [
-        ("Push", "推"),
-        ("Pull", "拉"),
-        ("Legs", "腿"),
+    assert (ppl["name_zh"], ppl["level"]) == ("推拉腿 ×2", "advanced")
+    assert [(d["name"], d["name_zh"]) for d in ppl["days"]][:3] == [
+        ("Push A", "推 A"),
+        ("Pull A", "拉 A"),
+        ("Legs A", "腿 A"),
     ]
     bench = ppl["days"][0]["exercises"][0]
     assert bench["rest_seconds"] == 180
-    assert [(s["rep_min"], s["rep_max"], s["target_rir"]) for s in bench["sets"]] == [(5, 8, 2)] * 4
+    # Sets and a rep range only: no reps in reserve.
+    assert [(s["rep_min"], s["rep_max"], s["target_rir"]) for s in bench["sets"]] == [
+        (5, 8, None)
+    ] * 4
+
+    supersets = built_in[str(template_id("superset_full_body"))]
+    squat, pulldown = supersets["days"][0]["exercises"][:2]
+    assert (squat["superset_group"], squat["rest_seconds"]) == (1, 0)
+    assert (pulldown["superset_group"], pulldown["rest_seconds"]) == (1, 120)
 
 
 def test_built_in_templates_cannot_be_changed(client):

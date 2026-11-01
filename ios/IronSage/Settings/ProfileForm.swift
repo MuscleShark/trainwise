@@ -39,7 +39,7 @@ struct ProfileForm: View {
             }
             .adaptivePickerStyle()
         } footer: {
-            Text("Beginners usually start with Beginner full body; the coach will use these later to suggest your next sessions.")
+            Text("Templates opens on the programs for your experience, beginner until you set it. The coach uses these to suggest your next sessions.")
         }
 
         Section {

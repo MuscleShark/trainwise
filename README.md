@@ -12,7 +12,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 
 - Sign-in with Clerk: email verification code, Google or Apple (no passwords); the API verifies Clerk session tokens
 - Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
-- Built-in exercise catalog (145 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
+- Built-in exercise catalog (151 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
 - Training templates with rep ranges and target RIR, including four built-in programs (`backend/template_catalog.py`)
 - Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate)
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
@@ -31,9 +31,9 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 
 - Clerk sign-in, five tabs (Today, History, Progress, Templates, Me), English and Chinese: the phone's language, or one picked at the bottom of Me › Profile, which switches the app at once (`ios/IronSage/Shared/AppLanguage.swift`)
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
-- Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time, optional RIR, a rest timer with a lock-screen notification, and a summary with volume and new records
+- Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time (weight and reps; reps in reserve isn't asked for), a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
-- Templates: four built-in programs (English and Chinese) and the user's own, built from scratch, copied from a program or saved from a finished workout, with each exercise's sets, rep range, reps in reserve and rest; programs can be hidden, on all the user's devices; starting a template day fills in its exercises, sets and targets
+- Templates: fifteen built-in programs, five per experience level (English and Chinese), shown for the user's level (beginner until it is set) with a picker for the others; each program's page says who it suits and how to progress, and shows one day at a time with sets × reps and rest. The user's own templates are built from scratch, copied from a program or saved from a finished workout, with each exercise's sets, rep range and rest; programs can be hidden, on all the user's devices; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; the photo is changed from the library or camera, or removed, by tapping it
 - Me tab: profile photo, name and email (opening the profile and the app's settings), workouts in all, this week against the planned training days, weeks in a row with training, the latest body weight and body fat with their trend, what IronSage Coach costs, and sign out and account deletion as quiet buttons at the bottom; sync problems are shown only when changes can't reach the server
 - Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
