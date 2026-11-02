@@ -30,7 +30,7 @@ final class WorkoutSession: Identifiable {
     }
 
     /// Starts and saves a new workout.
-    static func start(title: String = String(localized: "Workout"), exercises: [WorkoutExercise] = [], templateID: UUID? = nil, store: LocalStore) -> WorkoutSession {
+    static func start(title: String = String(appLocalized: "Workout"), exercises: [WorkoutExercise] = [], templateID: UUID? = nil, store: LocalStore) -> WorkoutSession {
         let workout = Workout(title: title, templateId: templateID, startedAt: .now, exercises: exercises)
         store.save(workout)
         return WorkoutSession(workout: workout, store: store)
@@ -67,7 +67,7 @@ final class WorkoutSession: Identifiable {
         // The title field may be empty while someone types; the API needs a name.
         var saved = workout
         if saved.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            saved.title = String(localized: "Workout")
+            saved.title = String(appLocalized: "Workout")
         }
         store.save(saved)
     }
@@ -187,8 +187,8 @@ enum RestNotifications {
         Task {
             guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else { return }
             let content = UNMutableNotificationContent()
-            content.title = String(localized: "Rest is over")
-            content.body = String(localized: "Next set: \(timer.exerciseName)")
+            content.title = String(appLocalized: "Rest is over")
+            content.body = String(appLocalized: "Next set: \(timer.exerciseName)")
             content.sound = .default
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
             try? await center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))

@@ -51,6 +51,26 @@ def test_invalid_measurements_are_rejected(client):
         assert response.status_code == 422
 
 
+def test_body_fat_can_be_an_estimated_range(client):
+    headers = auth_headers("me@example.com")
+    estimate = {**WEIGHT, "kind": "body_fat", "value": "17.5", "value_low": "15"}
+    estimate["value_high"] = "20"
+    response = client.put(f"/v1/body-measurements/{new_id()}", json=estimate, headers=headers)
+    assert response.status_code == 200
+
+    [saved] = client.get("/v1/body-measurements?kind=body_fat", headers=headers).json()
+    assert (saved["value"], saved["value_low"], saved["value_high"]) == (17.5, 15, 20)
+
+    for body in (
+        {**estimate, "value_high": None},
+        {**estimate, "value_low": "20", "value_high": "15"},
+        {**estimate, "value": "22"},
+        {**estimate, "kind": "weight"},
+    ):
+        response = client.put(f"/v1/body-measurements/{new_id()}", json=body, headers=headers)
+        assert response.status_code == 422, body
+
+
 def test_readiness_is_one_row_per_day(client):
     headers = auth_headers("me@example.com")
     client.put("/v1/readiness/2026-10-20", json=NIGHT, headers=headers)

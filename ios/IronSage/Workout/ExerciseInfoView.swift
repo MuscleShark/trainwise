@@ -107,8 +107,8 @@ struct ExerciseInfoView: View {
 
     /// "Barbell · Total weight · Squat"
     private var summary: String {
-        var parts = [String(localized: exercise.equipment.label), String(localized: exercise.loadType.label)]
-        if let movement { parts.append(String(localized: movement.family.title)) }
+        var parts = [String(appLocalized: exercise.equipment.label), String(appLocalized: exercise.loadType.label)]
+        if let movement { parts.append(String(appLocalized: movement.family.title)) }
         return parts.joined(separator: " · ")
     }
 
@@ -132,7 +132,7 @@ struct ExerciseInfoView: View {
             .padding(.vertical, 4)
             .foregroundStyle(primary ? Color.white : Color.primary)
             .background(primary ? Color.accentColor : Color.accentColor.opacity(0.15), in: .capsule)
-            .accessibilityLabel(primary ? Text("Main: \(String(localized: muscle.label))") : Text("Also works: \(String(localized: muscle.label))"))
+            .accessibilityLabel(primary ? Text("Main: \(String(appLocalized: muscle.label))") : Text("Also works: \(String(appLocalized: muscle.label))"))
     }
 
     private static let card = Color(.secondarySystemGroupedBackground)

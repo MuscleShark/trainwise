@@ -5,6 +5,12 @@ import { privacy } from "../../components/legal-content";
 
 export const metadata: Metadata = { title: "隐私政策 | IronSage" };
 
-export default function Page() {
-  return <LegalPage page={privacy.zh} lang="zh" />;
+// The iPhone app opens this page in a sheet with `?app=1`: just the text.
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ app?: string }>;
+}) {
+  const { app } = await searchParams;
+  return <LegalPage page={privacy.zh} lang="zh" inApp={app === "1"} />;
 }

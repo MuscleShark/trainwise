@@ -99,9 +99,9 @@ struct ReadinessCard: View {
     private static func comparison(_ direction: ReadinessComparison.Direction?, usual: String?) -> String? {
         guard let direction, let usual else { return nil }
         return switch direction {
-        case .lower: String(localized: "Lower than your usual \(usual)")
-        case .usual: String(localized: "About your usual \(usual)")
-        case .higher: String(localized: "Higher than your usual \(usual)")
+        case .lower: String(appLocalized: "Lower than your usual \(usual)")
+        case .usual: String(appLocalized: "About your usual \(usual)")
+        case .higher: String(appLocalized: "Higher than your usual \(usual)")
         }
     }
 
@@ -120,10 +120,10 @@ struct ReadinessCard: View {
     }
 
     static func milliseconds(_ value: Double) -> String {
-        String(localized: "\(Int(value.rounded())) ms")
+        String(appLocalized: "\(Int(value.rounded())) ms")
     }
 
     static func beats(_ value: Double) -> String {
-        String(localized: "\(Int(value.rounded())) bpm")
+        String(appLocalized: "\(Int(value.rounded())) bpm")
     }
 }

@@ -137,11 +137,15 @@ public enum BodyTrend {
 
     public struct Point: Hashable, Sendable {
         public let date: Date
+        /// The value, or an estimate's middle.
         public let value: Double
+        /// An estimate's range; nil for a measured value.
+        public let estimate: ClosedRange<Double>?
 
-        public init(date: Date, value: Double) {
+        public init(date: Date, value: Double, estimate: ClosedRange<Double>? = nil) {
             self.date = date
             self.value = value
+            self.estimate = estimate
         }
     }
 
@@ -168,7 +172,7 @@ public enum BodyTrend {
             .filter { $0.kind == kind && $0.measuredAt <= now && $0.measuredAt >= (start ?? .distantPast) }
             .sorted { $0.measuredAt < $1.measuredAt }
         guard let first = shown.first, let last = shown.last else { return [] }
-        let points = shown.map { Point(date: $0.measuredAt, value: $0.value) }
+        let points = shown.map { Point(date: $0.measuredAt, value: $0.value, estimate: $0.estimate) }
         guard last.measuredAt.timeIntervalSince(first.measuredAt) > Double(weeklyAfterDays) * 86_400 else { return points }
 
         var weeks: [Date: [Point]] = [:]
@@ -179,7 +183,12 @@ public enum BodyTrend {
         return weeks.keys.sorted().map { week in
             let inWeek = weeks[week]!
             let time = inWeek.map(\.date.timeIntervalSince1970).reduce(0, +) / Double(inWeek.count)
-            return Point(date: Date(timeIntervalSince1970: time), value: inWeek.map(\.value).reduce(0, +) / Double(inWeek.count))
+            // A week of estimates stays an estimate: the average of their ranges.
+            let ranges = inWeek.compactMap(\.estimate)
+            let estimate = ranges.count == inWeek.count
+                ? average(ranges.map(\.lowerBound))...average(ranges.map(\.upperBound))
+                : nil
+            return Point(date: Date(timeIntervalSince1970: time), value: average(inWeek.map(\.value)), estimate: estimate)
         }
     }
 }
@@ -188,4 +197,36 @@ public enum BodyTrend {
 public enum BodyFat {
     /// What a typed-in body fat can be.
     public static let plausible: ClosedRange<Double> = 2...70
+
+    /// The ranges an estimate is picked from, five points wide; the ends stand for
+    /// "under 10%" and "40% or more".
+    public static let estimates: [ClosedRange<Double>] = [
+        5...10, 10...15, 15...20, 20...25, 25...30, 30...35, 35...40, 40...50,
+    ]
+
+    /// A body fat estimate for a picked range, stored with its middle as the value.
+    public static func estimate(_ range: ClosedRange<Double>, at date: Date) -> BodyMeasurement {
+        BodyMeasurement(
+            measuredAt: date,
+            kind: .bodyFat,
+            value: (range.lowerBound + range.upperBound) / 2,
+            valueLow: range.lowerBound,
+            valueHigh: range.upperBound,
+            source: .manual
+        )
+    }
+
+    /// How many ranges the latest body fat moved since the estimate before it: negative
+    /// is lower. Nil when the latest is measured or there is no earlier estimate.
+    public static func estimateChange(_ measurements: [BodyMeasurement]) -> Int? {
+        let bodyFat = measurements.filter { $0.kind == .bodyFat }.sorted { $0.measuredAt > $1.measuredAt }
+        guard let latest = bodyFat.first?.estimate.flatMap(estimates.firstIndex(of:)),
+              let earlier = bodyFat.dropFirst().lazy.compactMap({ $0.estimate.flatMap(estimates.firstIndex(of:)) }).first
+        else { return nil }
+        return latest - earlier
+    }
+}
+
+private func average(_ values: [Double]) -> Double {
+    values.reduce(0, +) / Double(values.count)
 }

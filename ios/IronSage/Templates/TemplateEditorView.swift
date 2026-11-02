@@ -42,7 +42,7 @@ struct TemplateEditorView: View {
                 Section {
                     if template.days.count < Template.maxDays {
                         Button("Add day", systemImage: "plus") {
-                            template.days.append(TemplateDay(name: String(localized: "Day \(template.days.count + 1)")))
+                            template.days.append(TemplateDay(name: String(appLocalized: "Day \(template.days.count + 1)")))
                         }
                     }
                 } footer: {

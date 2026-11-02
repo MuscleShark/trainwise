@@ -2,6 +2,206 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "Open in Safari" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Safari 中打开"
+          }
+        }
+      }
+    },
+    "Couldn't load this page" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载此页面"
+          }
+        }
+      }
+    },
+    "Check your connection and try again, or open it in your browser." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请检查网络后重试，或在浏览器中打开。"
+          }
+        }
+      }
+    },
+    "Open in browser" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在浏览器中打开"
+          }
+        }
+      }
+    },
+    "%@, estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，估计"
+          }
+        }
+      }
+    },
+    "Measured" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实测"
+          }
+        }
+      }
+    },
+    "Estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估计"
+          }
+        }
+      }
+    },
+    "How" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方式"
+          }
+        }
+      }
+    },
+    "Estimate a range" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估计区间"
+          }
+        }
+      }
+    },
+    "Exact number" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "精确数值"
+          }
+        }
+      }
+    },
+    "From a body-fat scale, an InBody or a DEXA scan. Saved to Apple Health too." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来自体脂秤、InBody 或 DEXA 扫描。也会保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Pick the range closest to what you see in the mirror. A range shows as a band on your chart and isn't saved to Apple Health." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选一个和你在镜子里看到的最接近的区间。区间在图表上显示为一段范围，不会保存到 Apple 健康。"
+          }
+        }
+      }
+    },
+    "Under %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 以下"
+          }
+        }
+      }
+    },
+    "%@ or more" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 以上"
+          }
+        }
+      }
+    },
+    "About %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 %@"
+          }
+        }
+      }
+    },
+    "Same range as your last estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和上次估计在同一区间"
+          }
+        }
+      }
+    },
+    "One range lower than your last estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比上次估计低一档"
+          }
+        }
+      }
+    },
+    "One range higher than your last estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比上次估计高一档"
+          }
+        }
+      }
+    },
+    "%lld ranges lower than your last estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比上次估计低 %lld 档"
+          }
+        }
+      }
+    },
+    "%lld ranges higher than your last estimate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比上次估计高 %lld 档"
+          }
+        }
+      }
+    },
     "Version %@" : {
       "localizations" : {
         "zh-Hans" : {

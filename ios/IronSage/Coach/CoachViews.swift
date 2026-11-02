@@ -44,7 +44,7 @@ struct CoachConsentView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
-                    Link("Privacy policy", destination: Site.page("privacy"))
+                    SitePageButton(page: .privacy)
                         .font(.footnote)
                 }
                 .padding(24)
@@ -197,9 +197,9 @@ struct WeeklySummaryCard: View {
     private func title(_ summary: WeeklySummary) -> String {
         guard let start = HealthDays.date(summary.weekStart),
               let end = Calendar.current.date(byAdding: .day, value: 6, to: start)
-        else { return String(localized: "Your week") }
+        else { return String(appLocalized: "Your week") }
         let range = (start..<end).formatted(.interval.month(.abbreviated).day().locale(AppLanguage.locale))
-        return String(localized: "Your week, \(range)")
+        return String(appLocalized: "Your week, \(range)")
     }
 }
 

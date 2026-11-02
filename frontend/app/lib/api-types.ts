@@ -456,6 +456,10 @@ export interface components {
             updated_at: string;
             /** Value */
             value: number;
+            /** Value High */
+            value_high?: number | null;
+            /** Value Low */
+            value_low?: number | null;
         };
         /** BodyMeasurementWrite */
         BodyMeasurementWrite: {
@@ -479,6 +483,10 @@ export interface components {
             source: "manual" | "healthkit";
             /** Value */
             value: number;
+            /** Value High */
+            value_high?: number | null;
+            /** Value Low */
+            value_low?: number | null;
         };
         /** CoachInput */
         CoachInput: {

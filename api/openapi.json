@@ -92,6 +92,24 @@
             "maximum": 1000.0,
             "title": "Value",
             "type": "number"
+          },
+          "value_high": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Value High",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "value_low": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Value Low",
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
@@ -149,6 +167,24 @@
             "maximum": 1000.0,
             "title": "Value",
             "type": "number"
+          },
+          "value_high": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Value High",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "value_low": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Value Low",
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [

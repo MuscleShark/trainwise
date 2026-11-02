@@ -302,8 +302,25 @@ class BodyMeasurementWrite(BaseModel):
     measured_at: AwareDatetime
     kind: MeasurementKind
     value: MeasurementValue
+    # A body fat estimate gives the range the user picked, with `value` inside it (the
+    # app sends the middle); a measured value leaves both out.
+    value_low: MeasurementValue | None = None
+    value_high: MeasurementValue | None = None
     source: Source = "manual"
     healthkit_sample_id: HealthKitId | None = None
+
+    @model_validator(mode="after")
+    def check_range(self) -> "BodyMeasurementWrite":
+        if (self.value_low is None) != (self.value_high is None):
+            raise ValueError("Give both value_low and value_high, or neither")
+        if self.value_low is not None and self.value_high is not None:
+            if self.kind != "body_fat":
+                raise ValueError("Only body fat can be a range")
+            if not self.value_low < self.value_high:
+                raise ValueError("value_low must be below value_high")
+            if not self.value_low <= self.value <= self.value_high:
+                raise ValueError("value must be within value_low and value_high")
+        return self
 
 
 class BodyMeasurementRead(SyncedRead, BodyMeasurementWrite):
