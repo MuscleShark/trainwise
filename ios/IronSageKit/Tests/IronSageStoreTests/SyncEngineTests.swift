@@ -196,8 +196,14 @@ private func pushDay(completed: Bool = true) -> Workout {
 
 @MainActor
 @Test func resetStopsARunningSync() async throws {
+    // The server holds its answer until the reset is done, so the sync is surely under
+    // way when it happens, however slow the machine.
+    let (requested, signalRequest) = AsyncStream.makeStream(of: Void.self)
+    let answer = DispatchSemaphore(value: 0)
     let harness = try Harness { request in
         guard request.path.hasPrefix("/v1/sync") else { return try FakeServer.standard(request) }
+        signalRequest.yield()
+        answer.wait()
         return (200, FakeServer.syncPage(
             changeSeq: 5,
             workouts: [FakeServer.workoutJSON(id: UUID().uuidString.lowercased(), title: "Someone else's", changeSeq: 5)]
@@ -205,9 +211,10 @@ private func pushDay(completed: Bool = true) -> Workout {
     }
 
     async let running: Void = harness.sync.sync()
-    await Task.yield()
+    for await _ in requested { break }
     harness.store.removeAll()
     harness.sync.reset()
+    answer.signal()
     await running
 
     #expect(harness.store.workouts.isEmpty)
