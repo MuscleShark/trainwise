@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from coach_access import has_coach_access
 from database import get_db
 from models import Recommendation, User, utcnow
-from routers.subscription import has_coach_access
 from schemas import CoachSettings, RecommendationRead, RecommendationWrite
 from security import get_current_user
 from sync import id_conflict, next_change_seq

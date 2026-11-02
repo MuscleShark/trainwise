@@ -81,6 +81,7 @@ trainwise/
 │   ├── tests/
 │   ├── catalog.py                # built-in exercise catalog
 │   ├── template_catalog.py       # built-in training templates
+│   ├── coach_access.py           # who may use the coach (API and coach worker)
 │   ├── database.py
 │   ├── lambda_handler.py         # AWS Lambda entry point
 │   ├── migrate_handler.py        # Lambda that runs migrations during deploys
