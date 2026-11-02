@@ -306,7 +306,6 @@
 		4A2E2FC835F0913628DBCC81 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https:/$()/po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLERK_PUBLISHABLE_KEY = pk_test_aGVscGluZy1sYWR5YnVnLTM5NDUuY2xlcmsuYWNjb3VudHMuZGV2JA;
@@ -327,8 +326,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				PRODUCTION_API_URL = "https:/$()/po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws";
 				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STAGING_API_URL = "https:/$()/zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -368,7 +369,6 @@
 		9AE75E16C2D30D146FD60D6A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				API_BASE_URL = "https:/$()/zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLERK_PUBLISHABLE_KEY = pk_test_aGVscGluZy1sYWR5YnVnLTM5NDUuY2xlcmsuYWNjb3VudHMuZGV2JA;
@@ -389,8 +389,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				PRODUCTION_API_URL = "https:/$()/po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws";
 				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STAGING_API_URL = "https:/$()/zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;

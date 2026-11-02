@@ -234,7 +234,7 @@ Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator
 
 To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises, workouts and Apple Health data in memory, no sign-in and no network.
 
-A Debug build (run from Xcode) calls the staging API and a Release build the production API, so a change merged to `main` can be tried on staging before it is promoted; both use the Clerk development instance. These are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project, and both are public: the publishable key also ships in the web app. Staging's database is a copy of production's, so the same account signs in to both; sign out before switching a phone between a Debug and a Release build, so its local data starts again from the other server.
+The app picks its API by how it was installed (`AppConfig.Server` in `ios/IronSageKit/Sources/IronSageCore/AppConfig.swift`): a build run from Xcode and a TestFlight install call staging, the App Store's calls production. So one build is tried on staging in TestFlight and goes to the App Store unchanged once the backend is promoted. Both addresses are build settings (`STAGING_API_URL`, `PRODUCTION_API_URL`), as is `CLERK_PUBLISHABLE_KEY` (both servers use the Clerk development instance); all are public, and the publishable key also ships in the web app. Staging's database is a copy of production's, so the same account signs in to both. When the app finds it now talks to the other server, it empties the phone's copy and downloads the user's data again.
 
 From the command line:
 

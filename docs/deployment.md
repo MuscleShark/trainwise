@@ -193,10 +193,11 @@ The API verifies App Store transactions against Apple's root certificate, so it 
    - On both, an introductory offer for new subscribers: free, 1 week, United States.
    - English and Chinese display names, and a review screenshot of the paywall.
 2. Join the App Store Small Business Program (15% commission).
-3. Under App Information › App Store Server Notifications, set both the **Production** and the **Sandbox** URL to the API's notification endpoint, **Version 2**:
+3. Under App Information › App Store Server Notifications, **Version 2**, set the **Production** URL to production's notification endpoint and the **Sandbox** URL to staging's. TestFlight and App Review buy in the sandbox, and their builds call staging (see below):
 
    ```
-   https://po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws/v1/app-store/notifications
+   Production: https://po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws/v1/app-store/notifications
+   Sandbox:    https://zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws/v1/app-store/notifications
    ```
 
    Then send a test notification from App Store Connect; the API answers 200 and logs `App Store notification TEST` in CloudWatch.
@@ -235,7 +236,18 @@ Do this **before merging the PR that adds staging**: after that merge, every mer
 5. **Merge the PR.** The merge deploys staging for the first time (creating `TrainWiseApi-staging` and its tables). Confirm the staging alarm subscription email. The job summary shows the staging Function URL.
 6. Clerk: staging uses the same Clerk development instance as production, so the same accounts sign in to both; nothing to do.
 
-The staging API is the URL in the job summary (or CloudShell: `aws lambda get-function-url-config --region us-east-2 --function-name trainwise-api-staging --query FunctionUrl`). The iPhone app's Debug configuration calls it (`API_BASE_URL`), so a build run from Xcode tries what staging runs; Release builds call production. To give a test account the coach on staging, run the `UPDATE users SET coach_enabled = true …` from step 3 in the Neon SQL editor with the `staging` branch selected.
+The staging API is the URL in the job summary (or CloudShell: `aws lambda get-function-url-config --region us-east-2 --function-name trainwise-api-staging --query FunctionUrl`). The iPhone app calls it when run from Xcode or installed from TestFlight, and production when installed from the App Store (`STAGING_API_URL`, `PRODUCTION_API_URL`; see the release steps below). To give a test account the coach on staging, run the `UPDATE users SET coach_enabled = true …` from step 3 in the Neon SQL editor with the `staging` branch selected.
+
+## Releasing the iPhone app
+
+One build goes through both environments; where it was installed from decides the API (`AppConfig.Server`):
+
+1. Merge to `main`. CI passes and the backend deploys to staging.
+2. Archive and upload the build. In TestFlight it calls staging: test it there.
+3. [Promote](#promote-to-production) the backend that staging ran, so production has what the new build needs.
+4. Submit the same build for review and release it. From the App Store it calls production.
+
+App Review installs the build like TestFlight, so reviewers use staging: keep staging working while a build is in review. A phone that switches between a TestFlight and an App Store install (or an Xcode build) empties its copy of the data and downloads it again from the other server.
 
 ## Promote to production
 

@@ -89,6 +89,11 @@ final class HealthService {
         defaults.removeObject(forKey: Keys.forgottenWorkouts)
     }
 
+    /// Whether the phone has downloaded the user's data from the server since it was last
+    /// emptied. Until then, cardio is left in Apple Health: the server may already have it
+    /// (from another iPhone, or before a reinstall), and importing it again would add it twice.
+    @ObservationIgnored var hasServerData: () -> Bool = { true }
+
     /// Changes with every `reset()`, so work started before it can tell it is stale.
     @ObservationIgnored private var generation = 0
 
@@ -156,8 +161,10 @@ final class HealthService {
             }
             saveMeasurements(weights, kind: .weight)
             saveMeasurements(bodyFat, kind: .bodyFat)
-            saveCardio(cardio)
-            defaults.set(now, forKey: Keys.lastImport)
+            if hasServerData() {
+                saveCardio(cardio)
+                defaults.set(now, forKey: Keys.lastImport)
+            }
         } catch {
             log.error("Importing from Apple Health failed: \(error, privacy: .public)")
         }

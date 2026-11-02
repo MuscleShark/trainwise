@@ -56,6 +56,8 @@ final class AppServices {
     let isDemo: Bool
 
     private static let ownerKey = "IronSage.store.owner"
+    /// The API the phone's data came from (see AppConfig.Server).
+    private static let serverKey = "IronSage.store.server"
 
     init() throws {
         let config = try AppConfig.fromMainBundle()
@@ -69,6 +71,7 @@ final class AppServices {
         store = try LocalStore(inMemory: isDemo)
         sync = SyncEngine(store: store, api: api)
         health = HealthService(store: store, enabled: !isDemo)
+        health.hasServerData = { [sync] in sync.lastSyncedAt != nil }
         coach = CoachService(store: store, sync: sync, isOnline: !isDemo, defaults: isDemo ? Self.demoDefaults() : .standard)
         // Checked right before each request goes out, so turning the coach off stops
         // one that is already queued.
@@ -80,6 +83,23 @@ final class AppServices {
             DemoData.fill(store, coach: coach)
         }
         #endif
+        if !isDemo {
+            startOver(ifNotFrom: config.apiBaseURL)
+        }
+    }
+
+    /// The phone's data and sync position belong to one server. When the app now talks to
+    /// another (a TestFlight build replaced by the App Store's, or an Xcode build by
+    /// either), it starts over and downloads the signed-in user's data from the new one.
+    private func startOver(ifNotFrom server: URL) {
+        let defaults = UserDefaults.standard
+        let previous = defaults.string(forKey: Self.serverKey)
+        // Unknown before this was recorded: the same server is the likely case, and
+        // starting over would lose changes not synced yet.
+        if let previous, previous != server.absoluteString {
+            removeLocalData()
+        }
+        defaults.set(server.absoluteString, forKey: Self.serverKey)
     }
 
     /// Keeps only this user's data on the phone: another user's is removed first.
