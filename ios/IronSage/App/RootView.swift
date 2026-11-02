@@ -32,6 +32,8 @@ struct RootView: View {
         .task(id: clerk.user?.id) {
             guard let userID = clerk.user?.id, services?.isDemo != true else { return }
             services?.prepare(forUser: userID)
+            // The server's data first, so what Apple Health adds isn't added twice.
+            await sync.sync()
             await health.importRecent()
             await sync.sync()
             await subscriptions.refresh()
