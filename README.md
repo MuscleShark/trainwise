@@ -14,13 +14,14 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
 - Built-in exercise catalog (151 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
 - Training templates with rep ranges and target RIR, including four built-in programs (`backend/template_catalog.py`)
-- Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate)
+- Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate); body fat can be an estimated range (`value_low`/`value_high`, migration 0010) with its middle as the value
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
 - Account deletion: removes all of the user's data and the Clerk user
 
 **Web**
 
 - Landing page, Clerk sign-in, and an account page (sign out, delete account)
+- Privacy policy and support pages in English and Chinese; with `?app=1` they show only the text, for the app's sheet
 - Training review after sign-in (read-only; the iPhone app is where things change), in English or Chinese following the browser:
   - Overview (`/review`): workouts in all, this week against the planned days, weeks in a row, weekly volume for 12 weeks, body weight and body fat over a week, month, year or all time, and recent workouts
   - History (`/review/history`): workouts by week, each opening to its exercises and sets
@@ -29,15 +30,15 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 
 **iPhone app** (`ios/`)
 
-- Clerk sign-in, five tabs (Today, History, Progress, Templates, Me), English and Chinese: the phone's language, or one picked at the bottom of Me › Profile, which switches the app at once (`ios/IronSage/Shared/AppLanguage.swift`)
+- Clerk sign-in, five tabs (Today, History, Progress, Templates, Me), English and Chinese: the phone's language, or one picked at the bottom of Me › Profile, which switches the app at once, text looked up in code included (`String(appLocalized:)` in `ios/IronSage/Shared/AppLanguage.swift`)
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time (weight and reps; reps in reserve isn't asked for), a rest timer with a lock-screen notification, and a summary with volume and new records
 - History by week: each workout's sets, editing and deleting
 - Templates: fifteen built-in programs, five per experience level (English and Chinese), shown for the user's level (beginner until it is set) with a picker for the others; each program's page says who it suits and how to progress, and shows one day at a time with sets × reps and rest. The user's own templates are built from scratch, copied from a program or saved from a finished workout, with each exercise's sets, rep range and rest; programs can be hidden, on all the user's devices; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; the photo is changed from the library or camera, or removed, by tapping it
-- Me tab: profile photo, name and email (opening the profile and the app's settings), workouts in all, this week against the planned training days, weeks in a row with training, the latest body weight and body fat with their trend, what IronSage Coach costs, and sign out and account deletion as quiet buttons at the bottom; sync problems are shown only when changes can't reach the server
+- Me tab: profile photo, name and email (opening the profile and the app's settings), workouts in all, this week against the planned training days, weeks in a row with training, the latest body weight and body fat with their trend, what IronSage Coach costs, and sign out and account deletion as quiet buttons at the bottom; the privacy policy and support open in a sheet four fifths of the screen high; sync problems are shown only when changes can't reach the server
 - Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
-- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current) and body fat, each typed in or from Apple Health (typed ones are written back to it), over a week, month, year or all time (averaged per week once the data spans more than 120 days), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
+- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current) and body fat, each typed in or from Apple Health (typed ones are written back to it); body fat is entered as a 5-point range by default (an estimate, shown as a band on the chart, with how many ranges it moved since the last estimate, and not written to Apple Health) or as an exact number; over a week, month, year or all time (averaged per week once the data spans more than 120 days), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
 - Today shows last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average
 - Follows the iPhone's text size up to the largest accessibility size: rows put their value under the name, a set takes two lines from XXXL (its number fields stop growing at AX2 so they fit), and charts grow taller while their labels stop growing at AX1 (`ios/IronSage/Shared/AdaptiveLayout.swift`); a UI test logs a set at the largest size
 - API client generated from `api/openapi.json`
@@ -308,7 +309,7 @@ The iPhone app's version 1 ships in three milestones ([details](docs/architectur
 
 Next, after version 1:
 
-- [x] Body fat from Apple Health or typed in, with week, month, year and all-time ranges for body weight and body fat
+- [x] Body fat from Apple Health, typed in or estimated as a range, with week, month, year and all-time ranges for body weight and body fat
 - [x] The user's own templates built from scratch or copied from a program, and hiding built-in programs (synced across devices)
 - [x] Reviewing training on the website (read-only)
 - [ ] Sharing a template by link

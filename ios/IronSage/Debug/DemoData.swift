@@ -135,7 +135,12 @@ enum DemoData {
             }
             if daysAgo % 7 == 0 {
                 let morning = calendar.date(bySettingHour: 7, minute: 31, second: 0, of: date)!
-                store.save(BodyMeasurement(measuredAt: morning, kind: .bodyFat, value: 18 + Double(daysAgo) * 0.04 + wobble * 0.05, source: .healthkit))
+                // Scale readings, with an estimate by eye every other week lately.
+                switch daysAgo {
+                case 0: store.save(BodyFat.estimate(15...20, at: morning))
+                case 14: store.save(BodyFat.estimate(20...25, at: morning))
+                default: store.save(BodyMeasurement(measuredAt: morning, kind: .bodyFat, value: 18 + Double(daysAgo) * 0.04 + wobble * 0.05, source: .healthkit))
+                }
             }
         }
     }

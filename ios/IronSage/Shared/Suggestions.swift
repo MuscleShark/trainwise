@@ -51,21 +51,21 @@ extension NextSession.Suggestion {
     func reason(unit: WeightUnit) -> String {
         switch change {
         case .firstTime:
-            String(localized: "First time: choose a weight that leaves 1–3 reps in reserve.")
+            String(appLocalized: "First time: choose a weight that leaves 1–3 reps in reserve.")
         case let .increase(_, to):
-            String(localized: "Every set reached \(range.max) reps, so \(unit.formatWithUnit(kilograms: to)) this time.")
+            String(appLocalized: "Every set reached \(range.max) reps, so \(unit.formatWithUnit(kilograms: to)) this time.")
         case .addReps:
-            String(localized: "Same weight. Aim for one more rep per set, up to \(range.max).")
+            String(appLocalized: "Same weight. Aim for one more rep per set, up to \(range.max).")
         case .repeatWeight:
-            String(localized: "Same weight until every set reaches \(range.min) reps.")
+            String(appLocalized: "Same weight until every set reaches \(range.min) reps.")
         case let .decrease(_, to):
-            String(localized: "Every set was under \(range.min) reps, so \(unit.formatWithUnit(kilograms: to)) this time.")
+            String(appLocalized: "Every set was under \(range.min) reps, so \(unit.formatWithUnit(kilograms: to)) this time.")
         case let .deload(_, to):
-            String(localized: "Missed \(range.min) reps two sessions running, so \(unit.formatWithUnit(kilograms: to)) to build back up.")
+            String(appLocalized: "Missed \(range.min) reps two sessions running, so \(unit.formatWithUnit(kilograms: to)) to build back up.")
         case .heldForSleep:
-            String(localized: "Ready for more weight, but you slept little last night. Same weight today.")
+            String(appLocalized: "Ready for more weight, but you slept little last night. Same weight today.")
         case .addLoadOrVariation:
-            String(localized: "Top of the range: add weight or try a harder variation.")
+            String(appLocalized: "Top of the range: add weight or try a harder variation.")
         }
     }
 
@@ -82,7 +82,7 @@ extension NextSession.Suggestion {
     }
 
     static var stallNote: String {
-        String(localized: "No progress in the last \(NextSession.stallSessions) sessions. Consider a different rep range or exercise.")
+        String(appLocalized: "No progress in the last \(NextSession.stallSessions) sessions. Consider a different rep range or exercise.")
     }
 
     /// The hardest planned working set, "62.5 kg × 5", for short summaries: the

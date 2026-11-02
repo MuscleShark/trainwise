@@ -77,7 +77,7 @@ private struct EstimatedMaxChart: View {
             session.estimatedOneRepMax.map { Point(id: session.workoutID, date: session.date, kilograms: $0, value: unit.value(fromKilograms: $0)) }
         }
         .sorted { $0.date < $1.date }
-        let symbol = String(localized: unit.symbol)
+        let symbol = String(appLocalized: unit.symbol)
 
         if points.count < 2 {
             Text("The chart appears after two sessions with sets of 1 to 12 reps.")
@@ -153,7 +153,7 @@ private struct RecordsSection: View {
                     Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
                         ForEach(records.mostReps, id: \.self) { item in
                             GridRow {
-                                Text(item.weightKg > 0 ? unit.formatWithUnit(kilograms: item.weightKg) : String(localized: "Body weight"))
+                                Text(item.weightKg > 0 ? unit.formatWithUnit(kilograms: item.weightKg) : String(appLocalized: "Body weight"))
                                 Text("\(item.reps) reps")
                                 Text(item.date.shortDay)
                                     .foregroundStyle(.secondary)

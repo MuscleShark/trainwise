@@ -9,7 +9,7 @@ extension LocalStore {
     }
 
     func exerciseName(_ id: UUID) -> String {
-        exercises[id]?.name(chinese: AppLanguage.isChinese) ?? String(localized: "Unknown exercise")
+        exercises[id]?.name(chinese: AppLanguage.isChinese) ?? String(appLocalized: "Unknown exercise")
     }
 }
 
@@ -23,7 +23,7 @@ extension WeightUnit {
 
     /// "60 kg"
     func formatWithUnit(kilograms: Double) -> String {
-        "\(format(kilograms: kilograms)) \(String(localized: symbol))"
+        "\(format(kilograms: kilograms)) \(String(appLocalized: symbol))"
     }
 
     /// "60 kg × 8", or "× 12" for a set without weight.
@@ -35,7 +35,7 @@ extension WeightUnit {
 
     /// Totals such as volume, in whole units: "4,820 kg".
     func formatTotal(kilograms: Double) -> String {
-        "\(value(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(0)))) \(String(localized: symbol))"
+        "\(value(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(0)))) \(String(appLocalized: symbol))"
     }
 }
 

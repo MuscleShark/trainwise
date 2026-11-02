@@ -436,6 +436,9 @@ public struct BodyMeasurement: Identifiable, Hashable, Codable, Sendable {
     public var measuredAt: Date
     public var kind: MeasurementKind
     public var value: Double
+    /// A body fat estimate: the range the user picked. `value` is its middle.
+    public var valueLow: Double?
+    public var valueHigh: Double?
     public var source: DataSource
     public var healthkitSampleId: String?
 
@@ -444,6 +447,8 @@ public struct BodyMeasurement: Identifiable, Hashable, Codable, Sendable {
         measuredAt: Date,
         kind: MeasurementKind = .weight,
         value: Double,
+        valueLow: Double? = nil,
+        valueHigh: Double? = nil,
         source: DataSource,
         healthkitSampleId: String? = nil
     ) {
@@ -451,8 +456,16 @@ public struct BodyMeasurement: Identifiable, Hashable, Codable, Sendable {
         self.measuredAt = measuredAt
         self.kind = kind
         self.value = value
+        self.valueLow = valueLow
+        self.valueHigh = valueHigh
         self.source = source
         self.healthkitSampleId = healthkitSampleId
+    }
+
+    /// The range of an estimate; nil for a measured value.
+    public var estimate: ClosedRange<Double>? {
+        guard let valueLow, let valueHigh, valueLow < valueHigh else { return nil }
+        return valueLow...valueHigh
     }
 }
 

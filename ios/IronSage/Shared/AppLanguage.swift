@@ -87,6 +87,23 @@ enum AppLanguage {
     }
 }
 
+extension String {
+    /// `String(localized:)` in the app's language. Plain `String(localized:)` keeps the
+    /// language the app launched in, so after a pick in Me › Profile it would mix
+    /// languages until the next launch.
+    init(appLocalized value: String.LocalizationValue) {
+        self.init(localized: value, bundle: LocalizedBundle.strings ?? .main)
+    }
+
+    // A literal is plain text, as with Foundation's own initializers.
+    @_disfavoredOverload
+    init(appLocalized resource: LocalizedStringResource) {
+        var resource = resource
+        resource.locale = AppLanguage.locale
+        self.init(localized: resource)
+    }
+}
+
 /// The main bundle's class while the app runs, so every string lookup (SwiftUI `Text`,
 /// `String(localized:)`) reads the picked language's strings.
 private nonisolated final class LocalizedBundle: Bundle, @unchecked Sendable {
@@ -98,4 +115,5 @@ private nonisolated final class LocalizedBundle: Bundle, @unchecked Sendable {
         }
         return super.localizedString(forKey: key, value: value, table: tableName)
     }
+
 }

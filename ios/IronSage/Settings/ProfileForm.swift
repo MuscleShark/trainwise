@@ -186,8 +186,8 @@ private struct AppFooter: View {
                 .accessibilityIdentifier("language")
 
                 FittingStack(spacing: 28) {
-                    Link("Privacy policy", destination: Site.page("privacy"))
-                    Link("Support", destination: Site.page("support"))
+                    SitePageButton(page: .privacy)
+                    SitePageButton(page: .support)
                 }
                 .font(.subheadline)
 

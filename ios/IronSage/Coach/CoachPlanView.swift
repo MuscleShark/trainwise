@@ -47,7 +47,7 @@ struct CoachPlanView: View {
 
             Section {
                 if subscriptions.entitlement != nil {
-                    LabeledContent("Your plan", value: String(localized: CoachPlanRow.status(subscriptions)))
+                    LabeledContent("Your plan", value: String(appLocalized: CoachPlanRow.status(subscriptions)))
                     Button("Manage subscription") { managesSubscription = true }
                         .manageSubscriptionsSheet(isPresented: $managesSubscription)
                 } else if subscriptions.serverAccess {

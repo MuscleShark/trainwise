@@ -73,7 +73,7 @@ struct HealthSettingsSection: View {
                 Text("Apple Health isn't available on this device.")
                     .foregroundStyle(.secondary)
             } else if health.hasAsked {
-                LabeledContent("Apple Health", value: String(localized: "Connected"))
+                LabeledContent("Apple Health", value: String(appLocalized: "Connected"))
             } else {
                 Button("Connect Apple Health") { isShowingIntro = true }
             }

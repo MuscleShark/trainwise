@@ -312,6 +312,9 @@ class BodyMeasurement(SyncedMixin, Base):
     # weight (kg), body_fat (%), or a girth in cm (waist, chest, arm, thigh, hips, neck).
     kind: Mapped[str] = mapped_column(String(20), nullable=False)
     value: Mapped[Decimal] = mapped_column(Numeric(8, 3), nullable=False)
+    # A body fat estimate: the range the user picked; `value` is its middle.
+    value_low: Mapped[Decimal | None] = mapped_column(Numeric(8, 3))
+    value_high: Mapped[Decimal | None] = mapped_column(Numeric(8, 3))
     source: Mapped[str] = mapped_column(String(10), nullable=False)
     healthkit_sample_id: Mapped[str | None] = mapped_column(String(64))
 

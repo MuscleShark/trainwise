@@ -29,7 +29,7 @@ struct WorkoutSummaryView: View {
                     LabeledContent("Sets", value: workout.exercises.map(\.sets.count).reduce(0, +).formatted())
                     LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
                     if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
-                        LabeledContent("Heart rate", value: String(localized: "\(average) avg, \(maximum) max"))
+                        LabeledContent("Heart rate", value: String(appLocalized: "\(average) avg, \(maximum) max"))
                     }
                 } footer: {
                     Text("Volume is weight × reps of the working sets; one dumbbell per side counts twice.")

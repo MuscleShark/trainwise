@@ -116,7 +116,7 @@ struct BodySection: View {
             row(
                 "Body weight",
                 latest: BodyTrend.latest(measurements, kind: .weight),
-                format: { unit.formatWithUnit(kilograms: $0) },
+                format: { unit.formatWithUnit(kilograms: $0.value) },
                 trend: BodyWeight.trend(measurements, days: 90).map {
                     BodyTrend.Point(date: $0.measuredAt, value: unit.value(fromKilograms: $0.value))
                 }
@@ -138,7 +138,7 @@ struct BodySection: View {
     private func row(
         _ title: LocalizedStringResource,
         latest: BodyMeasurement?,
-        format: (Double) -> String,
+        format: (BodyMeasurement) -> String,
         trend: [BodyTrend.Point]
     ) -> some View {
         Button {
@@ -150,12 +150,18 @@ struct BodySection: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     if let latest {
-                        Text(format(latest.value))
+                        Text(format(latest))
                             .font(.title3.weight(.bold))
                             .monospacedDigit()
-                        Text(latest.measuredAt.shortDay)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Group {
+                            if latest.estimate != nil {
+                                Text("\(latest.measuredAt.shortDay), estimate")
+                            } else {
+                                Text(latest.measuredAt.shortDay)
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     } else {
                         Text("Not entered yet")
                             .font(.subheadline)
@@ -183,6 +189,12 @@ private struct Sparkline: View {
 
     var body: some View {
         Chart(points, id: \.date) { point in
+            // An estimate's range, faint behind the line through its middle.
+            if let estimate = point.estimate {
+                RuleMark(x: .value("Date", point.date), yStart: .value("Value", estimate.lowerBound), yEnd: .value("Value", estimate.upperBound))
+                    .lineStyle(StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .foregroundStyle(Color.chartMark.opacity(0.22))
+            }
             LineMark(x: .value("Date", point.date), y: .value("Value", point.value))
                 .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                 .foregroundStyle(Color.chartMark)

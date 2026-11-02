@@ -151,4 +151,34 @@ struct TrainingProgressTests {
         let points = BodyTrend.points(measurements, kind: .bodyFat, range: .all, now: day(1), calendar: calendar)
         #expect(points.map(\.value) == [20, 22, 18])
     }
+
+    @Test func anEstimateIsStoredWithItsMiddleAndRange() {
+        let estimate = BodyFat.estimate(15...20, at: day(0))
+        #expect(estimate.value == 17.5)
+        #expect(estimate.estimate == 15...20)
+        #expect(fat(0, 18).estimate == nil)
+
+        let points = BodyTrend.points([estimate, fat(-3, 19)], kind: .bodyFat, range: .all, now: day(1), calendar: calendar)
+        #expect(points.map(\.estimate) == [nil, 15...20])
+    }
+
+    @Test func aWeekOfEstimatesStaysAnEstimate() {
+        let measurements = [
+            BodyFat.estimate(20...25, at: day(-196)), BodyFat.estimate(15...20, at: day(-194)),
+            fat(-189, 19), BodyFat.estimate(15...20, at: day(-187)), fat(0, 18),
+        ]
+        let points = BodyTrend.points(measurements, kind: .bodyFat, range: .year, now: day(1), calendar: calendar)
+        #expect(points.first?.estimate == 17.5...22.5)
+        // A week with a measured value is shown as measured.
+        #expect(points[1].estimate == nil)
+    }
+
+    @Test func theEstimateChangeComparesWithTheLastEarlierEstimate() {
+        let lower = [BodyFat.estimate(15...20, at: day(0)), fat(-5, 19.8), BodyFat.estimate(20...25, at: day(-10))]
+        #expect(BodyFat.estimateChange(lower) == -1)
+        #expect(BodyFat.estimateChange([BodyFat.estimate(30...35, at: day(0)), BodyFat.estimate(20...25, at: day(-7))]) == 2)
+        // Measured last, or no earlier estimate: nothing to compare.
+        #expect(BodyFat.estimateChange([fat(0, 18), BodyFat.estimate(20...25, at: day(-7))]) == nil)
+        #expect(BodyFat.estimateChange([BodyFat.estimate(20...25, at: day(0)), fat(-7, 19)]) == nil)
+    }
 }

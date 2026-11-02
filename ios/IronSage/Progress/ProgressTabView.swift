@@ -7,14 +7,19 @@ import SwiftUI
 /// and a way into each exercise's progress.
 struct ProgressTabView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(HealthService.self) private var health
+    @Environment(SyncEngine.self) private var sync
     @AppStorage("IronSage.body.range") private var range = BodyTrend.Range.month
+    /// The measurement being entered. The sheet hangs on the list: on a section it
+    /// would be copied to each row, and iOS 26 then doesn't show it.
+    @State private var entering: Entering?
 
     var body: some View {
         NavigationStack {
             List {
                 WeeklySummaryCard()
-                BodyWeightSection(range: $range)
-                BodyFatSection(range: range)
+                BodyWeightSection(range: $range) { entering = Entering(kind: .weight) }
+                BodyFatSection(range: range) { entering = Entering(kind: .bodyFat) }
                 WeeklySetsSection()
                 WeeklyVolumeSection()
                 ExercisesSection()
@@ -30,7 +35,30 @@ struct ProgressTabView: View {
             .navigationDestination(for: MeasurementListRoute.self) { route in
                 MeasurementListView(kind: route.kind)
             }
+            .sheet(item: $entering) { entering in
+                if entering.kind == .bodyFat {
+                    BodyFatEntryView(onSave: save)
+                } else {
+                    WeightEntryView(onSave: save)
+                }
+            }
         }
+    }
+
+    private func save(_ measurement: BodyMeasurement) {
+        store.save(measurement)
+        Task {
+            // An estimate isn't a measurement, so Apple Health doesn't get it.
+            if measurement.estimate == nil {
+                await health.saveToHealth(measurement)
+            }
+            await sync.sync()
+        }
+    }
+
+    private struct Entering: Identifiable {
+        let kind: MeasurementKind
+        var id: MeasurementKind { kind }
     }
 }
 
@@ -45,11 +73,10 @@ private struct MeasurementListRoute: Hashable {
 /// The period chosen here applies to the body fat chart too.
 private struct BodyWeightSection: View {
     @Binding var range: BodyTrend.Range
+    let enter: () -> Void
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
-    @Environment(SyncEngine.self) private var sync
     @AppStorage("IronSage.weight.confirmed") private var confirmedIDs = ""
-    @State private var isEntering = false
 
     private var confirmed: Set<UUID> {
         Set(confirmedIDs.split(separator: ",").compactMap { UUID(uuidString: String($0)) })
@@ -67,7 +94,7 @@ private struct BodyWeightSection: View {
                         FittingStack {
                             Button("Yes, still current") { confirm(latest) }
                                 .buttonStyle(.borderedProminent)
-                            Button("Enter my weight") { isEntering = true }
+                            Button("Enter my weight", action: enter)
                                 .buttonStyle(.bordered)
                         }
                         .font(.subheadline.weight(.semibold))
@@ -79,9 +106,9 @@ private struct BodyWeightSection: View {
                 BodyRangePicker(range: $range)
                 let points = BodyTrend.points(store.bodyMeasurements, kind: .weight, range: range)
                     .map { BodyTrend.Point(date: $0.date, value: unit.value(fromKilograms: $0.value)) }
-                BodyChart(points: points, range: range, title: "Body weight", unit: String(localized: unit.symbol))
+                BodyChart(points: points, range: range, title: "Body weight", unit: String(appLocalized: unit.symbol))
                 if !asking {
-                    Button("Enter my weight", systemImage: "plus") { isEntering = true }
+                    Button("Enter my weight", systemImage: "plus", action: enter)
                 }
                 NavigationLink("All weights", value: MeasurementListRoute(kind: .weight))
             } else {
@@ -89,19 +116,10 @@ private struct BodyWeightSection: View {
                      ? "Apple Health has no weight for you yet."
                      : "No weight yet.")
                     .foregroundStyle(.secondary)
-                Button("Enter my weight", systemImage: "plus") { isEntering = true }
+                Button("Enter my weight", systemImage: "plus", action: enter)
             }
         } header: {
             Text("Body weight")
-        }
-        .sheet(isPresented: $isEntering) {
-            WeightEntryView { weight in
-                store.save(weight)
-                Task {
-                    await health.saveToHealth(weight)
-                    await sync.sync()
-                }
-            }
         }
     }
 
@@ -113,28 +131,33 @@ private struct BodyWeightSection: View {
 /// The latest body fat, from Apple Health (smart scales save it there) or typed in.
 private struct BodyFatSection: View {
     let range: BodyTrend.Range
+    let enter: () -> Void
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
-    @Environment(SyncEngine.self) private var sync
-    @State private var isEntering = false
 
     var body: some View {
         let latest = BodyTrend.latest(store.bodyMeasurements, kind: .bodyFat)
         Section {
             if let latest {
-                LatestRow(value: BodyFat.format(latest.value), date: latest.measuredAt)
+                LatestRow(value: BodyFat.format(latest), date: latest.measuredAt, isEstimate: latest.estimate != nil)
+                if let change = BodyFat.estimateChange(store.bodyMeasurements) {
+                    Text(BodyFat.describe(change))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 BodyChart(
                     points: BodyTrend.points(store.bodyMeasurements, kind: .bodyFat, range: range),
                     range: range,
                     title: "Body fat",
-                    unit: "%"
+                    unit: "%",
+                    marksEachPoint: true
                 )
-                Button("Enter body fat", systemImage: "plus") { isEntering = true }
+                Button("Enter body fat", systemImage: "plus", action: enter)
                 NavigationLink("All body fat", value: MeasurementListRoute(kind: .bodyFat))
             } else {
                 Text("No body fat yet. Smart scales usually save it to Apple Health.")
                     .foregroundStyle(.secondary)
-                Button("Enter body fat", systemImage: "plus") { isEntering = true }
+                Button("Enter body fat", systemImage: "plus", action: enter)
             }
             if health.hasNewTypes {
                 Button("Allow body fat from Apple Health", systemImage: "heart") {
@@ -145,25 +168,21 @@ private struct BodyFatSection: View {
             Text("Body fat")
         }
         .task { await health.checkForNewTypes() }
-        .sheet(isPresented: $isEntering) {
-            BodyFatEntryView { bodyFat in
-                store.save(bodyFat)
-                Task {
-                    await health.saveToHealth(bodyFat)
-                    await sync.sync()
-                }
-            }
-        }
     }
 }
 
 private struct LatestRow: View {
     let value: String
     let date: Date
+    var isEstimate = false
 
     var body: some View {
         LabeledContent {
-            Text(date.shortDay)
+            if isEstimate {
+                Text("\(date.shortDay), estimate")
+            } else {
+                Text(date.shortDay)
+            }
         } label: {
             Text(value)
                 .font(.title2.weight(.bold))
@@ -223,6 +242,9 @@ private struct BodyChart: View {
     let range: BodyTrend.Range
     let title: LocalizedStringResource
     let unit: String
+    /// Body fat marks every entry: a dot when measured, a band when estimated. Body
+    /// weight, often daily, marks only the latest.
+    var marksEachPoint = false
     @ChartHeight(160, maximum: 240) private var chartHeight
 
     var body: some View {
@@ -231,14 +253,21 @@ private struct BodyChart: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         } else {
+            let name = String(appLocalized: title)
             Chart(points, id: \.date) { point in
-                LineMark(x: .value("Date", point.date), y: .value(String(localized: title), point.value))
+                if let estimate = point.estimate {
+                    RuleMark(x: .value("Date", point.date), yStart: .value(name, estimate.lowerBound), yEnd: .value(name, estimate.upperBound))
+                        .lineStyle(StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .foregroundStyle(Color.chartMark.opacity(0.22))
+                }
+                LineMark(x: .value("Date", point.date), y: .value(name, point.value))
                     .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                     .foregroundStyle(Color.chartMark)
-                if point == points.last {
-                    PointMark(x: .value("Date", point.date), y: .value(String(localized: title), point.value))
-                        .symbolSize(64)
-                        .foregroundStyle(Color.chartMark)
+                if marksEachPoint || point == points.last {
+                    PointMark(x: .value("Date", point.date), y: .value(name, point.value))
+                        .symbol {
+                            PointSymbol(isEstimate: point.estimate != nil)
+                        }
                 }
             }
             .chartYScale(domain: .automatic(includesZero: false))
@@ -258,7 +287,23 @@ private struct BodyChart: View {
             .frame(height: chartHeight)
             .chartTextSize()
             .padding(.vertical, 4)
-            .accessibilityLabel(Text("\(String(localized: title)) over \(String(localized: range.spoken)), in \(unit)"))
+            .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
+            if marksEachPoint, points.contains(where: { $0.estimate != nil }) {
+                HStack(spacing: 18) {
+                    HStack(spacing: 6) {
+                        PointSymbol(isEstimate: false)
+                        Text("Measured")
+                    }
+                    HStack(spacing: 6) {
+                        PointSymbol(isEstimate: true)
+                            .background { Capsule().fill(Color.chartMark.opacity(0.22)).frame(width: 8, height: 18) }
+                        Text("Estimate")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            }
         }
     }
 
@@ -269,6 +314,25 @@ private struct BodyChart: View {
         let start = range.start().map { min($0, first) } ?? first
         let end = max(points.last?.date ?? .now, range == .all ? first : .now)
         return start...max(end, start.addingTimeInterval(86_400))
+    }
+}
+
+/// A filled dot for a measured value, a hollow one on a band for an estimate.
+private struct PointSymbol: View {
+    let isEstimate: Bool
+
+    var body: some View {
+        if isEstimate {
+            Circle()
+                .strokeBorder(Color.chartMark, lineWidth: 2)
+                .background(Circle().fill(Color(.secondarySystemGroupedBackground)))
+                .frame(width: 9, height: 9)
+        } else {
+            Circle()
+                .fill(Color.chartMark)
+                .overlay { Circle().strokeBorder(Color(.secondarySystemGroupedBackground), lineWidth: 2) }
+                .frame(width: 11, height: 11)
+        }
     }
 }
 
@@ -326,10 +390,14 @@ private struct WeightEntryView: View {
     }
 }
 
-/// Typing in body fat. It is saved to the phone and to Apple Health.
+/// Entering body fat: by default a range picked by eye, or an exact number from a
+/// scale or scan. Only exact numbers go to Apple Health.
 private struct BodyFatEntryView: View {
     let onSave: (BodyMeasurement) -> Void
     @Environment(\.dismiss) private var dismiss
+    /// The last way used, so someone with a scale gets the number field straight away.
+    @AppStorage("IronSage.bodyFat.exact") private var isExact = false
+    @State private var estimate: ClosedRange<Double>?
     @State private var value: Double?
     @State private var date = Date.now
     @FocusState private var isFocused: Bool
@@ -337,20 +405,54 @@ private struct BodyFatEntryView: View {
     var body: some View {
         NavigationStack {
             Form {
-                LabeledContent("Body fat") {
-                    HStack(spacing: 4) {
-                        TextField("Body fat", value: $value, format: .number.precision(.fractionLength(0...1)))
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.trailing)
-                            .focused($isFocused)
-                        Text(verbatim: "%")
-                            .foregroundStyle(.secondary)
+                Section {
+                    Picker("How", selection: $isExact) {
+                        Text("Estimate a range").tag(false)
+                        Text("Exact number").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("bodyFatMode")
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                }
+
+                if isExact {
+                    Section {
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            TextField(String("17.8"), value: $value, format: .number.precision(.fractionLength(0...1)))
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .font(.system(size: 44, weight: .bold))
+                                .monospacedDigit()
+                                .focused($isFocused)
+                                .accessibilityLabel("Body fat")
+                            Text(verbatim: "%")
+                                .font(.title.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                    } footer: {
+                        Text("From a body-fat scale, an InBody or a DEXA scan. Saved to Apple Health too.")
+                    }
+                } else {
+                    Section {
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                            ForEach(BodyFat.estimates, id: \.lowerBound) { range in
+                                Button(BodyFat.label(range)) { estimate = range }
+                                    .buttonStyle(RangeButtonStyle(isSelected: estimate == range))
+                            }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                    } footer: {
+                        Text("Pick the range closest to what you see in the mirror. A range shows as a band on your chart and isn't saved to Apple Health.")
                     }
                 }
+
                 DatePicker("Date", selection: $date, in: ...Date.now)
             }
             .brandBackground()
-            .navigationTitle("Enter body fat")
+            .navigationTitle("Body fat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -358,28 +460,80 @@ private struct BodyFatEntryView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        guard let percent else { return }
-                        onSave(BodyMeasurement(measuredAt: date, kind: .bodyFat, value: percent, source: .manual))
+                        guard let entry else { return }
+                        onSave(entry)
                         dismiss()
                     }
-                    .disabled(percent == nil)
+                    .disabled(entry == nil)
                 }
             }
-            .onAppear { isFocused = true }
+            .onChange(of: isExact) { isFocused = isExact }
+            .onAppear { isFocused = isExact }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.large])
     }
 
-    private var percent: Double? {
-        guard let value, BodyFat.plausible.contains(value) else { return nil }
-        return value
+    private var entry: BodyMeasurement? {
+        if isExact {
+            guard let value, BodyFat.plausible.contains(value) else { return nil }
+            return BodyMeasurement(measuredAt: date, kind: .bodyFat, value: value, source: .manual)
+        }
+        return estimate.map { BodyFat.estimate($0, at: date) }
+    }
+}
+
+/// One range to pick: a tile that fills with the accent when picked.
+private struct RangeButtonStyle: ButtonStyle {
+    let isSelected: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.title3.weight(isSelected ? .semibold : .regular))
+            .monospacedDigit()
+            .foregroundStyle(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(
+                isSelected ? AnyShapeStyle(.tint.opacity(0.12)) : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
+                in: .rect(cornerRadius: 12)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), lineWidth: 2)
+            }
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
 extension BodyFat {
     /// "18.5%"
     static func format(_ percent: Double) -> String {
-        (percent / 100).formatted(.percent.precision(.fractionLength(0...1)))
+        (percent / 100).formatted(.percent.precision(.fractionLength(0...1)).locale(AppLanguage.locale))
+    }
+
+    /// "18.5%", or an estimate: "About 15–20%", "Under 10%", "40% or more".
+    static func format(_ measurement: BodyMeasurement) -> String {
+        guard let estimate = measurement.estimate else { return format(measurement.value) }
+        if estimate == estimates.first || estimate == estimates.last { return label(estimate) }
+        return String(appLocalized: "About \(label(estimate))")
+    }
+
+    /// A range to pick: "15–20%", "Under 10%", "40% or more".
+    static func label(_ range: ClosedRange<Double>) -> String {
+        if range == estimates.first { return String(appLocalized: "Under \(format(range.upperBound))") }
+        if range == estimates.last { return String(appLocalized: "\(format(range.lowerBound)) or more") }
+        return "\(Int(range.lowerBound))–\(format(range.upperBound))"
+    }
+
+    /// "One range lower than your last estimate"
+    static func describe(_ change: Int) -> String {
+        switch change {
+        case 0: String(appLocalized: "Same range as your last estimate")
+        case -1: String(appLocalized: "One range lower than your last estimate")
+        case 1: String(appLocalized: "One range higher than your last estimate")
+        case ..<0: String(appLocalized: "\(-change) ranges lower than your last estimate")
+        default: String(appLocalized: "\(change) ranges higher than your last estimate")
+        }
     }
 }
 
@@ -399,10 +553,10 @@ private struct MeasurementListView: View {
         List {
             ForEach(measurements) { measurement in
                 LabeledContent {
-                    Text(measurement.source == .healthkit ? String(localized: "Apple Health") : String(localized: "Entered"))
+                    Text(source(of: measurement))
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(kind == .bodyFat ? BodyFat.format(measurement.value) : unit.formatWithUnit(kilograms: measurement.value))
+                        Text(kind == .bodyFat ? BodyFat.format(measurement) : unit.formatWithUnit(kilograms: measurement.value))
                             .monospacedDigit()
                         Text(measurement.measuredAt, format: .dateTime.month().day().year().hour().minute())
                             .font(.caption)
@@ -421,6 +575,11 @@ private struct MeasurementListView: View {
         }
         .brandBackground()
         .navigationTitle(kind == .bodyFat ? LocalizedStringKey("All body fat") : LocalizedStringKey("All weights"))
+    }
+
+    private func source(of measurement: BodyMeasurement) -> String {
+        if measurement.source == .healthkit { return String(appLocalized: "Apple Health") }
+        return measurement.estimate == nil ? String(appLocalized: "Entered") : String(appLocalized: "Estimate")
     }
 }
 
@@ -455,13 +614,13 @@ private struct WeeklySetsSection: View {
                         RectangleMark(
                             xStart: .value("Reference low", reference.lowerBound),
                             xEnd: .value("Reference high", reference.upperBound),
-                            y: .value("Muscle", String(localized: item.muscle.label)),
+                            y: .value("Muscle", String(appLocalized: item.muscle.label)),
                             height: .fixed(rowHeight)
                         )
                         .foregroundStyle(Color.primary.opacity(0.06))
                         BarMark(
                             x: .value("Sets", item.sets),
-                            y: .value("Muscle", String(localized: item.muscle.label)),
+                            y: .value("Muscle", String(appLocalized: item.muscle.label)),
                             height: .fixed(14)
                         )
                         .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 4, topTrailingRadius: 4))
@@ -538,7 +697,7 @@ private struct WeeklyVolumeSection: View {
                 .frame(height: chartHeight)
                 .chartTextSize()
                 .padding(.vertical, 4)
-                .accessibilityLabel(Text("Volume per week, in \(String(localized: unit.symbol))"))
+                .accessibilityLabel(Text("Volume per week, in \(String(appLocalized: unit.symbol))"))
             }
         } header: {
             Text("Weekly volume")

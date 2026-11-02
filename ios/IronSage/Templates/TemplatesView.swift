@@ -102,7 +102,7 @@ struct TemplateList: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("New template", systemImage: "plus") {
-                    creating = .new(dayName: String(localized: "Day \(1)"))
+                    creating = .new(dayName: String(appLocalized: "Day \(1)"))
                 }
             }
         }
@@ -387,7 +387,7 @@ struct TemplateDetailView: View {
                 } else {
                     Menu("More", systemImage: "ellipsis.circle") {
                         Button("Copy and edit", systemImage: "doc.on.doc") {
-                            editing = template.copy(named: String(localized: "\(name) (my copy)"), chinese: chinese)
+                            editing = template.copy(named: String(appLocalized: "\(name) (my copy)"), chinese: chinese)
                         }
                         if isHidden {
                             Button("Show program", systemImage: "eye") {

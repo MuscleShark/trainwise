@@ -55,7 +55,7 @@ struct PaywallView: View {
                 }
                 HStack(spacing: 16) {
                     Link("Terms of Use", destination: Self.termsOfUse)
-                    Link("Privacy policy", destination: Site.page("privacy"))
+                    SitePageButton(page: .privacy)
                 }
                 .font(.footnote)
             }

@@ -291,4 +291,27 @@ final class IronSageUITests: XCTestCase {
         app.buttons["跟随 iPhone"].tap()
         XCTAssertTrue(app.tabBars.buttons["Me"].waitForExistence(timeout: 10))
     }
+
+    func testBodyFatCanBeEnteredAsARange() {
+        app.tabBars.buttons["Progress"].tap()
+        let enter = app.buttons["Enter body fat"]
+        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
+        // The list builds rows as they scroll in, and iOS 26's tab bar floats over the
+        // list, so scroll until the button is there and clear of the tab bar.
+        let tabBar = app.tabBars.firstMatch
+        for _ in 0..<8 where !(enter.exists && enter.isHittable && enter.frame.maxY < tabBar.frame.minY - 8) {
+            app.swipeUp()
+        }
+        enter.tap()
+
+        // A range is the default; an exact number is the other choice.
+        let estimate = app.buttons["Estimate a range"]
+        XCTAssertTrue(estimate.waitForExistence(timeout: 5))
+        XCTAssertTrue(estimate.isSelected)
+        app.buttons["25–30%"].tap()
+        app.navigationBars["Body fat"].buttons["Save"].tap()
+
+        app.buttons["All body fat"].tap()
+        XCTAssertTrue(app.staticTexts["About 25–30%"].waitForExistence(timeout: 5))
+    }
 }

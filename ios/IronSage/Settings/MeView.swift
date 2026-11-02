@@ -176,7 +176,7 @@ struct ProfileHeader: View {
         HStack(spacing: 14) {
             AvatarView(url: ProfilePhoto.url(of: clerk.user), email: email)
             VStack(alignment: .leading, spacing: 2) {
-                Text(clerk.user?.displayName ?? String(localized: "Profile"))
+                Text(clerk.user?.displayName ?? String(appLocalized: "Profile"))
                     .font(.headline)
                 if let email {
                     Text(email)

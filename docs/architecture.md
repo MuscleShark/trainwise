@@ -202,7 +202,9 @@ templates             name_en, name_zh, level, days_per_week, owner (null = buil
 template_days         template, position, name, name_zh (built-in days, migration 0005)
 template_exercises    day, exercise, position, rest seconds, superset group
 template_sets         position, type, rep_min, rep_max, target_rir
-body_measurements     measured_at, kind (weight, body_fat, waist, ...), value, source, healthkit_sample_id
+body_measurements     measured_at, kind (weight, body_fat, waist, ...), value, value_low and value_high
+                      (a body fat estimate's range, value its middle, migration 0010), source,
+                      healthkit_sample_id
 daily_readiness       date (local), sleep minutes and stages, HRV (SDNN), resting HR, source
 ```
 

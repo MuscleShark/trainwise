@@ -83,10 +83,10 @@ private struct WeekHeader: View {
         let calendar = Calendar.current
         let thisWeek = calendar.dateInterval(of: .weekOfYear, for: .now)?.start
         if week.start == thisWeek {
-            return String(localized: "This week")
+            return String(appLocalized: "This week")
         }
         if let thisWeek, let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeek), week.start == lastWeek {
-            return String(localized: "Last week")
+            return String(appLocalized: "Last week")
         }
         let end = calendar.date(byAdding: .day, value: 6, to: week.start) ?? week.start
         return (week.start..<end).formatted(.interval.month(.abbreviated).day().locale(AppLanguage.locale))
@@ -126,7 +126,7 @@ struct WorkoutDetailView: View {
                 }
                 LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
                 if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
-                    LabeledContent("Heart rate", value: String(localized: "\(average) avg, \(maximum) max"))
+                    LabeledContent("Heart rate", value: String(appLocalized: "\(average) avg, \(maximum) max"))
                 }
             }
 
