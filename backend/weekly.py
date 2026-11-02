@@ -159,6 +159,7 @@ def build_input(db: Session, user: User, week_start: date) -> WeeklyInput | None
                     trained.append(item.exercise_id)
 
     stalled = [e for e in trained if is_stalled(sessions[e])]
+    cardio = cardio_minutes(this_week, exercises)
     readiness = week_readiness(db, user, week_start)
     return WeeklyInput(
         language=language if language in ("en", "zh") else "en",
@@ -167,7 +168,16 @@ def build_input(db: Session, user: User, week_start: date) -> WeeklyInput | None
         experience=profile.experience_level if profile else None,
         week_start=week_start.isoformat(),
         week_end=week_end.isoformat(),
-        workouts=len(this_week),
+        # Sessions with lifting; cardio alone (an Apple Watch run) counts as cardio.
+        workouts=sum(
+            1
+            for workout in this_week
+            if any(
+                item.exercise_id in exercises and exercises[item.exercise_id].kind != "cardio"
+                for item in workout.exercises
+            )
+        ),
+        cardio_minutes=cardio or None,
         sets_per_muscle=sets_per_muscle(this_week, exercises),
         records=[
             record
@@ -190,7 +200,7 @@ def sets_per_muscle(workouts: list[Workout], exercises: dict) -> list[MuscleSets
             done = sum(
                 1 for s in item.sets if s.completed_at is not None and s.set_type != "warmup"
             )
-            if exercise is None or not done:
+            if exercise is None or exercise.kind == "cardio" or not done:
                 continue
             for muscle in exercise.primary_muscles:
                 totals[muscle] = totals.get(muscle, 0) + done
@@ -199,6 +209,19 @@ def sets_per_muscle(workouts: list[Workout], exercises: dict) -> list[MuscleSets
                     totals[muscle] = totals.get(muscle, 0) + done / 2
     ordered = sorted(totals.items(), key=lambda m: (-m[1], MUSCLE_ORDER.get(m[0], 99)))
     return [MuscleSets(muscle=muscle, sets=sets) for muscle, sets in ordered]
+
+
+def cardio_minutes(workouts: list[Workout], exercises: dict) -> int:
+    """Minutes of completed cardio, from the time logged on each cardio set."""
+    seconds = sum(
+        s.duration_seconds or 0
+        for workout in workouts
+        for item in workout.exercises
+        if (exercise := exercises.get(item.exercise_id)) is not None and exercise.kind == "cardio"
+        for s in item.sets
+        if s.completed_at is not None
+    )
+    return round(seconds / 60)
 
 
 def is_stalled(sessions: list[ExerciseSession]) -> bool:

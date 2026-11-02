@@ -77,7 +77,8 @@ struct FigureView: View {
     private static let scene = Color.secondary.opacity(0.55)
 }
 
-/// The figure moving back and forth between its poses, or still when paused.
+/// The figure moving back and forth between its poses (cardio goes round in a loop),
+/// or still when paused.
 struct AnimatedFigureView: View {
     let movement: Movement
     let equipment: Equipment
@@ -90,7 +91,8 @@ struct AnimatedFigureView: View {
 
     var body: some View {
         TimelineView(.animation(paused: !isPlaying)) { context in
-            FigureView(movement: movement, equipment: equipment, progress: Self.ease(phase(at: context.date)), background: background)
+            let phase = phase(at: context.date)
+            FigureView(movement: movement, equipment: equipment, progress: movement.period == nil ? Self.ease(phase) : phase, background: background)
         }
         .onChange(of: isPlaying) {
             // Pausing keeps the current pose; playing resumes from it.
@@ -100,7 +102,7 @@ struct AnimatedFigureView: View {
 
     private func phase(at date: Date) -> Double {
         guard isPlaying else { return anchor.phase }
-        return (anchor.phase + date.timeIntervalSince(anchor.date) / Self.period).truncatingRemainder(dividingBy: 1)
+        return (anchor.phase + date.timeIntervalSince(anchor.date) / (movement.period ?? Self.period)).truncatingRemainder(dividingBy: 1)
     }
 
     /// Slow at both poses, quick in between.

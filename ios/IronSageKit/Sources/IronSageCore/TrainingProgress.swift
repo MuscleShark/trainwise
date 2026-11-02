@@ -15,7 +15,7 @@ public enum TrainingProgress {
         var sets: [Muscle: Double] = [:]
         for workout in workouts where !workout.isInProgress && week.contains(workout.startedAt) && workout.startedAt < week.end {
             for item in workout.exercises {
-                guard let exercise = exercises[item.exerciseId] else { continue }
+                guard let exercise = exercises[item.exerciseId], !exercise.isCardio else { continue }
                 let done = Double(item.sets.filter { $0.isCompleted && $0.setType != .warmup }.count)
                 guard done > 0 else { continue }
                 for muscle in exercise.primaryMuscles {
@@ -84,12 +84,13 @@ public enum TrainingProgress {
     }
 
     /// The exercises done in finished workouts, most recently done first; within one
-    /// workout, in the order they were done.
-    public static func recentExercises(in workouts: [Workout]) -> [UUID] {
+    /// workout, in the order they were done. `skipping` leaves some out (cardio).
+    public static func recentExercises(in workouts: [Workout], skipping: Set<UUID> = []) -> [UUID] {
         var seen: Set<UUID> = []
         var order: [UUID] = []
         for workout in workouts.filter({ !$0.isInProgress }).sorted(by: { $0.startedAt > $1.startedAt }) {
-            for item in workout.exercises where item.sets.contains(where: \.isCompleted) && seen.insert(item.exerciseId).inserted {
+            for item in workout.exercises where item.sets.contains(where: \.isCompleted) && !skipping.contains(item.exerciseId)
+                && seen.insert(item.exerciseId).inserted {
                 order.append(item.exerciseId)
             }
         }

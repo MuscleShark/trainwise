@@ -101,7 +101,8 @@ Agreed before M2 started:
 | Body weight | The latest weight from Apple Health is shown with its date and the question whether it is current. If it isn't, or there is none, the user types it in. Typed weights are written back to Apple Health |
 | Body fat | Read from Apple Health (smart scales save it there) or typed in; typed values are written back. Apple Health keeps it as a fraction, IronSage as percent. Body weight and body fat share one period: week, month, year or all time; over more than 120 days the charts show weekly averages. People who connected Apple Health before body fat was read get a button to allow it |
 | Readiness | Last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average. No combined score |
-| Workouts to Apple Health | Written when the workout is finished, as traditional strength training. When a Watch recorded it, active energy and average and maximum heart rate for the workout's time are added |
+| Workouts to Apple Health | Written when the workout is finished, as traditional strength training (a workout that is only cardio as that cardio, such as stair climbing). When a Watch recorded it, active energy and average and maximum heart rate for the workout's time are added; cardio logged by hand gets the average heart rate of its own minutes |
+| Cardio from Apple Health | Workouts another app or a Watch recorded as walking, running, cycling, stairs, elliptical or rowing become built-in cardio exercises (indoor walking is the incline walk, indoor cycling the exercise bike), with time, distance, average heart rate and active energy. One recorded during an IronSage workout joins it (also when the workout is finished later); any other is a workout of its own. Cardio removed in the app is remembered on the phone and not imported again. A recorded cardio workout is never taken for the strength workout itself |
 | Weekly sets | Per muscle: a primary muscle counts 1, a secondary one 0.5. A light reference band of 10 to 20 sets |
 | Personal records | Heaviest weight, best estimated one-rep max, and most reps at a weight |
 
@@ -219,7 +220,7 @@ Notes:
 - **Offline logging**: the app creates records with its own UUIDs and saves each workout as a whole (`PUT`, safe to retry; last write wins). Every write takes the next value of the user's `change_seq`. The update locks the user's row until commit, so `GET /v1/sync?since=N` never skips a change, and users never wait for each other.
 - **History instead of snapshots**: weight, body fat and sleep live in dated tables, so trends can be charted.
 - **Derived values are not stored**: personal records, estimated one-rep max and weekly sets are computed from sets.
-- **Exercise catalog**: 151 exercises written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
+- **Exercise catalog**: 160 exercises (9 of them cardio, with `kind` and `cardio_metrics`) written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
 - **Built-in templates**: fifteen programs, five per experience level (see [coaching.md](coaching.md)), in `backend/template_catalog.py`, synced the same way after the exercises. Who each suits and how to progress on it live in the app (`ProgramGuide.swift`), keyed by slug like the exercise figures.
 
 ## AI coach
@@ -267,7 +268,7 @@ Later (version 2), a coach agent can chat and change plans with tools on our API
 
 ## Apple Health
 
-- Only the iPhone can read HealthKit, so the app reads it and uploads **daily summaries** (sleep, HRV, resting HR, workout heart rate). Raw samples are never uploaded.
+- Only the iPhone can read HealthKit, so the app reads it and uploads **daily summaries** (sleep, HRV, resting HR, workout heart rate) and the totals of cardio workouts it recorded (time, distance, average heart rate, active energy). Raw samples are never uploaded.
 - Finished workouts are written to HealthKit so they appear in Apple Fitness.
 - Before anything is sent to the AI, the app tells the user which summaries are sent and asks for consent. HealthKit data is never used for advertising (an App Store rule).
 

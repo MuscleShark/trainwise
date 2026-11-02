@@ -13,7 +13,7 @@ export default function ExercisesPage() {
   const [chosen, setChosen] = useState<string | null>(null);
   if (!training) return null;
 
-  const done = recentExercises(training.workouts);
+  const done = recentExercises(training.workouts, training.cardio);
   const exerciseId = chosen && done.includes(chosen) ? chosen : done[0];
 
   return (

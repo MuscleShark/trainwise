@@ -12,7 +12,8 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 
 - Sign-in with Clerk: email verification code, Google or Apple (no passwords); the API verifies Clerk session tokens
 - Strength workouts: exercises, sets, reps, load (kg, 3 decimals so pounds round-trip), RIR, set types
-- Built-in exercise catalog (151 exercises, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
+- Cardio in the same workouts: an exercise of `kind` cardio lists what it logs besides time (`cardio_metrics`), and a session is one set with the time, distance, speed, incline, the machine's level, floors, average heart rate, active energy and, when an Apple Watch recorded it, that workout's id (migration 0011); the weekly summary counts it as minutes, not as workouts or sets
+- Built-in exercise catalog (160 exercises, 9 of them cardio, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
 - Training templates with rep ranges and target RIR, including four built-in programs (`backend/template_catalog.py`)
 - Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate); body fat can be an estimated range (`value_low`/`value_high`, migration 0010) with its middle as the value
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
@@ -24,7 +25,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - Privacy policy and support pages in English and Chinese; with `?app=1` they show only the text, for the app's sheet
 - Training review after sign-in (read-only; the iPhone app is where things change), in English or Chinese following the browser:
   - Overview (`/review`): workouts in all, this week against the planned days, weeks in a row, weekly volume for 12 weeks, body weight and body fat over a week, month, year or all time, and recent workouts
-  - History (`/review/history`): workouts by week, each opening to its exercises and sets
+  - History (`/review/history`): workouts by week, each opening to its exercises and sets, cardio with its time and the machine's numbers
   - Exercises (`/review/exercises`): one exercise's records and estimated one-rep max over time
   - The numbers are worked out in `frontend/app/lib/training.ts` the same way as the app's IronSageCore; the charts are plain SVG with a readout on hover and keyboard focus and a table for screen readers
 
@@ -33,12 +34,13 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - Clerk sign-in, five tabs (Today, History, Progress, Templates, Me), English and Chinese: the phone's language, or one picked at the bottom of Me › Profile, which switches the app at once, text looked up in code included (`String(appLocalized:)` in `ios/IronSage/Shared/AppLanguage.swift`)
 - Works offline: data is kept on the phone (SwiftData) and synced with the API when online
 - Workout logging: exercise search (typos, English or Chinese, aliases such as "RDL", pinyin such as "wotui"), custom exercises, sets prefilled from last time (weight and reps; reps in reserve isn't asked for), a rest timer with a lock-screen notification, and a summary with volume and new records
+- Cardio: incline walk, treadmill run, stair climber, exercise bike, rowing machine, elliptical, and outdoor walks, runs and rides, each with a looping stick figure (`ios/IronSageKit/Sources/IronSageCore/CardioFigures.swift`). Added to a workout from what the Apple Watch recorded today or logged by hand with the machine's own numbers, starting from last time's; in templates with a time and settings to aim for. It isn't stepped up like sets, and isn't counted in sets per muscle, volume or records
 - History by week: each workout's sets, editing and deleting
 - Templates: fifteen built-in programs, five per experience level (English and Chinese), shown for the user's level (beginner until it is set) with a picker for the others; each program's page says who it suits and how to progress, and shows one day at a time with sets × reps and rest. The user's own templates are built from scratch, copied from a program or saved from a finished workout, with each exercise's sets, rep range and rest; programs can be hidden, on all the user's devices; starting a template day fills in its exercises, sets and targets
 - Profile (asked once after the first sign-in): units, experience, goal, training days, and optional height and birthday; the photo is changed from the library or camera, or removed, by tapping it
 - Me tab: profile photo, name and email (opening the profile and the app's settings), workouts in all, this week against the planned training days, weeks in a row with training, the latest body weight and body fat with their trend, what IronSage Coach costs, and sign out and account deletion as quiet buttons at the bottom; the privacy policy and support open in a sheet four fifths of the screen high; sync problems are shown only when changes can't reach the server
-- Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), saves finished workouts as strength training, and adds heart rate and active energy when an Apple Watch recorded the workout
-- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current) and body fat, each typed in or from Apple Health (typed ones are written back to it); body fat is entered as a 5-point range by default (an estimate, shown as a band on the chart, with how many ranges it moved since the last estimate, and not written to Apple Health) or as an exact number; over a week, month, year or all time (averaged per week once the data spans more than 120 days), weekly sets per muscle with a 10–20 reference band, weekly volume, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
+- Apple Health (optional; everything else works without it): reads sleep, HRV, resting heart rate, body weight and body fat (the last 90 days, then what changed), and cardio workouts another app or an Apple Watch recorded (walks, runs, rides, stairs, elliptical, rowing): one recorded during an IronSage workout joins it, any other becomes its own workout, and one removed in the app isn't imported again. Saves finished workouts as strength training (cardio on its own as that cardio), adds heart rate and active energy when an Apple Watch recorded the workout, and gives cardio logged by hand its heart rate from those minutes
+- Progress tab: body weight (a weight from Apple Health is used once the user confirms it is current) and body fat, each typed in or from Apple Health (typed ones are written back to it); body fat is entered as a 5-point range by default (an estimate, shown as a band on the chart, with how many ranges it moved since the last estimate, and not written to Apple Health) or as an exact number; over a week, month, year or all time (averaged per week once the data spans more than 120 days), weekly sets per muscle with a 10–20 reference band, weekly volume, weekly cardio minutes against the WHO's 150–300 with this week's sessions, and each exercise's estimated one-rep max chart and records (heaviest weight, best estimated one-rep max, most reps at a weight)
 - Today shows last night's sleep, HRV and resting heart rate, each compared with the user's own 28-day average
 - Follows the iPhone's text size up to the largest accessibility size: rows put their value under the name, a set takes two lines from XXXL (its number fields stop growing at AX2 so they fit), and charts grow taller while their labels stop growing at AX1 (`ios/IronSage/Shared/AdaptiveLayout.swift`); a UI test logs a set at the largest size
 - API client generated from `api/openapi.json`
@@ -232,7 +234,7 @@ Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator
 
 To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises, workouts and Apple Health data in memory, no sign-in and no network.
 
-The app calls the production API and the Clerk development instance; both values are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project. Both are public: the publishable key also ships in the web app.
+A Debug build (run from Xcode) calls the staging API and a Release build the production API, so a change merged to `main` can be tried on staging before it is promoted; both use the Clerk development instance. These are build settings (`API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) in the project, and both are public: the publishable key also ships in the web app. Staging's database is a copy of production's, so the same account signs in to both; sign out before switching a phone between a Debug and a Release build, so its local data starts again from the other server.
 
 From the command line:
 
@@ -312,6 +314,7 @@ Next, after version 1:
 - [x] Body fat from Apple Health, typed in or estimated as a range, with week, month, year and all-time ranges for body weight and body fat
 - [x] The user's own templates built from scratch or copied from a program, and hiding built-in programs (synced across devices)
 - [x] Reviewing training on the website (read-only)
+- [x] Cardio: logged by hand or read from Apple Watch, with weekly minutes
 - [ ] Sharing a template by link
 - [ ] Apple Watch: the workout in progress on the wrist
 

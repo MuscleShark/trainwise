@@ -130,9 +130,7 @@ private struct UpNextSection: View {
                                 .lineLimit(size.isAccessibilitySize ? nil : 1)
                         } trailing: {
                             HStack(spacing: 8) {
-                                Text(advised.flatMap { topSet($0, unit: unit, loadType: loadType) }
-                                    ?? suggestion.topSet(unit: unit, loadType: loadType)
-                                    ?? TemplateTarget(item: item).summary)
+                                Text(planned(item, suggestion: suggestion, advised: advised, unit: unit, loadType: loadType))
                                     .monospacedDigit()
                                     .foregroundStyle(.secondary)
                                 Image(systemName: advised == nil ? suggestion.systemImage : "sparkles")
@@ -159,6 +157,17 @@ private struct UpNextSection: View {
                 Text("Suggested from your last sessions. Each exercise says why once you start.")
             }
         }
+    }
+
+    /// What the row shows: the hardest planned set, or for cardio its time and settings.
+    private func planned(_ item: TemplateExercise, suggestion: NextSession.Suggestion, advised: CoachAdvice.Exercise?, unit: WeightUnit, loadType: LoadType) -> String {
+        let exercise = store.exercises[item.exerciseId]
+        if exercise?.isCardio == true, let set = suggestion.sets.first, set.durationSeconds != nil {
+            return CardioText.summary(set, exercise: exercise, unit: unit)
+        }
+        return advised.flatMap { topSet($0, unit: unit, loadType: loadType) }
+            ?? suggestion.topSet(unit: unit, loadType: loadType)
+            ?? TemplateTarget(item: item, exercise: exercise, unit: unit).summary
     }
 
     /// The hardest of the coach's sets, as `NextSession.Suggestion.topSet` does.
@@ -214,7 +223,15 @@ struct WorkoutRow: View {
 
     private var summary: String {
         workout.exercises
-            .map { "\(store.exerciseName($0.exerciseId)) × \($0.sets.count)" }
+            .map { item in
+                let exercise = store.exercises[item.exerciseId]
+                // Cardio by its time, lifting by its sets.
+                if exercise?.isCardio == true {
+                    let seconds = item.sets.compactMap(\.durationSeconds).reduce(0, +)
+                    return "\(store.exerciseName(item.exerciseId)) \(CardioText.minutes(seconds))"
+                }
+                return "\(store.exerciseName(item.exerciseId)) × \(item.sets.count)"
+            }
             .joined(separator: ", ")
     }
 }

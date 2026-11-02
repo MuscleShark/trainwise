@@ -102,6 +102,37 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Workout"].exists)
     }
 
+    func testCardioCanBeAddedFromTheWatchOrLoggedByHand() {
+        let empty = app.buttons["Start an empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        let addCardio = app.buttons["Add cardio"].firstMatch
+        XCTAssertTrue(addCardio.waitForExistence(timeout: 10))
+        addCardio.tap()
+
+        // The demo's Watch recorded stairs this morning.
+        let fromWatch = app.buttons["Add Stair climber"]
+        XCTAssertTrue(fromWatch.waitForExistence(timeout: 10))
+        fromWatch.tap()
+        XCTAssertTrue(app.staticTexts["Added"].waitForExistence(timeout: 5))
+
+        // The incline walk starts from last time's 15 minutes.
+        app.buttons["cardio-Incline walk"].tap()
+        let add = app.navigationBars["Incline walk"].buttons["Add"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        XCTAssertTrue(add.isEnabled)
+        add.tap()
+
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Incline walk"].exists)
+        XCTAssertTrue(app.staticTexts["Stair climber"].exists)
+        app.buttons["Finish"].tap()
+        let confirm = app.buttons["Finish workout"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        confirm.tap()
+        XCTAssertTrue(app.staticTexts["Cardio"].waitForExistence(timeout: 10))
+    }
+
     func testTheProgressTabShowsBodyWeightAndVolume() {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))

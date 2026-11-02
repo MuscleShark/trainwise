@@ -66,6 +66,10 @@ extension NextSession.Suggestion {
             String(appLocalized: "Ready for more weight, but you slept little last night. Same weight today.")
         case .addLoadOrVariation:
             String(appLocalized: "Top of the range: add weight or try a harder variation.")
+        case .cardio(firstTime: true):
+            String(appLocalized: "First time: log what you did.")
+        case .cardio(firstTime: false):
+            String(appLocalized: "Same as last time. Cardio isn't stepped up the way sets are.")
         }
     }
 
@@ -78,6 +82,7 @@ extension NextSession.Suggestion {
         case .decrease, .deload: "arrow.down"
         case .heldForSleep: "moon.zzz"
         case .addLoadOrVariation: "arrow.up.right"
+        case .cardio(let firstTime): firstTime ? "flag" : "equal"
         }
     }
 

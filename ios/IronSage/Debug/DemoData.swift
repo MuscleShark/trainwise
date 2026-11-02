@@ -15,7 +15,18 @@ enum DemoData {
         let pulldown = exercise("lat_pulldown", "Lat pulldown", "高位下拉", .cable, .total, [.lats], [.biceps, .upperBack], ["pulldown", "下拉"])
         let curl = exercise("dumbbell_curl", "Dumbbell curl", "哑铃弯举", .dumbbell, .perSide, [.biceps], [.forearms], [])
         let raise = exercise("lateral_raise", "Dumbbell lateral raise", "哑铃侧平举", .dumbbell, .perSide, [.sideDelts], [.traps], ["侧平举"])
-        store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise])
+        let walk = cardio("incline_walk", "Incline walk", "爬坡走", .machine, [.incline, .speed, .distance])
+        let stairs = cardio("stair_climber", "Stair climber", "楼梯机", .machine, [.level, .floors])
+        let run = cardio("outdoor_run", "Outdoor run", "户外跑步", .bodyweight, [.distance])
+        let otherCardio = [
+            cardio("treadmill_run", "Treadmill run", "跑步机跑步", .machine, [.speed, .incline, .distance]),
+            cardio("exercise_bike", "Exercise bike", "动感单车", .machine, [.resistance, .distance]),
+            cardio("rowing_machine", "Rowing machine", "划船机", .machine, [.distance, .damper]),
+            cardio("elliptical", "Elliptical", "椭圆机", .machine, [.resistance, .distance]),
+            cardio("outdoor_walk", "Outdoor walk", "户外步行", .bodyweight, [.distance]),
+            cardio("outdoor_ride", "Outdoor ride", "户外骑行", .other, [.distance]),
+        ]
+        store.replaceBuiltInExercises([bench, squat, rdl, row, press, pulldown, curl, raise, walk, stairs, run] + otherCardio)
         // Built-in IDs, so each program's guide shows. The days are shortened.
         let ppl = Template(
             id: ProgramGuide.builtinID(slug: "push_pull_legs"),
@@ -23,7 +34,7 @@ enum DemoData {
             days: [
                 day("Push", "推", [(bench, 4, 5, 8, 180), (press, 3, 6, 10, 180), (raise, 3, 12, 20, 90)]),
                 day("Pull", "拉", [(row, 4, 6, 10, 180), (pulldown, 3, 8, 12, 180), (curl, 3, 10, 12, 90)]),
-                day("Legs", "腿", [(squat, 4, 5, 8, 180), (rdl, 3, 8, 10, 180)]),
+                day("Legs", "腿", [(squat, 4, 5, 8, 180), (rdl, 3, 8, 10, 180)], cardio: [.cardio(walk.id)]),
             ],
             isCustom: false
         )
@@ -61,13 +72,22 @@ enum DemoData {
         }
         store.save(workout("Push", daysAgo: 4, [(bench, 180, [(60, 8), (60, 8), (60, 7)]), (press, 150, [(40, 8), (40, 7)]), (raise, 90, [(8, 12), (8, 12)])]))
         store.save(workout("Legs", daysAgo: 2, [(squat, 180, [(100, 5), (100, 5), (100, 5)]), (rdl, 150, [(80, 10), (80, 10)])]))
-        store.save(workout("Pull", daysAgo: 1, [(row, 150, [(70, 8), (70, 8)]), (pulldown, 120, [(55, 10), (55, 10)]), (curl, 90, [(12, 10), (12, 9)])]))
+        var pull = workout("Pull", daysAgo: 1, [(row, 150, [(70, 8), (70, 8)]), (pulldown, 120, [(55, 10), (55, 10)]), (curl, 90, [(12, 10), (12, 9)])])
+        pull.exercises.append(cardioItem(walk, minutes: 15, endingAt: pull.endedAt!, distanceM: 1207, speedKmh: 4.83, inclinePct: 12))
+        store.save(pull)
+        // Cardio the Watch recorded on its own: a run three days ago, and stairs this morning.
+        store.save(watchWorkout(run, minutes: 28, daysAgo: 3, distanceM: 4989, heart: 152, kcal: 310))
+        store.save(watchWorkout(stairs, minutes: 22, daysAgo: 0, distanceM: nil, heart: 138, kcal: 212))
 
         // Six earlier weeks, a little lighter each week back.
         for week in 1...6 {
             let back = Double(week) * 2.5
             store.save(workout("Push", daysAgo: 4 + 7 * week, [(bench, 180, [(60 - back, 8), (60 - back, 8), (60 - back, 6)]), (press, 150, [(40 - back / 2, 8), (40 - back / 2, 6)])]))
             store.save(workout("Legs", daysAgo: 2 + 7 * week, [(squat, 180, [(100 - back * 2, 5), (100 - back * 2, 5), (100 - back * 2, 5)]), (rdl, 150, [(80 - back, 8), (80 - back, 8)])]))
+            if week <= 4 {
+                store.save(watchWorkout(run, minutes: 25 + 5 * (week % 3), daysAgo: 3 + 7 * week, distanceM: 4500, heart: 150, kcal: 280))
+                store.save(watchWorkout(stairs, minutes: 20, daysAgo: 1 + 7 * week, distanceM: nil, heart: 136, kcal: 190))
+            }
         }
         fillHealth(store)
         fillCoach(store, coach: coach)
@@ -150,14 +170,37 @@ enum DemoData {
         Exercise(id: ExerciseVisuals.builtinID(slug: slug), nameEn: en, nameZh: zh, equipment: equipment, loadType: load, primaryMuscles: primary, secondaryMuscles: secondary, aliases: aliases, isCustom: false)
     }
 
-    private static func day(_ en: String, _ zh: String, _ items: [(Exercise, Int, Int, Int, Int)]) -> TemplateDay {
+    private static func day(_ en: String, _ zh: String, _ items: [(Exercise, Int, Int, Int, Int)], cardio: [TemplateExercise] = []) -> TemplateDay {
         TemplateDay(name: en, nameZh: zh, exercises: items.map { exercise, sets, low, high, rest in
             TemplateExercise(
                 exerciseId: exercise.id,
                 restSeconds: rest,
                 sets: (0..<sets).map { _ in TemplateSet(repMin: low, repMax: high) }
             )
-        })
+        } + cardio)
+    }
+
+    private static func cardio(_ slug: String, _ en: String, _ zh: String, _ equipment: Equipment, _ metrics: [CardioMetric]) -> Exercise {
+        Exercise(id: ExerciseVisuals.builtinID(slug: slug), nameEn: en, nameZh: zh, equipment: equipment, loadType: .total,
+                 primaryMuscles: [.glutes, .quads], isCustom: false, kind: .cardio, cardioMetrics: metrics)
+    }
+
+    private static func cardioItem(_ exercise: Exercise, minutes: Int, endingAt end: Date, distanceM: Double? = nil, speedKmh: Double? = nil,
+                                   inclinePct: Double? = nil, heart: Int? = nil, kcal: Int? = nil, watchID: String? = nil) -> WorkoutExercise {
+        WorkoutExercise(exerciseId: exercise.id, sets: [WorkoutSet(
+            durationSeconds: minutes * 60, distanceM: distanceM, speedKmh: speedKmh, inclinePct: inclinePct,
+            avgHeartRate: heart, energyKcal: kcal, healthkitWorkoutId: watchID, completedAt: end
+        )])
+    }
+
+    /// Cardio as an Apple Watch workout read from Apple Health.
+    private static func watchWorkout(_ exercise: Exercise, minutes: Int, daysAgo: Int, distanceM: Double?, heart: Int, kcal: Int) -> Workout {
+        let start = Date.now.addingTimeInterval(-Double(daysAgo) * 86_400 - 3 * 3600)
+        let end = start.addingTimeInterval(TimeInterval(minutes * 60) + 4)
+        let id = UUID().uuidString
+        return Workout(title: exercise.nameEn, startedAt: start, endedAt: end, healthkitWorkoutId: id, exercises: [
+            cardioItem(exercise, minutes: minutes, endingAt: end, distanceM: distanceM, heart: heart, kcal: kcal, watchID: id),
+        ])
     }
 
     private static func workout(_ title: String, templateID: UUID?, daysAgo: Int, _ items: [(Exercise, Int, [(Double, Int)])]) -> Workout {

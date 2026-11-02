@@ -3,6 +3,7 @@ from decimal import Decimal
 from conftest import TestingSessionLocal, auth_headers
 from helpers import BENCH, SQUAT, new_id, workout_body
 
+from catalog import exercise_id
 from models import WorkoutSet
 
 
@@ -198,3 +199,42 @@ def test_workouts_require_sign_in(client):
     assert client.get("/v1/workouts").status_code == 401
     assert client.put(f"/v1/workouts/{workout_id}", json=workout_body()).status_code == 401
     assert client.delete(f"/v1/workouts/{workout_id}").status_code == 401
+
+
+def test_cardio_is_one_set_with_time_and_the_machines_numbers(client):
+    headers = auth_headers("cardio@example.com")
+    workout_id = new_id()
+    body = workout_body(exercise=str(exercise_id("incline_walk")), sets=0)
+    body["exercises"][0]["sets"] = [
+        {
+            "id": new_id(),
+            "duration_seconds": 900,
+            "incline_pct": "12",
+            "speed_kmh": "4.83",
+            "distance_m": "1207.01",
+            "avg_heart_rate": 128,
+            "energy_kcal": 110,
+            "healthkit_workout_id": "6F0B6D7E-6B83-4A51-9E59-2B3A5C1F7A10",
+            "completed_at": "2026-10-20T18:50:00+02:00",
+        }
+    ]
+
+    response = client.put(f"/v1/workouts/{workout_id}", json=body, headers=headers)
+
+    assert response.status_code == 200, response.text
+    (cardio,) = response.json()["exercises"][0]["sets"]
+    assert cardio["duration_seconds"] == 900
+    assert (cardio["incline_pct"], cardio["speed_kmh"], cardio["distance_m"]) == (12, 4.83, 1207.01)
+    assert (cardio["avg_heart_rate"], cardio["energy_kcal"]) == (128, 110)
+    assert cardio["healthkit_workout_id"] == "6F0B6D7E-6B83-4A51-9E59-2B3A5C1F7A10"
+    assert cardio["reps"] is None and cardio["level"] is None
+
+
+def test_cardio_numbers_must_be_plausible(client):
+    headers = auth_headers("cardio@example.com")
+    body = workout_body()
+    body["exercises"][0]["sets"][0].update({"incline_pct": "55"})
+
+    response = client.put(f"/v1/workouts/{new_id()}", json=body, headers=headers)
+
+    assert response.status_code == 422

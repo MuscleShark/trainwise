@@ -23,6 +23,7 @@ struct TemplateEditorView: View {
 
     private struct DayID: Identifiable {
         let id: UUID
+        var only: ExerciseKind?
     }
 
     var body: some View {
@@ -56,7 +57,11 @@ struct TemplateEditorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ExerciseRoute.self) { route in
                 if let binding = exerciseBinding(route.id) {
-                    TemplateExerciseEditor(item: binding)
+                    if let exercise = store.exercises[binding.wrappedValue.exerciseId], exercise.isCardio {
+                        TemplateCardioEditor(item: binding, exercise: exercise)
+                    } else {
+                        TemplateExerciseEditor(item: binding)
+                    }
                 }
             }
             .toolbar {
@@ -81,9 +86,9 @@ struct TemplateEditorView: View {
                 Button("Discard changes", role: .destructive) { dismiss() }
             }
             .sheet(item: $addingTo) { day in
-                ExercisePickerView { exercise in
+                ExercisePickerView(only: day.only) { exercise in
                     guard let index = template.days.firstIndex(where: { $0.id == day.id }) else { return }
-                    template.days[index].exercises.append(.standard(exercise.id))
+                    template.days[index].exercises.append(exercise.isCardio ? .cardio(exercise.id) : .standard(exercise.id))
                 }
             }
         }
@@ -101,7 +106,7 @@ struct TemplateEditorView: View {
                     AdaptiveRow {
                         Text(store.exerciseName(item.exerciseId))
                     } trailing: {
-                        Text(TemplateTarget(item: item).summary)
+                        Text(TemplateTarget(item: item, exercise: store.exercises[item.exerciseId], unit: store.weightUnit).summary)
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
                     }
@@ -116,6 +121,9 @@ struct TemplateEditorView: View {
             if day.exercises.count < Template.maxExercisesPerDay {
                 Button("Add exercise", systemImage: "plus") {
                     addingTo = DayID(id: day.id)
+                }
+                Button("Add cardio", systemImage: "figure.stair.stepper") {
+                    addingTo = DayID(id: day.id, only: .cardio)
                 }
             }
             if template.days.count > 1 {
@@ -198,6 +206,70 @@ private struct TemplateExerciseEditor: View {
 
     private static func duration(_ seconds: Int) -> String {
         Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated).locale(AppLanguage.locale))
+    }
+}
+
+/// Time and the machine's settings to aim for, for cardio in a template.
+private struct TemplateCardioEditor: View {
+    @Binding var item: TemplateExercise
+    let exercise: Exercise
+    @Environment(LocalStore.self) private var store
+
+    var body: some View {
+        let unit = store.weightUnit
+        Form {
+            Section {
+                Stepper(value: binding(\.durationSeconds, default: 1200), in: 300...10_800, step: 300) {
+                    LabeledContent("Time", value: CardioText.minutes(target.durationSeconds ?? 1200))
+                }
+                ForEach(exercise.cardioMetrics.filter { $0 != .distance && $0 != .floors }, id: \.self) { metric in
+                    LabeledContent {
+                        NumberField(placeholder: String(appLocalized: "Optional"), value: value(metric, unit: unit), decimals: !metric.isLevel)
+                            .frame(width: 110)
+                            .accessibilityLabel(Text(metric.label))
+                    } label: {
+                        switch metric {
+                        case .incline: CardioFieldTitle(title: metric.label, unit: "%")
+                        case .speed: CardioFieldTitle(title: metric.label, unit: CardioText.speedUnit(unit))
+                        default: Text(metric.label)
+                        }
+                    }
+                }
+            } footer: {
+                Text("Cardio shows what you did last time. It isn't stepped up the way sets are.")
+            }
+        }
+        .brandBackground()
+        .navigationTitle(store.exerciseName(item.exerciseId))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var target: TemplateSet {
+        item.sets.first ?? TemplateSet(durationSeconds: 1200)
+    }
+
+    private func change(_ edit: (inout TemplateSet) -> Void) {
+        var set = target
+        edit(&set)
+        item.sets = [set]
+    }
+
+    private func binding(_ keyPath: WritableKeyPath<TemplateSet, Int?>, default value: Int) -> Binding<Int> {
+        Binding(get: { target[keyPath: keyPath] ?? value }, set: { new in change { $0[keyPath: keyPath] = new } })
+    }
+
+    private func value(_ metric: CardioMetric, unit: WeightUnit) -> Binding<Double?> {
+        switch metric {
+        case .incline:
+            Binding(get: { target.inclinePct }, set: { new in change { $0.inclinePct = new.map { CardioUnits.incline(min(max($0, -10), 40)) } } })
+        case .speed:
+            Binding(
+                get: { target.speedKmh.map { (CardioUnits.speed(fromKmh: $0, unit: unit) * 10).rounded() / 10 } },
+                set: { new in change { $0.speedKmh = new.map { min(CardioUnits.kmh(fromSpeed: $0, unit: unit), 60) } } }
+            )
+        default:
+            Binding(get: { target.level.map(Double.init) }, set: { new in change { $0.level = new.map { Int(min($0, 100)) } } })
+        }
     }
 }
 

@@ -23,7 +23,7 @@ export const CONTACT_EMAIL = "support@ironsage.app";
 export const privacy: Record<Lang, Page> = {
   en: {
     title: "Privacy policy",
-    updated: "Last updated October 28, 2026",
+    updated: "Last updated November 1, 2026",
     intro:
       "IronSage is a strength-training log for iPhone with an optional AI coach. It is run by an individual developer. This page explains what data IronSage keeps, why, who helps process it, and how you can delete it.",
     otherLanguage: { label: "中文", href: "/privacy/zh" },
@@ -36,7 +36,7 @@ export const privacy: Record<Lang, Page> = {
           "Profile: birthday, height, gender, where you train, units, experience, goal and training days per week. All are optional except units.",
           "Training: your workouts, exercises, sets, reps, weights, notes, templates and the exercises you create.",
           "Body measurements you enter or allow from Apple Health: weight, body fat and girth measurements.",
-          "Apple Health data, only if you allow it: sleep time and sleep stages, heart rate variability, resting heart rate, and average and maximum heart rate during workouts. IronSage stores daily summaries, not the raw readings.",
+          "Apple Health data, only if you allow it: sleep time and sleep stages, heart rate variability, resting heart rate, average and maximum heart rate during workouts, and the cardio workouts other apps and devices such as an Apple Watch record (the kind, time, distance, average heart rate and active energy of each). IronSage stores daily summaries and these workout totals, not the raw readings.",
           "AI coach, if you turn it on: the suggestions and weekly summaries it writes, each with the data it was based on.",
           "Subscription, if you subscribe: Apple's record of the purchase, meaning the product, Apple's transaction ID, the dates, any offer or promotion code used, and whether it renewed, expired or was refunded. IronSage never sees your payment details.",
           "Server logs: when requests reach the IronSage API and any errors they cause, kept for 30 days to fix problems and keep the service secure. The website's host keeps its own short-lived request logs, which include IP addresses.",
@@ -61,7 +61,7 @@ export const privacy: Record<Lang, Page> = {
       {
         heading: "The AI coach",
         paragraphs: [
-          "The AI coach is optional and off until you turn it on. It suggests your next session and, every Monday, writes a summary of your past week. For each, IronSage sends Anthropic, the company behind the Claude AI model, only what it needs: your recent sets for the exercises involved, or for the weekly summary the week's sets per muscle, records and lifts that stalled; your experience, goal, units and language; and daily summaries of sleep, heart rate variability and resting heart rate. Your email address and name are not sent.",
+          "The AI coach is optional and off until you turn it on. It suggests your next session and, every Monday, writes a summary of your past week. For each, IronSage sends Anthropic, the company behind the Claude AI model, only what it needs: your recent sets for the exercises involved, or for the weekly summary the week's sets per muscle, records, lifts that stalled and minutes of cardio; your experience, goal, units and language; and daily summaries of sleep, heart rate variability and resting heart rate. Your email address and name are not sent.",
           "Anthropic processes this data to produce the suggestion or summary for IronSage. Its handling of the data is described in Anthropic's privacy policy at anthropic.com/legal/privacy. Each suggestion and summary is saved in your account together with the data it was based on, so you can see why it was made.",
           "You can turn the AI coach off at any time in the app under Me › Profile. IronSage then stops sending data to Anthropic.",
         ],
@@ -124,7 +124,7 @@ export const privacy: Record<Lang, Page> = {
   },
   zh: {
     title: "隐私政策",
-    updated: "最后更新：2026 年 10 月 28 日",
+    updated: "最后更新：2026 年 11 月 1 日",
     intro:
       "IronSage 是一款 iPhone 力量训练记录 App，附带可选的 AI 教练，由一位个人开发者运营。本页说明 IronSage 保存哪些数据、为什么保存、由谁协助处理，以及如何删除。",
     otherLanguage: { label: "English", href: "/privacy" },
@@ -137,7 +137,7 @@ export const privacy: Record<Lang, Page> = {
           "档案：生日、身高、性别、训练地点、单位、训练经验、目标和每周训练天数。除单位外都可以不填。",
           "训练：你的训练记录、动作、组数、次数、重量、备注、训练模板，以及你自建的动作。",
           "你手动输入或允许从 Apple 健康读取的身体数据：体重、体脂和围度。",
-          "Apple 健康数据，仅在你允许时读取：睡眠时长和睡眠阶段、心率变异性、静息心率，以及训练时的平均和最高心率。IronSage 只保存每天的汇总，不保存原始读数。",
+          "Apple 健康数据，仅在你允许时读取：睡眠时长和睡眠阶段、心率变异性、静息心率、训练时的平均和最高心率，以及其他 App 和设备（例如 Apple Watch）记录的有氧训练（每次的类型、时长、距离、平均心率和活动能量）。IronSage 只保存每天的汇总和这些训练的总数，不保存原始读数。",
           "AI 教练，仅在你开启后：它写的建议和每周总结，以及每条所依据的数据。",
           "订阅，仅在你订阅后：Apple 提供的购买记录，包括产品、Apple 的交易编号、日期、使用过的优惠或促销码，以及续订、到期或退款的状态。IronSage 不会接触到你的付款信息。",
           "服务器日志：请求到达 IronSage 接口的时间，以及引发的错误，保存 30 天，用于排查问题和保障安全。网站的托管服务商会保留自己的短期访问日志，其中包含 IP 地址。",
@@ -162,7 +162,7 @@ export const privacy: Record<Lang, Page> = {
       {
         heading: "AI 教练",
         paragraphs: [
-          "AI 教练是可选功能，默认关闭，需要你主动开启。它会建议你下一次怎么练，并在每周一总结你上一周的训练。每次 IronSage 只把需要的数据发给 Anthropic（Claude AI 模型背后的公司）：相关动作最近的训练组，或者在每周总结里，这一周每块肌肉的组数、新纪录和停滞的动作；你的训练经验、目标、单位和语言；以及睡眠、心率变异性和静息心率的每日汇总。不会发送你的邮箱和姓名。",
+          "AI 教练是可选功能，默认关闭，需要你主动开启。它会建议你下一次怎么练，并在每周一总结你上一周的训练。每次 IronSage 只把需要的数据发给 Anthropic（Claude AI 模型背后的公司）：相关动作最近的训练组，或者在每周总结里，这一周每块肌肉的组数、新纪录、停滞的动作和有氧分钟数；你的训练经验、目标、单位和语言；以及睡眠、心率变异性和静息心率的每日汇总。不会发送你的邮箱和姓名。",
           "Anthropic 处理这些数据，为 IronSage 生成建议或总结。它如何处理数据，请见 Anthropic 的隐私政策：anthropic.com/legal/privacy。每条建议和总结会和它所依据的数据一起保存在你的账号里，方便你查看理由。",
           "你可以随时在 App 的「我 › 个人资料」里关闭 AI 教练，之后 IronSage 不再向 Anthropic 发送数据。",
         ],

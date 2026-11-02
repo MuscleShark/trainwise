@@ -53,6 +53,10 @@ EQUIPMENT = (
     "other",
 )
 LOAD_TYPES = ("total", "per_side", "bodyweight_plus", "assisted")
+KINDS = ("strength", "cardio")
+# What a cardio exercise logs besides time. level, resistance and damper are the same
+# number (the machine's setting) under the name the machine gives it.
+CARDIO_METRICS = ("incline", "speed", "distance", "level", "resistance", "damper", "floors")
 
 
 class CatalogExercise(NamedTuple):
@@ -63,9 +67,18 @@ class CatalogExercise(NamedTuple):
     load_type: str
     primary: tuple[str, ...]
     secondary: tuple[str, ...] = ()
+    kind: str = "strength"
+    cardio_metrics: tuple[str, ...] = ()
 
 
 E = CatalogExercise
+
+
+def C(slug, name_en, name_zh, equipment, primary, secondary, metrics) -> CatalogExercise:
+    """A cardio exercise: logged by time, with the machine's own numbers; the weight
+    fields (load type) don't apply."""
+    return E(slug, name_en, name_zh, equipment, "total", primary, secondary, "cardio", metrics)
+
 
 BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     # Chest
@@ -228,6 +241,16 @@ BUILTIN_EXERCISES: tuple[CatalogExercise, ...] = (
     E("power_clean", "Power clean", "高翻", "barbell", "total", ("quads", "glutes", "traps"), ("hamstrings", "upper_back")),
     E("hang_clean", "Hang clean", "悬垂翻", "barbell", "total", ("traps", "glutes"), ("quads", "hamstrings")),
     E("farmers_carry", "Farmer's carry", "农夫行走", "dumbbell", "per_side", ("forearms", "traps"), ("abs",)),
+    # Cardio
+    C("incline_walk", "Incline walk", "爬坡走", "machine", ("glutes", "calves"), ("hamstrings", "quads"), ("incline", "speed", "distance")),
+    C("treadmill_run", "Treadmill run", "跑步机跑步", "machine", ("quads", "calves"), ("glutes", "hamstrings"), ("speed", "incline", "distance")),
+    C("stair_climber", "Stair climber", "楼梯机", "machine", ("glutes", "quads"), ("calves", "hamstrings"), ("level", "floors")),
+    C("exercise_bike", "Exercise bike", "动感单车", "machine", ("quads",), ("glutes", "calves", "hamstrings"), ("resistance", "distance")),
+    C("rowing_machine", "Rowing machine", "划船机", "machine", ("upper_back", "quads"), ("lats", "glutes", "hamstrings", "biceps"), ("distance", "damper")),
+    C("elliptical", "Elliptical", "椭圆机", "machine", ("quads", "glutes"), ("hamstrings", "calves"), ("resistance", "distance")),
+    C("outdoor_walk", "Outdoor walk", "户外步行", "bodyweight", ("glutes", "calves"), ("quads", "hamstrings"), ("distance",)),
+    C("outdoor_run", "Outdoor run", "户外跑步", "bodyweight", ("quads", "calves"), ("glutes", "hamstrings"), ("distance",)),
+    C("outdoor_ride", "Outdoor ride", "户外骑行", "other", ("quads",), ("glutes", "calves", "hamstrings"), ("distance",)),
 )  # fmt: skip
 
 
@@ -297,6 +320,15 @@ ALIASES: dict[str, tuple[str, ...]] = {
     "kettlebell_swing": ("KB swing",),
     "power_clean": ("clean",),
     "farmers_carry": ("farmer's walk", "农夫走"),
+    "incline_walk": ("treadmill walk", "12-3-30", "坡度走", "跑步机走"),
+    "treadmill_run": ("treadmill", "跑步机"),
+    "stair_climber": ("StairMaster", "stepmill", "爬楼机", "爬楼梯"),
+    "exercise_bike": ("spin bike", "stationary bike", "健身车"),
+    "rowing_machine": ("rower", "erg", "划船器"),
+    "elliptical": ("cross trainer", "交叉训练机"),
+    "outdoor_walk": ("walk", "hike", "散步", "徒步"),
+    "outdoor_run": ("run", "jog", "慢跑"),
+    "outdoor_ride": ("bike ride", "cycling", "骑车"),
 }
 
 
@@ -320,6 +352,8 @@ def sync_builtin_exercises(db: Session) -> dict[str, int]:
             "primary_muscles": list(entry.primary),
             "secondary_muscles": list(entry.secondary),
             "aliases": list(ALIASES.get(entry.slug, ())),
+            "kind": entry.kind,
+            "cardio_metrics": list(entry.cardio_metrics),
             "deleted_at": None,
         }
         row = existing.pop(exercise_id(entry.slug), None)

@@ -433,6 +433,24 @@
               "null"
             ]
           },
+          "cardio_metrics": {
+            "default": [],
+            "items": {
+              "enum": [
+                "incline",
+                "speed",
+                "distance",
+                "level",
+                "resistance",
+                "damper",
+                "floors"
+              ],
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Cardio Metrics",
+            "type": "array"
+          },
           "change_seq": {
             "title": "Change Seq",
             "type": "integer"
@@ -468,6 +486,15 @@
           "is_custom": {
             "title": "Is Custom",
             "type": "boolean"
+          },
+          "kind": {
+            "default": "strength",
+            "enum": [
+              "strength",
+              "cardio"
+            ],
+            "title": "Kind",
+            "type": "string"
           },
           "load_type": {
             "enum": [
@@ -595,6 +622,24 @@
               "null"
             ]
           },
+          "cardio_metrics": {
+            "default": [],
+            "items": {
+              "enum": [
+                "incline",
+                "speed",
+                "distance",
+                "level",
+                "resistance",
+                "damper",
+                "floors"
+              ],
+              "type": "string"
+            },
+            "maxItems": 4,
+            "title": "Cardio Metrics",
+            "type": "array"
+          },
           "equipment": {
             "enum": [
               "barbell",
@@ -608,6 +653,15 @@
               "other"
             ],
             "title": "Equipment",
+            "type": "string"
+          },
+          "kind": {
+            "default": "strength",
+            "enum": [
+              "strength",
+              "cardio"
+            ],
+            "title": "Kind",
             "type": "string"
           },
           "load_type": {
@@ -1333,11 +1387,29 @@
       },
       "SetRead": {
         "properties": {
+          "avg_heart_rate": {
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Avg Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "completed_at": {
             "format": "date-time",
             "title": "Completed At",
             "type": [
               "string",
+              "null"
+            ]
+          },
+          "distance_m": {
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Distance M",
+            "type": [
+              "number",
               "null"
             ]
           },
@@ -1350,10 +1422,54 @@
               "null"
             ]
           },
+          "energy_kcal": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Energy Kcal",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "floors": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Floors",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "healthkit_workout_id": {
+            "maxLength": 64,
+            "title": "Healthkit Workout Id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "incline_pct": {
+            "maximum": 40.0,
+            "minimum": -10.0,
+            "title": "Incline Pct",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "level": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Level",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "reps": {
             "maximum": 1000.0,
@@ -1383,6 +1499,15 @@
             ],
             "title": "Set Type",
             "type": "string"
+          },
+          "speed_kmh": {
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Speed Kmh",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "weight_kg": {
             "maximum": 2000.0,
@@ -1402,11 +1527,29 @@
       },
       "SetWrite": {
         "properties": {
+          "avg_heart_rate": {
+            "maximum": 250.0,
+            "minimum": 20.0,
+            "title": "Avg Heart Rate",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "completed_at": {
             "format": "date-time",
             "title": "Completed At",
             "type": [
               "string",
+              "null"
+            ]
+          },
+          "distance_m": {
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Distance M",
+            "type": [
+              "number",
               "null"
             ]
           },
@@ -1419,10 +1562,54 @@
               "null"
             ]
           },
+          "energy_kcal": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Energy Kcal",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "floors": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Floors",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "healthkit_workout_id": {
+            "maxLength": 64,
+            "title": "Healthkit Workout Id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "incline_pct": {
+            "maximum": 40.0,
+            "minimum": -10.0,
+            "title": "Incline Pct",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "level": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Level",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "reps": {
             "maximum": 1000.0,
@@ -1452,6 +1639,15 @@
             ],
             "title": "Set Type",
             "type": "string"
+          },
+          "speed_kmh": {
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Speed Kmh",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "weight_kg": {
             "maximum": 2000.0,
@@ -1891,10 +2087,37 @@
       },
       "TemplateSetRead": {
         "properties": {
+          "duration_seconds": {
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "incline_pct": {
+            "maximum": 40.0,
+            "minimum": -10.0,
+            "title": "Incline Pct",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "level": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Level",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rep_max": {
             "maximum": 1000.0,
@@ -1924,6 +2147,15 @@
             ],
             "title": "Set Type",
             "type": "string"
+          },
+          "speed_kmh": {
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Speed Kmh",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "target_rir": {
             "maximum": 10.0,
@@ -1943,10 +2175,37 @@
       },
       "TemplateSetWrite": {
         "properties": {
+          "duration_seconds": {
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "incline_pct": {
+            "maximum": 40.0,
+            "minimum": -10.0,
+            "title": "Incline Pct",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "level": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Level",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "rep_max": {
             "maximum": 1000.0,
@@ -1976,6 +2235,15 @@
             ],
             "title": "Set Type",
             "type": "string"
+          },
+          "speed_kmh": {
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Speed Kmh",
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "target_rir": {
             "maximum": 10.0,

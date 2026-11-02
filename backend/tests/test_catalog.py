@@ -4,15 +4,26 @@ from conftest import TestingSessionLocal, auth_headers
 from sqlalchemy import select
 
 import catalog
-from catalog import ALIASES, BUILTIN_EXERCISES, EQUIPMENT, LOAD_TYPES, MUSCLES, exercise_id
+from catalog import (
+    ALIASES,
+    BUILTIN_EXERCISES,
+    CARDIO_METRICS,
+    EQUIPMENT,
+    KINDS,
+    LOAD_TYPES,
+    MUSCLES,
+    exercise_id,
+)
 from models import Exercise
-from schemas import Equipment, LoadType, Muscle
+from schemas import CardioMetric, Equipment, ExerciseKind, LoadType, Muscle
 
 
 def test_catalog_matches_the_api_vocabulary():
     assert set(MUSCLES) == set(typing.get_args(Muscle))
     assert set(EQUIPMENT) == set(typing.get_args(Equipment))
     assert set(LOAD_TYPES) == set(typing.get_args(LoadType))
+    assert set(KINDS) == set(typing.get_args(ExerciseKind))
+    assert set(CARDIO_METRICS) == set(typing.get_args(CardioMetric))
 
 
 def test_catalog_entries_are_valid():
@@ -25,6 +36,10 @@ def test_catalog_entries_are_valid():
         assert entry.load_type in LOAD_TYPES
         assert entry.primary
         assert set(entry.primary + entry.secondary) <= set(MUSCLES)
+        assert entry.kind in KINDS
+        assert set(entry.cardio_metrics) <= set(CARDIO_METRICS)
+        # Cardio says what it logs besides time; lifting logs weight and reps.
+        assert bool(entry.cardio_metrics) == (entry.kind == "cardio")
 
 
 def test_aliases_belong_to_catalog_entries():
@@ -60,3 +75,12 @@ def test_sync_updates_changed_and_retires_removed_entries(client, monkeypatch):
         assert counts == {"added": 0, "updated": 1, "removed": 1}
         assert db.get(Exercise, exercise_id(first.slug)).name_zh == "杠铃平板卧推"
         assert db.get(Exercise, exercise_id(rest[0].slug)).deleted_at is not None
+
+
+def test_cardio_is_served_with_what_it_logs(client):
+    response = client.get("/v1/exercises", headers=auth_headers("a@example.com"))
+
+    by_id = {exercise["id"]: exercise for exercise in response.json()}
+    stairs = by_id[str(exercise_id("stair_climber"))]
+    assert (stairs["kind"], stairs["cardio_metrics"]) == ("cardio", ["level", "floors"])
+    assert by_id[str(exercise_id("deadlift"))]["kind"] == "strength"

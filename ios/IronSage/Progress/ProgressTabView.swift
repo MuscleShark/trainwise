@@ -4,7 +4,7 @@ import IronSageStore
 import SwiftUI
 
 /// The Progress tab: body weight and body fat, weekly sets per muscle, weekly volume,
-/// and a way into each exercise's progress.
+/// weekly cardio, and a way into each exercise's progress.
 struct ProgressTabView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
@@ -22,6 +22,7 @@ struct ProgressTabView: View {
                 BodyFatSection(range: range) { entering = Entering(kind: .bodyFat) }
                 WeeklySetsSection()
                 WeeklyVolumeSection()
+                CardioProgressSection()
                 ExercisesSection()
             }
             .brandBackground()
@@ -707,13 +708,130 @@ private struct WeeklyVolumeSection: View {
     }
 }
 
+// MARK: Cardio
+
+/// Minutes of cardio a week against the WHO guideline, and this week's sessions.
+private struct CardioProgressSection: View {
+    @Environment(LocalStore.self) private var store
+    @ChartHeight(160, maximum: 240) private var chartHeight
+
+    var body: some View {
+        let weeks = Cardio.weeklyMinutes(in: store.finishedWorkouts, exercises: store.exercises, weeks: 8)
+        let reference = Cardio.weeklyMinutesReference
+        let thisWeek = weeks.last?.minutes ?? 0
+        let start = Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
+        let sessions = Cardio.sessions(in: store.finishedWorkouts, exercises: store.exercises, from: start)
+        Section {
+            if weeks.allSatisfy({ $0.minutes == 0 }) {
+                Text("No cardio yet. Add it to a workout, or record it on your Apple Watch.")
+                    .foregroundStyle(.secondary)
+            } else {
+                AdaptiveRow {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(CardioText.minutes(thisWeek * 60))
+                            .font(.title2.weight(.bold))
+                            .monospacedDigit()
+                        Text("This week so far")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } trailing: {
+                    Text(thisWeek < reference.lowerBound ? "Below 150–300 min" : thisWeek > reference.upperBound ? "Above 150–300 min" : "Inside 150–300 min")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Chart {
+                    RectangleMark(
+                        yStart: .value("Reference low", reference.lowerBound),
+                        yEnd: .value("Reference high", reference.upperBound)
+                    )
+                    .foregroundStyle(Color.primary.opacity(0.06))
+                    ForEach(weeks, id: \.start) { week in
+                        BarMark(
+                            x: .value("Week", week.start, unit: .weekOfYear),
+                            y: .value("Minutes", week.minutes),
+                            width: .ratio(0.6)
+                        )
+                        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
+                        // This week isn't over yet.
+                        .foregroundStyle(Color.chartMark.opacity(week.start == weeks.last?.start ? 0.5 : 1))
+                    }
+                }
+                .chartYScale(domain: 0...max(reference.upperBound + 30, (weeks.map(\.minutes).max() ?? 0) + 20))
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
+                        AxisValueLabel(format: .dateTime.month(.abbreviated).day(), centered: true)
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading, values: [0, 150, 300]) { _ in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                        AxisValueLabel()
+                    }
+                }
+                .frame(height: chartHeight)
+                .chartTextSize()
+                .padding(.vertical, 4)
+                .accessibilityLabel(Text("Minutes of cardio per week"))
+                .accessibilityValue(Text(weeks.map { "\($0.start.shortDay): \(CardioText.minutes($0.minutes * 60))" }.joined(separator: ", ")))
+
+                ForEach(sessions) { session in
+                    NavigationLink(value: WorkoutRoute(id: session.workoutID)) {
+                        CardioRow(session: session)
+                    }
+                }
+            }
+        } header: {
+            Text("Cardio")
+        } footer: {
+            Text("The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets, volume or records.")
+        }
+    }
+}
+
+private struct CardioRow: View {
+    let session: Cardio.Session
+    @Environment(LocalStore.self) private var store
+
+    var body: some View {
+        let exercise = store.exercises[session.exerciseID]
+        HStack(spacing: 12) {
+            ExerciseThumbnail(exercise: exercise, size: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(store.exerciseName(session.exerciseID))
+                    if session.done.healthkitWorkoutId != nil {
+                        Label("Apple Watch", systemImage: "applewatch")
+                            .font(.caption)
+                            .labelStyle(.titleAndIcon)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 1)
+                            .background(.quaternary, in: .rect(cornerRadius: 6))
+                    }
+                }
+                Text(detail(exercise))
+                    .font(.subheadline)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func detail(_ exercise: Exercise?) -> String {
+        let day = session.date.formatted(.dateTime.weekday(.abbreviated).locale(AppLanguage.locale))
+        var parts = [day, CardioText.summary(session.done, exercise: exercise, unit: store.weightUnit)]
+        if let heart = session.done.avgHeartRate { parts.append(String(appLocalized: "\(heart) bpm avg")) }
+        return parts.joined(separator: " · ")
+    }
+}
+
 // MARK: Exercises
 
 private struct ExercisesSection: View {
     @Environment(LocalStore.self) private var store
 
     var body: some View {
-        let exercises = TrainingProgress.recentExercises(in: store.finishedWorkouts)
+        let exercises = TrainingProgress.recentExercises(in: store.finishedWorkouts, skipping: store.cardioExerciseIDs)
         if !exercises.isEmpty {
             Section("Exercises") {
                 ForEach(exercises, id: \.self) { id in

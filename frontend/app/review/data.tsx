@@ -17,6 +17,8 @@ export interface Training {
   workouts: Workout[];
   exercises: Map<string, Exercise>;
   loadTypes: Map<string, LoadType>;
+  // Cardio exercises: logged by time, not counted as sets or lifts.
+  cardio: Set<string>;
   measurements: Measurement[];
   unit: WeightUnit;
   plannedDaysPerWeek: number | null;
@@ -72,6 +74,7 @@ export function TrainingProvider({ children }: { children: React.ReactNode }) {
           workouts,
           exercises: new Map(exercises.map((exercise) => [exercise.id, exercise])),
           loadTypes: new Map(exercises.map((exercise) => [exercise.id, exercise.load_type])),
+          cardio: new Set(exercises.filter((exercise) => exercise.kind === "cardio").map((exercise) => exercise.id)),
           measurements,
           unit: profile
             ? profile.unit_system === "imperial"

@@ -4,9 +4,11 @@ import { test } from "node:test";
 
 import {
   bodyPoints,
+  cardioParts,
   estimatedOneRepMax,
   exerciseSessions,
   formatWeight,
+  liftingSets,
   type LoadType,
   type Measurement,
   recentExercises,
@@ -176,4 +178,31 @@ test("recent exercises come newest first", () => {
     workout(3, [[BENCH, [set(80, 5, { done: false })]]]),
   ]);
   assert.deepEqual(order, [CURL, BENCH]);
+});
+
+test("cardio is left out of lifting sets and the exercise list", () => {
+  const walk: TrainingSet = { set_type: "working", duration_seconds: 900, completed_at: day(0).toISOString() };
+  const both = workout(0, [[BENCH, [set(80, 5), set(80, 5)]], ["walk", [walk]]]);
+  assert.equal(liftingSets(both, new Set(["walk"])), 2);
+  assert.deepEqual(recentExercises([both], new Set(["walk"])), [BENCH]);
+});
+
+test("cardio shows in the user's units, a rower in meters", () => {
+  const walk: TrainingSet = {
+    set_type: "working",
+    duration_seconds: 900,
+    distance_m: 1207.01,
+    speed_kmh: 4.83,
+    incline_pct: 12,
+  };
+  assert.deepEqual(cardioParts(walk, "lb", "en-US"), {
+    minutes: 15,
+    distance: "0.75 mi",
+    speed: "3 mph",
+    incline: "12%",
+  });
+  assert.equal(cardioParts(walk, "kg", "en-US").distance, "1.21 km");
+  assert.equal(cardioParts(walk, "kg", "en-US").speed, "4.8 km/h");
+  const row: TrainingSet = { set_type: "working", duration_seconds: 708, distance_m: 2500, level: 5 };
+  assert.deepEqual(cardioParts(row, "lb", "en-US", { meters: true }), { minutes: 12, distance: "2,500 m", level: 5 });
 });

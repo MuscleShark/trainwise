@@ -58,6 +58,8 @@ public enum NextSession {
         /// The top of the range without weight to add (body weight): add weight or a
         /// harder variation.
         case addLoadOrVariation
+        /// Cardio: last time's numbers, or nothing to go by yet.
+        case cardio(firstTime: Bool)
     }
 
     public struct Suggestion: Hashable, Sendable {
@@ -80,6 +82,9 @@ public enum NextSession {
     /// Each template set keeps its own rep target, so a template saved from a workout
     /// with 8, 7 and 6 reps progresses each set from its own reps.
     public static func suggest(_ exercise: Exercise, template: TemplateExercise? = nil, context: Context) -> Suggestion {
+        if exercise.isCardio {
+            return Cardio.suggestion(exercise, template: template, context: context)
+        }
         let targets = template?.sets ?? []
         let workingTargets = targets.filter { $0.setType != .warmup }
         let last = WorkoutLog.lastSets(of: exercise.id, in: context.history, before: context.before)
@@ -299,7 +304,7 @@ public enum NextSession {
             return WorkoutSet(setType: type, reps: target ?? range.min, weightKg: weight)
         case .repeatWeight:
             return WorkoutSet(setType: type, reps: type == .working ? range.min : reps, weightKg: weight)
-        case .heldForSleep, .addLoadOrVariation, .firstTime:
+        case .heldForSleep, .addLoadOrVariation, .firstTime, .cardio:
             return WorkoutSet(setType: type, reps: reps ?? range.min, weightKg: weight)
         }
     }

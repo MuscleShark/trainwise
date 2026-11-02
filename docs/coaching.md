@@ -40,6 +40,14 @@ The iPhone app computes these suggestions itself (`ios/IronSageKit/Sources/IronS
 - **Stall:** the best e1RM of the last three sessions is no better than the best before them. The app shows a note; changing the plan is left to the user and, later, the AI coach.
 - **Not yet:** "painful" sessions can't be marked yet, and lighter-week (deload) suggestions come with the weekly summary.
 
+## Cardio
+
+Cardio (incline walk, stair climber, bike, rower, elliptical, walks, runs and rides) is logged in the same workouts as one set per session: the time, and the machine's own numbers (incline, speed, distance, level, resistance or damper, floors). What an Apple Watch recorded comes in from Apple Health with its heart rate and active energy.
+
+- **No progression rule.** The next session starts from last time's time and settings (`Cardio.suggestion` in `ios/IronSageKit/Sources/IronSageCore/Cardio.swift`), or the template's target the first time, and says so. Unlike load and reps, there is no agreed rule for stepping cardio up, so the app doesn't invent one.
+- **Not counted as lifting.** Cardio is left out of sets per muscle, volume, records and the coach's session advice. Combined aerobic and strength training doesn't reduce muscle growth or maximal strength in the research (Schumann et al. 2022), so the app doesn't warn against it.
+- **Weekly minutes** on Progress, against the WHO guideline for adults: 150 to 300 minutes of moderate activity a week, or 75 to 150 if vigorous (Bull et al. 2020). The weekly summary gets the minutes (`cardio_minutes`) and mentions them in one sentence.
+
 ## Built-in templates
 
 IronSage writes its own templates from these principles. Programs such as 5/3/1, Starting Strength and StrongLifts are trademarks or copyrighted works, so their names and exact programs are not used.
@@ -57,6 +65,8 @@ Five programs per experience level (`backend/template_catalog.py`); the Template
 - Pelland et al. 2025, weekly volume and frequency dose response, *Sports Medicine*: https://link.springer.com/article/10.1007/s40279-025-02344-w
 - Robinson et al. 2024, proximity to failure, *Sports Medicine*: https://link.springer.com/article/10.1007/s40279-024-02069-2
 - Schoenfeld et al. 2017, low vs high load, *JSCR*: https://journals.lww.com/nsca-jscr/fulltext/2017/12000/strength_and_hypertrophy_adaptations_between_low_.31.aspx
+- Schumann et al. 2022, concurrent aerobic and strength training, *Sports Medicine*: https://doi.org/10.1007/s40279-021-01587-7
+- Bull et al. 2020, WHO guidelines on physical activity and sedentary behaviour, *British Journal of Sports Medicine*: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7719906/
 - Singer et al. 2024, rest intervals, *Frontiers in Sports and Active Living*: https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2024.1429789/full
 - Moesgaard et al. 2022, periodization, *Sports Medicine*: https://pubmed.ncbi.nlm.nih.gov/35044672/
 - Autoregulated training for maximal strength, network meta-analysis 2025: https://pubmed.ncbi.nlm.nih.gov/40791980/

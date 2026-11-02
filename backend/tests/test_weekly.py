@@ -13,7 +13,7 @@ from test_coach_api import enable_coach
 import coach_handler
 import weekly
 from catalog import exercise_id
-from coach import providers
+from coach import prompt, providers
 from models import User, WeeklySummary, utcnow
 
 EMAIL = "lifter@example.com"
@@ -158,6 +158,51 @@ def test_the_weeks_numbers_are_computed_from_synced_workouts(client):
     assert week.readiness.nights == 0 and week.readiness.sleep_minutes is None
     assert not week.deload_suggested
     assert (week.language, week.unit) == ("en", "kg")
+
+
+def test_cardio_counts_as_minutes_not_as_workouts_or_sets(client):
+    log(client, "2026-10-20T18:00:00-04:00", [(60, 8)])
+
+    def cardio(started_at, slug, minutes, done=True):
+        body = {
+            "title": "Cardio",
+            "started_at": started_at,
+            "ended_at": started_at,
+            "time_zone": "America/New_York",
+            "exercises": [
+                {
+                    "id": new_id(),
+                    "exercise_id": str(exercise_id(slug)),
+                    "sets": [
+                        {
+                            "id": new_id(),
+                            "duration_seconds": minutes * 60,
+                            "completed_at": started_at if done else None,
+                        }
+                    ],
+                }
+            ],
+        }
+        response = client.put(f"/v1/workouts/{new_id()}", json=body, headers=auth_headers(EMAIL))
+        assert response.status_code == 200, response.text
+
+    # An Apple Watch run on its own, a stair climber session, one left undone.
+    cardio("2026-10-21T07:00:00-04:00", "outdoor_run", 28)
+    cardio("2026-10-22T18:00:00-04:00", "stair_climber", 22)
+    cardio("2026-10-23T18:00:00-04:00", "exercise_bike", 40, done=False)
+
+    week = week_input()
+    assert week.workouts == 1
+    assert week.cardio_minutes == 50
+    assert {m.muscle for m in week.sets_per_muscle} == {"chest", "front_delts", "triceps"}
+
+
+def test_a_week_without_cardio_leaves_it_out(client):
+    log(client, "2026-10-20T18:00:00-04:00", [(60, 8)])
+
+    week = week_input()
+    assert week.cardio_minutes is None
+    assert "cardio_minutes" not in prompt.model_view(week)
 
 
 def test_a_better_estimate_is_a_record_and_language_and_unit_follow_the_app(client):

@@ -1,6 +1,7 @@
 from conftest import auth_headers
 from helpers import BENCH, SQUAT, new_id
 
+from catalog import exercise_id
 from template_catalog import BUILTIN_TEMPLATES
 
 
@@ -106,3 +107,28 @@ def test_invalid_templates_are_rejected(client):
     unknown = template_body()
     unknown["days"][0]["exercises"][0]["exercise_id"] = new_id()
     assert client.put(f"/v1/templates/{new_id()}", json=unknown, headers=headers).status_code == 422
+
+
+def test_cardio_in_a_template_has_a_time_and_targets(client):
+    headers = auth_headers("me@example.com")
+    body = template_body()
+    body["days"][1]["exercises"].append(
+        {
+            "id": new_id(),
+            "exercise_id": str(exercise_id("incline_walk")),
+            "sets": [
+                {"id": new_id(), "duration_seconds": 900, "incline_pct": "12", "speed_kmh": "4.8"}
+            ],
+        }
+    )
+
+    response = client.put(f"/v1/templates/{new_id()}", json=body, headers=headers)
+
+    assert response.status_code == 200, response.text
+    target = response.json()["days"][1]["exercises"][1]["sets"][0]
+    assert (target["duration_seconds"], target["incline_pct"], target["speed_kmh"]) == (
+        900,
+        12,
+        4.8,
+    )
+    assert target["rep_min"] is None and target["level"] is None

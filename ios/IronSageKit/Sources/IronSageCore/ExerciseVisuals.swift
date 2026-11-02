@@ -45,13 +45,20 @@ public struct Movement: Sendable, Hashable {
     /// A static hold (a plank), shown as a hold rather than as reps.
     public var isHold: Bool { pattern.isHold }
 
+    /// Seconds per loop for cardio, which goes round (pedals, strides) instead of back
+    /// and forth between two poses; `progress` is then the phase of the loop.
+    public var period: Double? {
+        if case .cycle(let cycle) = pattern.view { cycle.period } else { nil }
+    }
+
     /// The figure `progress` of the way from the start pose (0) to the end pose (1),
     /// fitted so the whole movement stays inside the 160 × 160 box. `zoomed` also
     /// enlarges it to fill the box, for small thumbnails.
     public func figure(at progress: Double, equipment: Equipment, zoomed: Bool = false) -> Figure {
         let u = min(max(progress, 0), 1)
         var bounds = Bounds()
-        for sample in [0, 0.25, 0.5, 0.75, 1.0] { bounds.add(raw(at: sample, equipment: equipment)) }
+        let samples = period == nil ? [0, 0.25, 0.5, 0.75, 1.0] : stride(from: 0.0, to: 1, by: 0.125).map { $0 }
+        for sample in samples { bounds.add(raw(at: sample, equipment: equipment)) }
         return raw(at: u, equipment: equipment).fitted(from: bounds, zoomed: zoomed)
     }
 
@@ -59,6 +66,7 @@ public struct Movement: Sendable, Hashable {
         switch pattern.view {
         case .side(let side): side.figure(at: u, equipment: equipment)
         case .front(let front): front.figure(at: u, equipment: equipment)
+        case .cycle(let cycle): cycle.draw(u.truncatingRemainder(dividingBy: 1))
         }
     }
 
@@ -70,7 +78,7 @@ public struct Movement: Sendable, Hashable {
 public enum MovementFamily: String, Sendable, CaseIterable {
     case squat, lunge, legPress, hinge, power, row, verticalPull, press, overheadPress
     case fly, raise, curl, triceps, dip, pushUp, kneeMachine, glute, calf, core, hold
-    case carry, shrug, hipMachine, backExtension
+    case carry, shrug, hipMachine, backExtension, cardio
 }
 
 // MARK: - What gets drawn
@@ -262,7 +270,7 @@ struct Joints {
 // MARK: - Patterns
 
 struct Pattern: Sendable {
-    enum View: Sendable { case side(SidePattern), front(FrontPattern) }
+    enum View: Sendable { case side(SidePattern), front(FrontPattern), cycle(CyclePattern) }
     var family: MovementFamily
     var isHold = false
     var view: View

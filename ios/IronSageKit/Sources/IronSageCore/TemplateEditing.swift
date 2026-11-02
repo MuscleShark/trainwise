@@ -28,7 +28,10 @@ extension Template {
                         restSeconds: item.restSeconds,
                         supersetGroup: item.supersetGroup,
                         sets: item.sets.map {
-                            TemplateSet(setType: $0.setType, repMin: $0.repMin, repMax: $0.repMax, targetRir: $0.targetRir)
+                            TemplateSet(
+                                setType: $0.setType, repMin: $0.repMin, repMax: $0.repMax, targetRir: $0.targetRir,
+                                durationSeconds: $0.durationSeconds, speedKmh: $0.speedKmh, inclinePct: $0.inclinePct, level: $0.level
+                            )
                         }
                     )
                 })
@@ -86,6 +89,11 @@ extension TemplateExercise {
             exerciseId: exerciseId,
             sets: (0..<3).map { _ in TemplateSet(repMin: 8, repMax: 12) }
         )
+    }
+
+    /// Cardio in a template: one target, 20 minutes until changed.
+    public static func cardio(_ exerciseId: UUID) -> TemplateExercise {
+        TemplateExercise(exerciseId: exerciseId, sets: [TemplateSet(durationSeconds: 1200)])
     }
 
     /// The working sets' count and the first one's target. Setting it gives every working

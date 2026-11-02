@@ -346,14 +346,14 @@ struct TemplateDetailView: View {
                         AdaptiveRow {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(store.exerciseName(item.exerciseId))
-                                if let rest = TemplateTarget(item: item).rest {
+                                if let rest = TemplateTarget(item: item, exercise: store.exercises[item.exerciseId], unit: store.weightUnit).rest {
                                     Text(rest)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
                             }
                         } trailing: {
-                            Text(TemplateTarget(item: item).summary)
+                            Text(TemplateTarget(item: item, exercise: store.exercises[item.exerciseId], unit: store.weightUnit).summary)
                                 .monospacedDigit()
                                 .fontWeight(.semibold)
                         }
@@ -463,8 +463,13 @@ private struct DayChipStyle: ButtonStyle {
 /// "3 × 5–8", and the rest after the exercise.
 struct TemplateTarget {
     let item: TemplateExercise
+    var exercise: Exercise?
+    var unit: WeightUnit = .default()
 
     var summary: String {
+        if exercise?.isCardio == true, let target = item.sets.first {
+            return CardioText.target(target, exercise: exercise, unit: unit)
+        }
         let working = item.sets.filter { $0.setType != .warmup }
         guard let first = working.first else { return "" }
         return "\(working.count) × \(Self.reps(first))"

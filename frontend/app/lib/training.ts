@@ -11,6 +11,13 @@ export interface TrainingSet {
   weight_kg?: number | null;
   rir?: number | null;
   completed_at?: string | null;
+  // Cardio: one set with the time and the machine's numbers.
+  duration_seconds?: number | null;
+  distance_m?: number | null;
+  speed_kmh?: number | null;
+  incline_pct?: number | null;
+  level?: number | null;
+  floors?: number | null;
 }
 
 export interface TrainingWorkout {
@@ -44,6 +51,39 @@ export function formatWeight(kilograms: number, unit: WeightUnit, locale: string
   return toUnit(kilograms, unit).toLocaleString(locale, {
     maximumFractionDigits: unit === "kg" ? 2 : 1,
   });
+}
+
+const METERS_PER_MILE = 1609.344;
+
+/**
+ * A cardio set's numbers as the app shows them, in order: time, then the machine's
+ * numbers. Distance in miles or kilometers (meters on a rower), speed in mph or km/h.
+ */
+export function cardioParts(
+  set: TrainingSet,
+  unit: WeightUnit,
+  locale: string,
+  options: { meters?: boolean } = {},
+): { minutes: number | null; distance?: string; speed?: string; incline?: string; level?: number; floors?: number } {
+  const number = (value: number, digits: number) =>
+    value.toLocaleString(locale, { maximumFractionDigits: digits });
+  const parts: ReturnType<typeof cardioParts> = {
+    minutes: set.duration_seconds ? Math.round(set.duration_seconds / 60) : null,
+  };
+  if (set.distance_m) {
+    parts.distance = options.meters
+      ? `${number(set.distance_m, 0)} m`
+      : unit === "lb"
+        ? `${number(set.distance_m / METERS_PER_MILE, 2)} mi`
+        : `${number(set.distance_m / 1000, 2)} km`;
+  }
+  if (set.speed_kmh) {
+    parts.speed = unit === "lb" ? `${number((set.speed_kmh * 1000) / METERS_PER_MILE, 1)} mph` : `${number(set.speed_kmh, 1)} km/h`;
+  }
+  if (typeof set.incline_pct === "number") parts.incline = `${number(set.incline_pct, 1)}%`;
+  if (typeof set.level === "number") parts.level = set.level;
+  if (typeof set.floors === "number") parts.floors = set.floors;
+  return parts;
 }
 
 /** Completed sets that count: not warm-ups. */
@@ -278,8 +318,20 @@ export function records(
   return { heaviest, bestEstimate };
 }
 
-/** Exercises done in finished workouts, most recently done first. */
-export function recentExercises(workouts: TrainingWorkout[]): string[] {
+/** Only cardio, like a run an Apple Watch recorded: not a training session in the counts. */
+export function isCardioOnly(workout: TrainingWorkout, cardio: Set<string>): boolean {
+  return workout.exercises.length > 0 && workout.exercises.every((item) => cardio.has(item.exercise_id));
+}
+
+/** Completed working sets of lifting, leaving out cardio. */
+export function liftingSets(workout: TrainingWorkout, cardio: Set<string>): number {
+  return workout.exercises
+    .filter((item) => !cardio.has(item.exercise_id))
+    .reduce((sum, item) => sum + workingSets(item.sets).length, 0);
+}
+
+/** Exercises done in finished workouts, most recently done first; `skip` leaves some out. */
+export function recentExercises(workouts: TrainingWorkout[], skip: Set<string> = new Set()): string[] {
   const seen = new Set<string>();
   const order: string[] = [];
   const newestFirst = workouts
@@ -287,7 +339,7 @@ export function recentExercises(workouts: TrainingWorkout[]): string[] {
     .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
   for (const workout of newestFirst) {
     for (const item of workout.exercises) {
-      if (workingSets(item.sets).length && !seen.has(item.exercise_id)) {
+      if (workingSets(item.sets).length && !seen.has(item.exercise_id) && !skip.has(item.exercise_id)) {
         seen.add(item.exercise_id);
         order.push(item.exercise_id);
       }

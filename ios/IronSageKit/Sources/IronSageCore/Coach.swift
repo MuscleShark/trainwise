@@ -309,7 +309,8 @@ public enum Coach {
         chinese: Bool
     ) -> CoachRequest? {
         let plans = day.exercises.compactMap { item -> CoachRequest.ExercisePlan? in
-            guard let exercise = exercises[item.exerciseId] else { return nil }
+            // The coach advises sets and weights; cardio keeps last time's numbers.
+            guard let exercise = exercises[item.exerciseId], !exercise.isCardio else { return nil }
             let suggestion = NextSession.suggest(exercise, template: item, context: context)
             let sessions = ExerciseProgress.sessions(of: exercise.id, in: context.history.filter { $0.startedAt < context.before })
             return CoachRequest.ExercisePlan(
@@ -374,6 +375,8 @@ extension NextSession.Change {
         case .deload: "deload"
         case .heldForSleep: "held_for_sleep"
         case .addLoadOrVariation: "add_load_or_variation"
+        // Never sent: cardio is left out of the request.
+        case .cardio: "repeat_weight"
         }
     }
 }
