@@ -163,6 +163,7 @@ class WeeklyInput(BaseModel):
     # Monday and Sunday of the week, local dates.
     week_start: str
     week_end: str
+    # Sessions with lifting in them; cardio is counted in cardio_minutes.
     workouts: int
     sets_per_muscle: list[MuscleSets] = Field(max_length=19)
     reference_sets: SetsBand = Field(default_factory=SetsBand)
@@ -172,6 +173,8 @@ class WeeklyInput(BaseModel):
     readiness: WeekReadiness = Field(default_factory=WeekReadiness)
     # Computed by the rules: stalls piled up or sleep stayed short. Never from HRV alone.
     deload_suggested: bool = False
+    # Minutes of cardio logged or recorded by an Apple Watch; left out when there was none.
+    cardio_minutes: int | None = Field(default=None, ge=0, le=10_080)
 
 
 class WeeklyOutput(BaseModel):

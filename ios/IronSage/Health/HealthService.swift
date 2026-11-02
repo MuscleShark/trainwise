@@ -6,8 +6,9 @@ import OSLog
 
 private let log = Logger(subsystem: "app.ironsage.IronSage", category: "health")
 
-/// Reads sleep, HRV, resting heart rate, body weight and body fat from Apple Health into the
-/// store, which syncs them like any other record, and saves finished workouts to it.
+/// Reads sleep, HRV, resting heart rate, body weight, body fat and the cardio an Apple
+/// Watch recorded from Apple Health into the store, which syncs them like any other
+/// record, and saves finished workouts to it.
 ///
 /// Apple Health never says whether reading was allowed (that would itself reveal health
 /// information), so the app only knows whether it has asked. Data that wasn't allowed
@@ -31,6 +32,7 @@ final class HealthService {
         static let asked = "IronSage.health.asked"
         static let introDismissed = "IronSage.health.introDismissed"
         static let lastImport = "IronSage.health.lastImport"
+        static let forgottenWorkouts = "IronSage.health.forgottenWorkouts"
     }
 
     static let readTypes: Set<HKObjectType> = [
@@ -42,6 +44,10 @@ final class HealthService {
         HKQuantityType(.bodyMass),
         HKQuantityType(.bodyFatPercentage),
         HKObjectType.workoutType(),
+        // The distance of cardio a Watch recorded.
+        HKQuantityType(.distanceWalkingRunning),
+        HKQuantityType(.distanceCycling),
+        HKQuantityType(.distanceRowing),
     ]
 
     static let writeTypes: Set<HKSampleType> = [
@@ -80,6 +86,7 @@ final class HealthService {
         generation += 1
         isImporting = false
         defaults.removeObject(forKey: Keys.lastImport)
+        defaults.removeObject(forKey: Keys.forgottenWorkouts)
     }
 
     /// Changes with every `reset()`, so work started before it can tell it is stale.
@@ -138,6 +145,7 @@ final class HealthService {
             let resting = try await values(.restingHeartRate, unit: .count().unitDivided(by: .minute()), from: firstDay)
             let weights = try await quantitySamples(.bodyMass, from: firstDay)
             let bodyFat = try await quantitySamples(.bodyFatPercentage, from: firstDay)
+            let cardio = try await recordedCardio(from: firstDay)
             // Signed out or switched user while Apple Health was being read.
             guard generation == self.generation else { return }
 
@@ -148,6 +156,7 @@ final class HealthService {
             }
             saveMeasurements(weights, kind: .weight)
             saveMeasurements(bodyFat, kind: .bodyFat)
+            saveCardio(cardio)
             defaults.set(now, forKey: Keys.lastImport)
         } catch {
             log.error("Importing from Apple Health failed: \(error, privacy: .public)")
@@ -194,6 +203,93 @@ final class HealthService {
         case .bodyFat: (HKQuantityType(.bodyFatPercentage), .percent(), 100)
         default: nil
         }
+    }
+
+    // MARK: Cardio the Watch recorded
+
+    /// Cardio workouts other apps and devices (an Apple Watch) recorded, with the
+    /// exercise each one is.
+    private func recordedCardio(from start: Date) async throws -> [(workout: HKWorkout, exerciseID: UUID)] {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: nil)
+        let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)], sortDescriptors: [])
+        return try await query.result(for: healthStore).compactMap { workout in
+            guard workout.sourceRevision.source.bundleIdentifier != Bundle.main.bundleIdentifier,
+                  let slug = Self.cardioSlug(for: workout)
+            else { return nil }
+            return (workout, ExerciseVisuals.builtinID(slug: slug))
+        }
+    }
+
+    /// The built-in cardio exercise for a workout type, inside (a treadmill, a bike) or out.
+    static func cardioSlug(for workout: HKWorkout) -> String? {
+        let indoor = workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool ?? false
+        return switch workout.workoutActivityType {
+        case .walking: indoor ? "incline_walk" : "outdoor_walk"
+        case .hiking: "outdoor_walk"
+        case .running: indoor ? "treadmill_run" : "outdoor_run"
+        case .cycling: indoor ? "exercise_bike" : "outdoor_ride"
+        case .stairClimbing, .stairs, .stepTraining: "stair_climber"
+        case .elliptical: "elliptical"
+        case .rowing: "rowing_machine"
+        default: nil
+        }
+    }
+
+    /// Adds recorded cardio not seen before: into the IronSage workout it happened during,
+    /// or as a workout of its own. Cardio removed in the app isn't brought back.
+    private func saveCardio(_ recorded: [(workout: HKWorkout, exerciseID: UUID)]) {
+        var known = Set(store.workouts.flatMap { workout in
+            [workout.healthkitWorkoutId].compactMap { $0 } + workout.exercises.flatMap { $0.sets.compactMap(\.healthkitWorkoutId) }
+        })
+        known.formUnion(forgotten)
+        for (workout, exerciseID) in recorded.sorted(by: { $0.workout.startDate < $1.workout.startDate }) {
+            let id = workout.uuid.uuidString
+            // The catalog may not have arrived yet; the next import tries again.
+            guard !known.contains(id), store.exercises[exerciseID] != nil else { continue }
+            known.insert(id)
+            let item = WorkoutExercise(exerciseId: exerciseID, sets: [Self.cardioSet(workout)])
+            let span = (workout.startDate, workout.endDate)
+            if var host = store.finishedWorkouts.first(where: { finished in
+                guard !finished.isFromAppleWatch, let end = finished.endedAt else { return false }
+                return WorkoutHealth.isSameSession((finished.startedAt, end), span)
+            }) {
+                host.exercises.append(item)
+                store.save(host)
+            } else {
+                store.save(Workout(
+                    title: store.exerciseName(exerciseID),
+                    startedAt: workout.startDate,
+                    endedAt: workout.endDate,
+                    healthkitWorkoutId: id,
+                    exercises: [item]
+                ))
+            }
+        }
+    }
+
+    private static func cardioSet(_ workout: HKWorkout) -> WorkoutSet {
+        let bpm = HKUnit.count().unitDivided(by: .minute())
+        let heart = workout.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: bpm)
+        let energy = workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie())
+        let distance = [HKQuantityType(.distanceWalkingRunning), HKQuantityType(.distanceCycling), HKQuantityType(.distanceRowing)]
+            .lazy.compactMap { workout.statistics(for: $0)?.sumQuantity()?.doubleValue(for: .meter()) }.first
+        return WorkoutSet(
+            durationSeconds: min(Int(workout.duration.rounded()), 86_400),
+            distanceM: distance.map { min(($0 * 100).rounded() / 100, 1_000_000) },
+            avgHeartRate: heart.map { Int($0.rounded()) }.flatMap { (20...250).contains($0) ? $0 : nil },
+            energyKcal: energy.map { min(Int($0.rounded()), 10_000) },
+            healthkitWorkoutId: workout.uuid.uuidString,
+            completedAt: workout.endDate
+        )
+    }
+
+    /// Recorded cardio the user removed: kept out of the next imports on this iPhone.
+    private var forgotten: Set<String> {
+        Set(defaults.stringArray(forKey: Keys.forgottenWorkouts) ?? [])
+    }
+
+    func forgetWatchWorkout(_ id: String) {
+        defaults.set(Array(forgotten.union([id])), forKey: Keys.forgottenWorkouts)
     }
 
     // MARK: Writing body measurements
@@ -260,6 +356,11 @@ final class HealthService {
             let heartRates = try await quantitySamples(.heartRate, from: start, to: end)
                 .map { HealthValue(date: $0.startDate, value: $0.quantity.doubleValue(for: .count().unitDivided(by: .minute()))) }
             let heart = WorkoutHealth.heartRate(heartRates, from: start, to: end)
+            // Cardio logged in the app gets the heart rate from its own minutes.
+            func cardioHeart(_ set: WorkoutSet) -> Int? {
+                guard set.healthkitWorkoutId == nil, let done = set.completedAt, let seconds = set.durationSeconds, seconds > 0 else { return set.avgHeartRate }
+                return set.avgHeartRate ?? WorkoutHealth.heartRate(heartRates, from: done.addingTimeInterval(-TimeInterval(seconds)), to: done)?.average
+            }
 
             let id: UUID
             if let saved = try await savedWorkout(workout.id) {
@@ -276,6 +377,11 @@ final class HealthService {
             latest.healthkitWorkoutId = id.uuidString
             latest.avgHeartRate = heart?.average
             latest.maxHeartRate = heart?.maximum
+            for e in latest.exercises.indices where store.exercises[latest.exercises[e].exerciseId]?.isCardio == true {
+                for s in latest.exercises[e].sets.indices {
+                    latest.exercises[e].sets[s].avgHeartRate = cardioHeart(latest.exercises[e].sets[s])
+                }
+            }
             store.save(latest)
         } catch {
             log.error("Saving a workout to Apple Health failed: \(error, privacy: .public)")
@@ -291,9 +397,13 @@ final class HealthService {
         }
     }
 
-    /// Removes a workout IronSage wrote. One the Watch recorded is left alone.
+    /// Removes a workout IronSage wrote. One the Watch recorded is left alone, and its
+    /// cardio isn't imported again.
     func removeFromHealth(_ workout: Workout) async {
-        guard isAvailable, let id = workout.healthkitWorkoutId.flatMap(UUID.init(uuidString:)) else { return }
+        for id in workout.exercises.flatMap({ $0.sets.compactMap(\.healthkitWorkoutId) }) {
+            forgetWatchWorkout(id)
+        }
+        guard !workout.isFromAppleWatch, isAvailable, let id = workout.healthkitWorkoutId.flatMap(UUID.init(uuidString:)) else { return }
         do {
             let predicate = HKQuery.predicateForObjects(with: [id])
             let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)], sortDescriptors: [])
@@ -316,12 +426,14 @@ final class HealthService {
         return try await query.result(for: healthStore).first
     }
 
-    /// A workout another app or the Watch recorded over the same time.
+    /// A workout another app or the Watch recorded over the same time. Cardio recorded
+    /// during it doesn't count: that is part of the workout, not the workout itself.
     private func watchWorkout(from start: Date, to end: Date) async throws -> HKWorkout? {
         let predicate = HKQuery.predicateForSamples(withStart: start.addingTimeInterval(-3600), end: end.addingTimeInterval(3600))
         let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)], sortDescriptors: [])
         return try await query.result(for: healthStore).first { recorded in
             recorded.sourceRevision.source.bundleIdentifier != Bundle.main.bundleIdentifier
+                && Self.cardioSlug(for: recorded) == nil
                 && WorkoutHealth.isSameSession((start, end), (recorded.startDate, recorded.endDate))
         }
     }
@@ -330,6 +442,12 @@ final class HealthService {
         let configuration = HKWorkoutConfiguration()
         configuration.activityType = .traditionalStrengthTraining
         configuration.locationType = .indoor
+        // Cardio on its own is saved as that cardio (a stair climber session), not as lifting.
+        if Cardio.isCardioOnly(workout, exercises: store.exercises), let first = workout.exercises.first,
+           let type = Self.activity[first.exerciseId] {
+            configuration.activityType = type.activity
+            configuration.locationType = type.indoor ? .indoor : .outdoor
+        }
         let builder = HKWorkoutBuilder(healthStore: healthStore, configuration: configuration, device: .local())
         do {
             try await builder.beginCollection(at: start)
@@ -366,6 +484,13 @@ final class HealthService {
             throw error
         }
     }
+
+    /// Apple Health's workout type for each built-in cardio exercise.
+    private static let activity: [UUID: (activity: HKWorkoutActivityType, indoor: Bool)] = [
+        "incline_walk": (HKWorkoutActivityType.walking, true), "treadmill_run": (.running, true), "stair_climber": (.stairClimbing, true),
+        "exercise_bike": (.cycling, true), "rowing_machine": (.rowing, true), "elliptical": (.elliptical, true),
+        "outdoor_walk": (.walking, false), "outdoor_run": (.running, false), "outdoor_ride": (.cycling, false),
+    ].reduce(into: [:]) { $0[ExerciseVisuals.builtinID(slug: $1.key)] = $1.value }
 
     private static func sleepSample(_ sample: HKCategorySample) -> SleepSample? {
         let stage: SleepStage? = switch HKCategoryValueSleepAnalysis(rawValue: sample.value) {

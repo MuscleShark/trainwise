@@ -162,6 +162,14 @@ class Exercise(SyncedMixin, Base):
     )
     # The built-in exercise a custom one is a variant of, e.g. a specific machine.
     base_exercise_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("exercises.id"))
+    # strength, or cardio: logged by time (one set per session) with the machine's own
+    # numbers, the ones listed in cardio_metrics (see catalog.CARDIO_METRICS).
+    kind: Mapped[str] = mapped_column(
+        String(10), default="strength", server_default="strength", nullable=False
+    )
+    cardio_metrics: Mapped[list[str]] = mapped_column(
+        JSON, default=list, server_default="[]", nullable=False
+    )
 
 
 class Workout(SyncedMixin, Base):
@@ -221,6 +229,17 @@ class WorkoutSet(Base):
     weight_kg: Mapped[Decimal | None] = mapped_column(Numeric(7, 3))
     rir: Mapped[int | None] = mapped_column(Integer)
     duration_seconds: Mapped[int | None] = mapped_column(Integer)
+    # Cardio: a session on a machine or outside is one set with these.
+    distance_m: Mapped[Decimal | None] = mapped_column(Numeric(9, 2))
+    speed_kmh: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    incline_pct: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))
+    # The machine's level, resistance or damper setting.
+    level: Mapped[int | None] = mapped_column(Integer)
+    floors: Mapped[int | None] = mapped_column(Integer)
+    avg_heart_rate: Mapped[int | None] = mapped_column(Integer)
+    energy_kcal: Mapped[int | None] = mapped_column(Integer)
+    # The Apple Watch workout this cardio came from, so it is imported only once.
+    healthkit_workout_id: Mapped[str | None] = mapped_column(String(64))
     # Null while the set is only planned (for example prefilled from a template).
     completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
 
@@ -299,6 +318,11 @@ class TemplateSet(Base):
     rep_min: Mapped[int | None] = mapped_column(Integer)
     rep_max: Mapped[int | None] = mapped_column(Integer)
     target_rir: Mapped[int | None] = mapped_column(Integer)
+    # Cardio targets: how long, and the machine's numbers to aim for.
+    duration_seconds: Mapped[int | None] = mapped_column(Integer)
+    speed_kmh: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    incline_pct: Mapped[Decimal | None] = mapped_column(Numeric(4, 1))
+    level: Mapped[int | None] = mapped_column(Integer)
 
     template_exercise: Mapped[TemplateExercise] = relationship(back_populates="sets")
 

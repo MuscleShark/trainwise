@@ -72,6 +72,9 @@ def test_invalid_exercises_are_rejected(client):
         {**MACHINE, "load_type": "half"},
         {**MACHINE, "aliases": [""]},
         {**MACHINE, "aliases": ["x"] * 11},
+        {**MACHINE, "cardio_metrics": ["incline"]},
+        {**MACHINE, "kind": "cardio", "cardio_metrics": ["level", "level"]},
+        {**MACHINE, "kind": "yoga"},
     ):
         assert (
             client.put(f"/v1/exercises/{new_id()}", json=body, headers=headers).status_code == 422
@@ -91,3 +94,23 @@ def test_deleted_exercise_leaves_the_list(client):
 
 def test_exercises_require_sign_in(client):
     assert client.get("/v1/exercises").status_code == 401
+
+
+def test_a_custom_cardio_machine_says_what_it_logs(client):
+    headers = auth_headers("me@example.com")
+    body = {
+        "name_en": "Jacob's ladder",
+        "equipment": "machine",
+        "load_type": "total",
+        "primary_muscles": ["quads"],
+        "kind": "cardio",
+        "cardio_metrics": ["level", "distance"],
+    }
+
+    response = client.put(f"/v1/exercises/{new_id()}", json=body, headers=headers)
+
+    assert response.status_code == 200, response.text
+    assert (response.json()["kind"], response.json()["cardio_metrics"]) == (
+        "cardio",
+        ["level", "distance"],
+    )

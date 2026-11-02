@@ -62,6 +62,10 @@ extension ExerciseVisuals {
         "machine_crunch": "machine_crunch", "russian_twist": "russian_twist", "pallof_press": "pallof_press",
         // Full body
         "power_clean": "clean", "hang_clean": "hang_clean", "farmers_carry": "carry",
+        // Cardio (CardioFigures.swift)
+        "incline_walk": "incline_walk", "treadmill_run": "treadmill_run", "stair_climber": "stairs",
+        "exercise_bike": "bike", "outdoor_ride": "bike", "rowing_machine": "rower", "elliptical": "elliptical",
+        "outdoor_walk": "walk", "outdoor_run": "run",
     ]
 
     static let patterns: [String: Pattern] = {
@@ -441,6 +445,9 @@ extension ExerciseVisuals {
                  fig.line(j[.wrist], Point(j[.wrist].x + 4, g - 6), .lever)
                  fig.rect(j[.wrist].x - 8, g - 12, 34, 10, .sceneFill)
              })
-        return all
+        return all.merging(cardioPatterns) { strength, _ in
+            assertionFailure("A cardio movement has the name of a lifting one")
+            return strength
+        }
     }()
 }

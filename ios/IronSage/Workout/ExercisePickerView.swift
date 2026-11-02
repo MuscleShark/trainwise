@@ -5,12 +5,15 @@ import SwiftUI
 /// Search by name, alias or pinyin, filter by equipment or muscle, or create an
 /// exercise with the typed name.
 struct ExercisePickerView: View {
+    /// Only lifting or only cardio; nil lets the filter menu choose.
+    var only: ExerciseKind?
     let onPick: (Exercise) -> Void
     @Environment(LocalStore.self) private var store
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @State private var equipment: Equipment?
     @State private var muscle: Muscle?
+    @State private var kind: ExerciseKind?
     @State private var index: ExerciseSearch?
     @State private var isCreating = false
     @State private var info: Exercise?
@@ -25,7 +28,7 @@ struct ExercisePickerView: View {
                         systemImage: "dumbbell",
                         description: Text("The exercise list downloads the first time IronSage connects.")
                     )
-                } else if query.isEmpty, equipment == nil, muscle == nil, !recent.isEmpty {
+                } else if query.isEmpty, !isFiltered, !recent.isEmpty {
                     Section("Recent") {
                         ForEach(recent) { exercise in
                             row(ExerciseSearch.Result(exercise: exercise, matched: nil))
@@ -33,7 +36,7 @@ struct ExercisePickerView: View {
                     }
                 }
 
-                Section(query.isEmpty && equipment == nil && muscle == nil ? "All exercises" : "Results") {
+                Section(query.isEmpty && !isFiltered ? "All exercises" : "Results") {
                     ForEach(results) { result in
                         row(result)
                     }
@@ -59,7 +62,7 @@ struct ExercisePickerView: View {
             .onAppear { isSearching = true }
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
-            .navigationTitle("Add exercise")
+            .navigationTitle(only == .cardio ? "Add cardio" : "Add exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -85,19 +88,27 @@ struct ExercisePickerView: View {
     }
 
     private var results: [ExerciseSearch.Result] {
-        (index?.search(query, limit: 200) ?? []).filter { result in
+        let kind = only ?? kind
+        return (index?.search(query, limit: 200) ?? []).filter { result in
             (equipment == nil || result.exercise.equipment == equipment)
                 && (muscle == nil || result.exercise.primaryMuscles.contains(muscle!))
+                && (kind == nil || result.exercise.kind == kind)
         }
     }
 
-    /// Exercises from the last few workouts, most recent first.
+    private var isFiltered: Bool {
+        equipment != nil || muscle != nil || kind != nil || only != nil
+    }
+
+    /// Exercises from the last few workouts, most recent first: lifting, or only cardio
+    /// when adding cardio (it has its own button in a workout).
     private var recent: [Exercise] {
         var seen: Set<UUID> = []
-        return store.finishedWorkouts.prefix(10)
+        let cardio = only == .cardio
+        return store.finishedWorkouts.filter { !$0.isFromAppleWatch }.prefix(10)
             .flatMap(\.exercises)
             .compactMap { seen.insert($0.exerciseId).inserted ? store.exercises[$0.exerciseId] : nil }
-            .filter { !store.removedExerciseIDs.contains($0.id) }
+            .filter { !store.removedExerciseIDs.contains($0.id) && $0.isCardio == cardio }
             .prefix(8)
             .map(\.self)
     }
@@ -116,6 +127,8 @@ struct ExercisePickerView: View {
                         Group {
                             if let matched = result.matched {
                                 Text(matched)
+                            } else if result.exercise.isCardio {
+                                Text(result.exercise.equipment.label) + Text(verbatim: " · ") + Text("Cardio")
                             } else if let muscle = result.exercise.primaryMuscles.first {
                                 Text(result.exercise.equipment.label) + Text(verbatim: " · ") + Text(muscle.label)
                             } else {
@@ -141,6 +154,14 @@ struct ExercisePickerView: View {
 
     private var filterMenu: some View {
         Menu {
+            if only == nil {
+                Picker("Type", selection: $kind) {
+                    Text("Lifting and cardio").tag(ExerciseKind?.none)
+                    Text("Lifting").tag(ExerciseKind?.some(.strength))
+                    Text("Cardio").tag(ExerciseKind?.some(.cardio))
+                }
+                .pickerStyle(.menu)
+            }
             Picker("Equipment", selection: $equipment) {
                 Text("Any equipment").tag(Equipment?.none)
                 ForEach(Equipment.allCases, id: \.self) { item in
@@ -156,7 +177,7 @@ struct ExercisePickerView: View {
             }
             .pickerStyle(.menu)
         } label: {
-            Label("Filter", systemImage: equipment == nil && muscle == nil
+            Label("Filter", systemImage: equipment == nil && muscle == nil && kind == nil
                 ? "line.3.horizontal.decrease.circle"
                 : "line.3.horizontal.decrease.circle.fill")
         }

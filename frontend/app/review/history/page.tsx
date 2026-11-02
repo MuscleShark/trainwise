@@ -1,6 +1,6 @@
 "use client";
 
-import { formatWeight, startOfWeek, volumeKg, workingSets, type TrainingSet } from "../../lib/training";
+import { cardioParts, formatWeight, liftingSets, startOfWeek, volumeKg, type TrainingSet } from "../../lib/training";
 import { useReview } from "../data";
 import { fullDay, weekRange } from "../format";
 
@@ -28,7 +28,7 @@ export default function HistoryPage() {
               const minutes = workout.ended_at
                 ? Math.round((new Date(workout.ended_at).getTime() - started.getTime()) / 60_000)
                 : null;
-              const sets = workout.exercises.reduce((sum, item) => sum + workingSets(item.sets).length, 0);
+              const sets = liftingSets(workout, training.cardio);
               return (
                 <li key={workout.id}>
                   <details className="group rounded-sm bg-card">
@@ -66,6 +66,31 @@ function ExerciseSets({ exerciseId, sets }: { exerciseId: string; sets: Training
   if (!training) return null;
   const done = sets.filter((set) => set.completed_at);
   if (done.length === 0) return null;
+
+  if (training.cardio.has(exerciseId)) {
+    const meters = training.exercises.get(exerciseId)?.cardio_metrics?.includes("damper");
+    return (
+      <div>
+        <h3 className="font-medium">{exerciseName(exerciseId)}</h3>
+        {done.map((set, index) => {
+          const parts = cardioParts(set, training.unit, locale, { meters });
+          const text = [
+            parts.minutes === null ? null : t.minutes(parts.minutes),
+            parts.distance,
+            parts.speed,
+            parts.incline,
+            parts.level === undefined ? null : t.level(parts.level),
+            parts.floors === undefined ? null : t.floors(parts.floors),
+          ].filter(Boolean);
+          return (
+            <p key={index} className="mt-1.5 text-sm tabular-nums">
+              {text.join(" · ")}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div>

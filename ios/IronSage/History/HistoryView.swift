@@ -124,42 +124,68 @@ struct WorkoutDetailView: View {
                 if let endedAt = workout.endedAt {
                     LabeledContent("Duration", value: Duration.clock(endedAt.timeIntervalSince(workout.startedAt)))
                 }
-                LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
+                if !Cardio.isCardioOnly(workout, exercises: store.exercises) {
+                    LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
+                }
+                if workout.isFromAppleWatch {
+                    LabeledContent("Recorded by", value: "Apple Watch")
+                }
                 if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
                     LabeledContent("Heart rate", value: String(appLocalized: "\(average) avg, \(maximum) max"))
                 }
             }
 
             ForEach(workout.exercises) { item in
-                Section {
-                    ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in
-                        HStack {
-                            Group {
-                                if let badge = set.setType.badge {
-                                    Text(badge)
-                                } else {
-                                    Text(item.sets[...index].filter { $0.setType != .warmup }.count, format: .number)
+                if let exercise = store.exercises[item.exerciseId], exercise.isCardio {
+                    Section(store.exerciseName(item.exerciseId)) {
+                        ForEach(item.sets) { set in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(CardioText.summary(set, exercise: exercise, unit: unit))
+                                    .monospacedDigit()
+                                let extras = [
+                                    set.avgHeartRate.map { String(appLocalized: "\($0) bpm avg") },
+                                    set.energyKcal.map { String(appLocalized: "\($0) kcal") },
+                                    set.healthkitWorkoutId == nil || workout.isFromAppleWatch ? nil : "Apple Watch",
+                                ].compactMap(\.self)
+                                if !extras.isEmpty {
+                                    Text(extras.joined(separator: " · "))
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
                                 }
                             }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(minWidth: badgeWidth, alignment: .leading)
-                            Text(unit.formatSet(set))
-                                .monospacedDigit()
-                            Spacer()
                         }
                     }
-                } header: {
-                    // Opens the exercise's progress: every session, the chart and records.
-                    NavigationLink(value: ExerciseRoute(id: item.exerciseId)) {
-                        HStack(spacing: 4) {
-                            Text(store.exerciseName(item.exerciseId))
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.semibold))
-                                .accessibilityHidden(true)
+                } else {
+                    Section {
+                        ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in
+                            HStack {
+                                Group {
+                                    if let badge = set.setType.badge {
+                                        Text(badge)
+                                    } else {
+                                        Text(item.sets[...index].filter { $0.setType != .warmup }.count, format: .number)
+                                    }
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(minWidth: badgeWidth, alignment: .leading)
+                                Text(unit.formatSet(set))
+                                    .monospacedDigit()
+                                Spacer()
+                            }
                         }
+                    } header: {
+                        // Opens the exercise's progress: every session, the chart and records.
+                        NavigationLink(value: ExerciseRoute(id: item.exerciseId)) {
+                            HStack(spacing: 4) {
+                                Text(store.exerciseName(item.exerciseId))
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .accessibilityHint(Text("Shows this exercise's progress and records"))
                     }
-                    .accessibilityHint(Text("Shows this exercise's progress and records"))
                 }
             }
 

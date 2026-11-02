@@ -598,6 +598,11 @@ export interface components {
              * Format: uuid
              */
             base_exercise_id?: string | null;
+            /**
+             * Cardio Metrics
+             * @default []
+             */
+            cardio_metrics: ("incline" | "speed" | "distance" | "level" | "resistance" | "damper" | "floors")[];
             /** Change Seq */
             change_seq: number;
             /**
@@ -617,6 +622,12 @@ export interface components {
             id: string;
             /** Is Custom */
             is_custom: boolean;
+            /**
+             * Kind
+             * @default strength
+             * @enum {string}
+             */
+            kind: "strength" | "cardio";
             /**
              * Load Type
              * @enum {string}
@@ -652,10 +663,21 @@ export interface components {
              */
             base_exercise_id?: string | null;
             /**
+             * Cardio Metrics
+             * @default []
+             */
+            cardio_metrics: ("incline" | "speed" | "distance" | "level" | "resistance" | "damper" | "floors")[];
+            /**
              * Equipment
              * @enum {string}
              */
             equipment: "barbell" | "dumbbell" | "machine" | "cable" | "smith" | "bodyweight" | "kettlebell" | "band" | "other";
+            /**
+             * Kind
+             * @default strength
+             * @enum {string}
+             */
+            kind: "strength" | "cardio";
             /**
              * Load Type
              * @enum {string}
@@ -929,18 +951,32 @@ export interface components {
         };
         /** SetRead */
         SetRead: {
+            /** Avg Heart Rate */
+            avg_heart_rate?: number | null;
             /**
              * Completed At
              * Format: date-time
              */
             completed_at?: string | null;
+            /** Distance M */
+            distance_m?: number | null;
             /** Duration Seconds */
             duration_seconds?: number | null;
+            /** Energy Kcal */
+            energy_kcal?: number | null;
+            /** Floors */
+            floors?: number | null;
+            /** Healthkit Workout Id */
+            healthkit_workout_id?: string | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Incline Pct */
+            incline_pct?: number | null;
+            /** Level */
+            level?: number | null;
             /** Reps */
             reps?: number | null;
             /** Rir */
@@ -951,23 +987,39 @@ export interface components {
              * @enum {string}
              */
             set_type: "warmup" | "working" | "drop" | "failure";
+            /** Speed Kmh */
+            speed_kmh?: number | null;
             /** Weight Kg */
             weight_kg?: number | null;
         };
         /** SetWrite */
         SetWrite: {
+            /** Avg Heart Rate */
+            avg_heart_rate?: number | null;
             /**
              * Completed At
              * Format: date-time
              */
             completed_at?: string | null;
+            /** Distance M */
+            distance_m?: number | null;
             /** Duration Seconds */
             duration_seconds?: number | null;
+            /** Energy Kcal */
+            energy_kcal?: number | null;
+            /** Floors */
+            floors?: number | null;
+            /** Healthkit Workout Id */
+            healthkit_workout_id?: string | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Incline Pct */
+            incline_pct?: number | null;
+            /** Level */
+            level?: number | null;
             /** Reps */
             reps?: number | null;
             /** Rir */
@@ -978,6 +1030,8 @@ export interface components {
              * @enum {string}
              */
             set_type: "warmup" | "working" | "drop" | "failure";
+            /** Speed Kmh */
+            speed_kmh?: number | null;
             /** Weight Kg */
             weight_kg?: number | null;
         };
@@ -1152,11 +1206,17 @@ export interface components {
         };
         /** TemplateSetRead */
         TemplateSetRead: {
+            /** Duration Seconds */
+            duration_seconds?: number | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Incline Pct */
+            incline_pct?: number | null;
+            /** Level */
+            level?: number | null;
             /** Rep Max */
             rep_max?: number | null;
             /** Rep Min */
@@ -1167,16 +1227,24 @@ export interface components {
              * @enum {string}
              */
             set_type: "warmup" | "working" | "drop" | "failure";
+            /** Speed Kmh */
+            speed_kmh?: number | null;
             /** Target Rir */
             target_rir?: number | null;
         };
         /** TemplateSetWrite */
         TemplateSetWrite: {
+            /** Duration Seconds */
+            duration_seconds?: number | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Incline Pct */
+            incline_pct?: number | null;
+            /** Level */
+            level?: number | null;
             /** Rep Max */
             rep_max?: number | null;
             /** Rep Min */
@@ -1187,6 +1255,8 @@ export interface components {
              * @enum {string}
              */
             set_type: "warmup" | "working" | "drop" | "failure";
+            /** Speed Kmh */
+            speed_kmh?: number | null;
             /** Target Rir */
             target_rir?: number | null;
         };

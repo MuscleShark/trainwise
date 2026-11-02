@@ -26,8 +26,16 @@ struct WorkoutSummaryView: View {
                 Section {
                     LabeledContent("Duration", value: Duration.clock((workout.endedAt ?? .now).timeIntervalSince(workout.startedAt)))
                     LabeledContent("Exercises", value: workout.exercises.count.formatted())
-                    LabeledContent("Sets", value: workout.exercises.map(\.sets.count).reduce(0, +).formatted())
-                    LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
+                    let lifting = workout.exercises.filter { store.exercises[$0.exerciseId]?.isCardio != true }
+                    let cardioSeconds = workout.exercises.filter { store.exercises[$0.exerciseId]?.isCardio == true }
+                        .flatMap(\.sets).compactMap(\.durationSeconds).reduce(0, +)
+                    if !lifting.isEmpty {
+                        LabeledContent("Sets", value: lifting.map(\.sets.count).reduce(0, +).formatted())
+                        LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
+                    }
+                    if cardioSeconds > 0 {
+                        LabeledContent("Cardio", value: CardioText.minutes(cardioSeconds))
+                    }
                     if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
                         LabeledContent("Heart rate", value: String(appLocalized: "\(average) avg, \(maximum) max"))
                     }

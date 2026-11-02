@@ -197,8 +197,11 @@ extension WorkoutLog {
     /// and sets, each aiming for the reps done.
     public static func template(from workout: Workout, name: String) -> Template {
         let exercises = workout.exercises.compactMap { item -> TemplateExercise? in
-            let sets = item.sets.filter(\.isCompleted).map {
-                TemplateSet(setType: $0.setType, repMin: $0.reps, repMax: $0.reps, targetRir: $0.rir)
+            let sets = item.sets.filter(\.isCompleted).map { set in
+                // Cardio keeps its time and settings; lifting the reps done.
+                set.durationSeconds != nil && set.reps == nil
+                    ? TemplateSet(durationSeconds: set.durationSeconds, speedKmh: set.speedKmh, inclinePct: set.inclinePct, level: set.level)
+                    : TemplateSet(setType: set.setType, repMin: set.reps, repMax: set.reps, targetRir: set.rir)
             }
             guard !sets.isEmpty else { return nil }
             return TemplateExercise(exerciseId: item.exerciseId, restSeconds: item.restSeconds, supersetGroup: item.supersetGroup, sets: sets)

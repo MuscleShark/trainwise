@@ -50,7 +50,8 @@ struct TrainingStatsSection: View {
     @Environment(\.dynamicTypeSize) private var size
 
     var body: some View {
-        let workouts = store.finishedWorkouts
+        // Training sessions: a walk or run the Watch recorded on its own isn't one.
+        let workouts = store.finishedWorkouts.filter { !Cardio.isCardioOnly($0, exercises: store.exercises) }
         let thisWeek = TrainingProgress.workoutsThisWeek(in: workouts)
         let stats: [(Text, LocalizedStringResource)] = [
             (Text(workouts.count, format: .number), "Workouts"),

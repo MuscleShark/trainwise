@@ -235,7 +235,7 @@ Do this **before merging the PR that adds staging**: after that merge, every mer
 5. **Merge the PR.** The merge deploys staging for the first time (creating `TrainWiseApi-staging` and its tables). Confirm the staging alarm subscription email. The job summary shows the staging Function URL.
 6. Clerk: staging uses the same Clerk development instance as production, so the same accounts sign in to both; nothing to do.
 
-The staging API is the URL in the job summary (or CloudShell: `aws lambda get-function-url-config --region us-east-2 --function-name trainwise-api-staging --query FunctionUrl`). To try the iPhone app against it, set `API_BASE_URL` of the Debug configuration to that URL. To give a test account the coach on staging, run the `UPDATE users SET coach_enabled = true …` from step 3 in the Neon SQL editor with the `staging` branch selected.
+The staging API is the URL in the job summary (or CloudShell: `aws lambda get-function-url-config --region us-east-2 --function-name trainwise-api-staging --query FunctionUrl`). The iPhone app's Debug configuration calls it (`API_BASE_URL`), so a build run from Xcode tries what staging runs; Release builds call production. To give a test account the coach on staging, run the `UPDATE users SET coach_enabled = true …` from step 3 in the Neon SQL editor with the `staging` branch selected.
 
 ## Promote to production
 

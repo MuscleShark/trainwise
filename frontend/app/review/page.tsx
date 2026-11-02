@@ -6,15 +6,16 @@ import { useState } from "react";
 import {
   bodyPoints,
   formatWeight,
+  isCardioOnly,
   isFinished,
   latest,
+  liftingSets,
   rangeStart,
   toUnit,
   volumeKg,
   WEEKLY_AFTER_DAYS,
   weeklyVolume,
   weekStreak,
-  workingSets,
   workoutsThisWeek,
   type Range,
 } from "../lib/training";
@@ -30,7 +31,9 @@ export default function OverviewPage() {
   if (!training) return null;
 
   const finished = training.workouts.filter(isFinished);
-  const thisWeek = workoutsThisWeek(finished, now, weekStartsOn);
+  // Training sessions: a walk or run the Watch recorded on its own isn't one.
+  const sessions = finished.filter((workout) => !isCardioOnly(workout, training.cardio));
+  const thisWeek = workoutsThisWeek(sessions, now, weekStartsOn);
   const planned = training.plannedDaysPerWeek;
 
   return (
@@ -42,12 +45,12 @@ export default function OverviewPage() {
       ) : (
         <>
           <dl className="mt-8 grid grid-cols-3 divide-x divide-ink/15 border-y border-ink/15">
-            <Stat label={t.workouts} value={wholeNumber(finished.length, locale)} />
+            <Stat label={t.workouts} value={wholeNumber(sessions.length, locale)} />
             <Stat
               label={t.thisWeek}
               value={planned ? `${thisWeek}/${planned}` : wholeNumber(thisWeek, locale)}
             />
-            <Stat label={t.weeksInARow} value={wholeNumber(weekStreak(finished, now, weekStartsOn), locale)} />
+            <Stat label={t.weeksInARow} value={wholeNumber(weekStreak(sessions, now, weekStartsOn), locale)} />
           </dl>
 
           <section className="mt-12">
@@ -227,7 +230,7 @@ function RecentWorkouts() {
       </div>
       <ul className="mt-4 divide-y divide-ink/15 border-y border-ink/15">
         {recent.map((workout) => {
-          const sets = workout.exercises.reduce((sum, item) => sum + workingSets(item.sets).length, 0);
+          const sets = liftingSets(workout, training.cardio);
           return (
             <li key={workout.id} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
               <span className="font-medium">{workout.title}</span>

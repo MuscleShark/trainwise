@@ -85,12 +85,33 @@ final class WorkoutSession: Identifiable {
         let completing = !workout.exercises[e].sets[s].isCompleted
         let completedAt = isEditing ? workout.endedAt : .now
         update { $0.exercises[e].sets[s].completedAt = completing ? completedAt : nil }
-        if completing && !isEditing {
-            let item = workout.exercises[e]
-            let exercise = store.exercises[item.exerciseId]
+        let item = workout.exercises[e]
+        let exercise = store.exercises[item.exerciseId]
+        // No rest after cardio.
+        if completing && !isEditing && exercise?.isCardio != true {
             let seconds = item.restSeconds ?? exercise?.defaultRestSeconds ?? 120
             startRest(RestTimer(exerciseName: store.exerciseName(item.exerciseId), seconds: seconds))
         }
+    }
+
+    /// Adds cardio logged in the add-cardio sheet, already done.
+    func addCardio(_ exercise: Exercise, set: WorkoutSet) {
+        var done = set
+        done.completedAt = isEditing ? workout.endedAt : .now
+        update { $0.exercises.append(WorkoutExercise(exerciseId: exercise.id, sets: [done])) }
+    }
+
+    /// Moves cardio the Watch recorded (imported on its own) into this workout. The
+    /// copies get new ids: the server keeps the deleted workout's rows under the old ones.
+    func absorb(_ recorded: Workout) {
+        let moved = recorded.exercises.map { item in
+            var copy = item
+            copy.id = UUID()
+            copy.sets = item.sets.map { var set = $0; set.id = UUID(); return set }
+            return copy
+        }
+        update { $0.exercises += moved }
+        store.deleteWorkout(id: recorded.id)
     }
 
     func addSet(to exerciseID: UUID) {
@@ -128,8 +149,15 @@ final class WorkoutSession: Identifiable {
     /// Ends the workout, dropping sets that were never done and exercises left empty.
     func finish() {
         skipRest()
+        // Cardio the Watch recorded during the workout belongs to it.
+        let end = Date.now
+        for recorded in store.finishedWorkouts where recorded.isFromAppleWatch {
+            if let recordedEnd = recorded.endedAt, WorkoutHealth.isSameSession((workout.startedAt, end), (recorded.startedAt, recordedEnd)) {
+                absorb(recorded)
+            }
+        }
         update { workout in
-            workout.endedAt = .now
+            workout.endedAt = end
             for index in workout.exercises.indices {
                 workout.exercises[index].sets.removeAll { !$0.isCompleted }
             }

@@ -32,6 +32,18 @@ public enum LoadType: String, Codable, CaseIterable, Hashable, Sendable {
     case assisted
 }
 
+/// Lifting (weight and reps), or cardio: one set per session with the time and the
+/// machine's own numbers.
+public enum ExerciseKind: String, Codable, CaseIterable, Hashable, Sendable {
+    case strength, cardio
+}
+
+/// What a cardio exercise logs besides time. Level, resistance and damper are the same
+/// number (`WorkoutSet.level`), named as the machine names its setting.
+public enum CardioMetric: String, Codable, CaseIterable, Hashable, Sendable {
+    case incline, speed, distance, level, resistance, damper, floors
+}
+
 public enum SetType: String, Codable, CaseIterable, Hashable, Sendable {
     case warmup, working, drop, failure
 }
@@ -65,6 +77,9 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
     /// The built-in exercise a custom one is a variant of.
     public var baseExerciseId: UUID?
     public var isCustom: Bool
+    public var kind: ExerciseKind
+    /// For cardio: what it logs besides time, in the order shown.
+    public var cardioMetrics: [CardioMetric]
 
     public init(
         id: UUID = UUID(),
@@ -76,7 +91,9 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         secondaryMuscles: [Muscle] = [],
         aliases: [String] = [],
         baseExerciseId: UUID? = nil,
-        isCustom: Bool
+        isCustom: Bool,
+        kind: ExerciseKind = .strength,
+        cardioMetrics: [CardioMetric] = []
     ) {
         self.id = id
         self.nameEn = nameEn
@@ -88,7 +105,11 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         self.aliases = aliases
         self.baseExerciseId = baseExerciseId
         self.isCustom = isCustom
+        self.kind = kind
+        self.cardioMetrics = cardioMetrics
     }
+
+    public var isCardio: Bool { kind == .cardio }
 
     /// The name in the app's language; Chinese falls back to English.
     public func name(chinese: Bool) -> String {
@@ -104,6 +125,17 @@ public struct WorkoutSet: Identifiable, Hashable, Codable, Sendable {
     /// Reps in reserve.
     public var rir: Int?
     public var durationSeconds: Int?
+    // Cardio: a session is one set with the time and these.
+    public var distanceM: Double?
+    public var speedKmh: Double?
+    public var inclinePct: Double?
+    /// The machine's level, resistance or damper setting.
+    public var level: Int?
+    public var floors: Int?
+    public var avgHeartRate: Int?
+    public var energyKcal: Int?
+    /// The Apple Watch workout this cardio came from.
+    public var healthkitWorkoutId: String?
     /// Nil while the set is only planned.
     public var completedAt: Date?
 
@@ -114,6 +146,14 @@ public struct WorkoutSet: Identifiable, Hashable, Codable, Sendable {
         weightKg: Double? = nil,
         rir: Int? = nil,
         durationSeconds: Int? = nil,
+        distanceM: Double? = nil,
+        speedKmh: Double? = nil,
+        inclinePct: Double? = nil,
+        level: Int? = nil,
+        floors: Int? = nil,
+        avgHeartRate: Int? = nil,
+        energyKcal: Int? = nil,
+        healthkitWorkoutId: String? = nil,
         completedAt: Date? = nil
     ) {
         self.id = id
@@ -122,6 +162,14 @@ public struct WorkoutSet: Identifiable, Hashable, Codable, Sendable {
         self.weightKg = weightKg
         self.rir = rir
         self.durationSeconds = durationSeconds
+        self.distanceM = distanceM
+        self.speedKmh = speedKmh
+        self.inclinePct = inclinePct
+        self.level = level
+        self.floors = floors
+        self.avgHeartRate = avgHeartRate
+        self.energyKcal = energyKcal
+        self.healthkitWorkoutId = healthkitWorkoutId
         self.completedAt = completedAt
     }
 
@@ -203,19 +251,32 @@ public struct TemplateSet: Identifiable, Hashable, Codable, Sendable {
     public var repMin: Int?
     public var repMax: Int?
     public var targetRir: Int?
+    // Cardio targets.
+    public var durationSeconds: Int?
+    public var speedKmh: Double?
+    public var inclinePct: Double?
+    public var level: Int?
 
     public init(
         id: UUID = UUID(),
         setType: SetType = .working,
         repMin: Int? = nil,
         repMax: Int? = nil,
-        targetRir: Int? = nil
+        targetRir: Int? = nil,
+        durationSeconds: Int? = nil,
+        speedKmh: Double? = nil,
+        inclinePct: Double? = nil,
+        level: Int? = nil
     ) {
         self.id = id
         self.setType = setType
         self.repMin = repMin
         self.repMax = repMax
         self.targetRir = targetRir
+        self.durationSeconds = durationSeconds
+        self.speedKmh = speedKmh
+        self.inclinePct = inclinePct
+        self.level = level
     }
 }
 
@@ -348,7 +409,9 @@ extension Exercise {
             secondaryMuscles: c.decodeIfPresent([Muscle].self, forKey: .secondaryMuscles) ?? [],
             aliases: c.decodeIfPresent([String].self, forKey: .aliases) ?? [],
             baseExerciseId: c.decodeIfPresent(UUID.self, forKey: .baseExerciseId),
-            isCustom: c.decode(Bool.self, forKey: .isCustom)
+            isCustom: c.decode(Bool.self, forKey: .isCustom),
+            kind: c.decodeIfPresent(ExerciseKind.self, forKey: .kind) ?? .strength,
+            cardioMetrics: c.decodeIfPresent([CardioMetric].self, forKey: .cardioMetrics) ?? []
         )
     }
 }
@@ -363,6 +426,14 @@ extension WorkoutSet {
             weightKg: c.decodeIfPresent(Double.self, forKey: .weightKg),
             rir: c.decodeIfPresent(Int.self, forKey: .rir),
             durationSeconds: c.decodeIfPresent(Int.self, forKey: .durationSeconds),
+            distanceM: c.decodeIfPresent(Double.self, forKey: .distanceM),
+            speedKmh: c.decodeIfPresent(Double.self, forKey: .speedKmh),
+            inclinePct: c.decodeIfPresent(Double.self, forKey: .inclinePct),
+            level: c.decodeIfPresent(Int.self, forKey: .level),
+            floors: c.decodeIfPresent(Int.self, forKey: .floors),
+            avgHeartRate: c.decodeIfPresent(Int.self, forKey: .avgHeartRate),
+            energyKcal: c.decodeIfPresent(Int.self, forKey: .energyKcal),
+            healthkitWorkoutId: c.decodeIfPresent(String.self, forKey: .healthkitWorkoutId),
             completedAt: c.decodeIfPresent(Date.self, forKey: .completedAt)
         )
     }
@@ -376,7 +447,11 @@ extension TemplateSet {
             setType: c.decodeIfPresent(SetType.self, forKey: .setType) ?? .working,
             repMin: c.decodeIfPresent(Int.self, forKey: .repMin),
             repMax: c.decodeIfPresent(Int.self, forKey: .repMax),
-            targetRir: c.decodeIfPresent(Int.self, forKey: .targetRir)
+            targetRir: c.decodeIfPresent(Int.self, forKey: .targetRir),
+            durationSeconds: c.decodeIfPresent(Int.self, forKey: .durationSeconds),
+            speedKmh: c.decodeIfPresent(Double.self, forKey: .speedKmh),
+            inclinePct: c.decodeIfPresent(Double.self, forKey: .inclinePct),
+            level: c.decodeIfPresent(Int.self, forKey: .level)
         )
     }
 }

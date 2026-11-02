@@ -13,8 +13,8 @@ final class ExerciseVisualsTests: XCTestCase {
         let catalog = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().appendingPathComponent("../../../../backend/catalog.py").standardized
         let source = try String(contentsOf: catalog, encoding: .utf8)
-        let slugs = source.matches(of: /\n\s+E\("(\w+)"/).map { String($0.output.1) }
-        XCTAssertEqual(slugs.count, 151)
+        let slugs = source.matches(of: /\n\s+[EC]\("(\w+)"/).map { String($0.output.1) }
+        XCTAssertEqual(slugs.count, 160)
         XCTAssertEqual(Set(slugs), Set(ExerciseVisuals.movementBySlug.keys))
         for slug in slugs {
             XCTAssertNotNil(ExerciseVisuals.movement(forID: ExerciseVisuals.builtinID(slug: slug)), slug)
@@ -63,6 +63,25 @@ final class ExerciseVisualsTests: XCTestCase {
         XCTAssertEqual(ExerciseVisuals.movement(for: custom)?.name, "machine_squat")
         let plain = Exercise(nameEn: "Mystery machine", equipment: .machine, loadType: .total, primaryMuscles: [.chest], isCustom: true)
         XCTAssertNil(ExerciseVisuals.movement(for: plain))
+    }
+
+    func testCardioGoesRoundInALoop() throws {
+        let bike = try XCTUnwrap(ExerciseVisuals.movement(forID: ExerciseVisuals.builtinID(slug: "exercise_bike")))
+        XCTAssertEqual(bike.period, 1.0)
+        XCTAssertEqual(bike.family, .cardio)
+        XCTAssertNil(ExerciseVisuals.movement(named: "squat")!.period)
+        for slug in ["incline_walk", "treadmill_run", "stair_climber", "exercise_bike", "rowing_machine", "elliptical", "outdoor_walk", "outdoor_run", "outdoor_ride"] {
+            XCTAssertNotNil(ExerciseVisuals.movement(forID: ExerciseVisuals.builtinID(slug: slug))?.period, slug)
+        }
+        // The pedals are back where they started after one loop, and elsewhere halfway.
+        XCTAssertEqual(pedal(bike.figure(at: 0, equipment: .machine)), pedal(bike.figure(at: 0.999_999, equipment: .machine)), accuracy: 0.01)
+        XCTAssertNotEqual(pedal(bike.figure(at: 0, equipment: .machine)), pedal(bike.figure(at: 0.5, equipment: .machine)), accuracy: 1)
+    }
+
+    /// The near pedal's crank, drawn as the only lever.
+    private func pedal(_ figure: Figure) -> Double {
+        for case .polyline(let points, .lever) in figure.items { return points[1].y }
+        return .nan
     }
 
     /// The torso line's lowest point (the hip, for a standing figure).

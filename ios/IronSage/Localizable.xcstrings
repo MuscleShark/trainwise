@@ -2,6 +2,472 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {},
+    "Incline" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "坡度"
+          }
+        }
+      }
+    },
+    "Speed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度"
+          }
+        }
+      }
+    },
+    "Distance" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距离"
+          }
+        }
+      }
+    },
+    "machineLevel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Level"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "档位"
+          }
+        }
+      }
+    },
+    "Resistance" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阻力"
+          }
+        }
+      }
+    },
+    "Damper" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "风阻"
+          }
+        }
+      }
+    },
+    "Floors" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "层数"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分钟"
+          }
+        }
+      }
+    },
+    "Resistance %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阻力 %lld"
+          }
+        }
+      }
+    },
+    "Damper %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "风阻 %lld"
+          }
+        }
+      }
+    },
+    "Level %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "档位 %lld"
+          }
+        }
+      }
+    },
+    "%lld floors" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 层"
+          }
+        }
+      }
+    },
+    "Apple Watch · %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Watch · %@"
+          }
+        }
+      }
+    },
+    "Apple Watch" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Watch"
+          }
+        }
+      }
+    },
+    "First time: log what you did." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一次：记下你做了什么。"
+          }
+        }
+      }
+    },
+    "%lld bpm avg" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均 %lld 次/分"
+          }
+        }
+      }
+    },
+    "%lld kcal" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 千卡"
+          }
+        }
+      }
+    },
+    "Minutes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分钟"
+          }
+        }
+      }
+    },
+    "Heart rate is added from Apple Watch when you finish." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结束训练后会从 Apple Watch 补上心率。"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除"
+          }
+        }
+      }
+    },
+    "Nothing from Apple Watch today. Cardio you record on your Watch shows up here." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天 Apple Watch 还没有记录。你在手表上记录的有氧会显示在这里。"
+          }
+        }
+      }
+    },
+    "Added" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已添加"
+          }
+        }
+      }
+    },
+    "Add %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加%@"
+          }
+        }
+      }
+    },
+    "From Apple Watch today" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天 Apple Watch 的记录"
+          }
+        }
+      }
+    },
+    "Anything your Watch records during this workout is added for you." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训练期间手表记录的有氧会自动加进来。"
+          }
+        }
+      }
+    },
+    "Log it yourself" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自己记录"
+          }
+        }
+      }
+    },
+    "Add cardio" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加有氧"
+          }
+        }
+      }
+    },
+    "Only time is needed. The rest helps you compare sessions. Heart rate comes from Apple Watch if you wear it." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有时长是必填的，其他数据方便你对比每次训练。戴着 Apple Watch 的话，心率会从手表读取。"
+          }
+        }
+      }
+    },
+    "Cardio" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有氧"
+          }
+        }
+      }
+    },
+    "Start easy for a few minutes, then settle into your pace." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先轻松做几分钟，再进入你的节奏。"
+          }
+        }
+      }
+    },
+    "For moderate effort you can talk, but not sing." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中等强度时你能说话，但唱不了歌。"
+          }
+        }
+      }
+    },
+    "Stand or sit tall, and hold the rails lightly if at all." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "站直或坐直，扶手轻轻扶着就好，不扶更好。"
+          }
+        }
+      }
+    },
+    "Type" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "类型"
+          }
+        }
+      }
+    },
+    "Lifting and cardio" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "力量和有氧"
+          }
+        }
+      }
+    },
+    "Lifting" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "力量"
+          }
+        }
+      }
+    },
+    "Time" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时长"
+          }
+        }
+      }
+    },
+    "Cardio shows what you did last time. It isn't stepped up the way sets are." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有氧会显示你上次做了什么，不会像力量训练那样逐步加量。"
+          }
+        }
+      }
+    },
+    "Same as last time. Cardio isn't stepped up the way sets are." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和上次一样。有氧不会像力量训练那样逐步加量。"
+          }
+        }
+      }
+    },
+    "Recorded by" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录来源"
+          }
+        }
+      }
+    },
+    "No cardio yet. Add it to a workout, or record it on your Apple Watch." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有有氧记录。可以在训练里添加，或者用 Apple Watch 记录。"
+          }
+        }
+      }
+    },
+    "This week so far" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本周至今"
+          }
+        }
+      }
+    },
+    "Below 150–300 min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低于 150–300 分钟"
+          }
+        }
+      }
+    },
+    "Above 150–300 min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高于 150–300 分钟"
+          }
+        }
+      }
+    },
+    "Inside 150–300 min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 150–300 分钟之内"
+          }
+        }
+      }
+    },
+    "Minutes of cardio per week" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周有氧分钟数"
+          }
+        }
+      }
+    },
+    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets, volume or records." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数、训练量和纪录。"
+          }
+        }
+      }
+    },
     "Open in Safari" : {
       "localizations" : {
         "zh-Hans" : {

@@ -42,6 +42,10 @@ Equipment = Literal[
     "barbell", "dumbbell", "machine", "cable", "smith", "bodyweight", "kettlebell", "band", "other"
 ]
 LoadType = Literal["total", "per_side", "bodyweight_plus", "assisted"]
+ExerciseKind = Literal["strength", "cardio"]
+# What a cardio exercise logs besides time; level, resistance and damper all go in
+# `level`, named as the machine names its setting.
+CardioMetric = Literal["incline", "speed", "distance", "level", "resistance", "damper", "floors"]
 SetType = Literal["warmup", "working", "drop", "failure"]
 Level = Literal["beginner", "intermediate", "advanced"]
 Source = Literal["manual", "healthkit"]
@@ -56,6 +60,9 @@ Rir = Annotated[int, Field(ge=0, le=10)]
 Seconds = Annotated[int, Field(ge=0, le=86_400)]
 HeartRate = Annotated[int, Field(ge=20, le=250)]
 Minutes = Annotated[int, Field(ge=0, le=1440)]
+MachineLevel = Annotated[int, Field(ge=0, le=100)]
+Floors = Annotated[int, Field(ge=0, le=10_000)]
+Kilocalories = Annotated[int, Field(ge=0, le=10_000)]
 
 
 def _json_number(**bounds) -> WithJsonSchema:
@@ -72,6 +79,24 @@ WeightKg = Annotated[
     Field(ge=0, le=2000, max_digits=7, decimal_places=3),
     AsNumber,
     _json_number(minimum=0, maximum=2000),
+]
+DistanceM = Annotated[
+    Decimal,
+    Field(ge=0, le=1_000_000, max_digits=9, decimal_places=2),
+    AsNumber,
+    _json_number(minimum=0, maximum=1_000_000),
+]
+SpeedKmh = Annotated[
+    Decimal,
+    Field(ge=0, le=60, max_digits=5, decimal_places=2),
+    AsNumber,
+    _json_number(minimum=0, maximum=60),
+]
+InclinePct = Annotated[
+    Decimal,
+    Field(ge=-10, le=40, max_digits=4, decimal_places=1),
+    AsNumber,
+    _json_number(minimum=-10, maximum=40),
 ]
 # kg for weight, % for body_fat, cm for girths.
 MeasurementValue = Annotated[
@@ -147,6 +172,16 @@ class ExerciseWrite(BaseModel):
     secondary_muscles: Annotated[list[Muscle], Field(max_length=8)] = []
     aliases: Annotated[list[Alias], Field(max_length=10)] = []
     base_exercise_id: uuid.UUID | None = None
+    kind: ExerciseKind = "strength"
+    cardio_metrics: Annotated[list[CardioMetric], Field(max_length=4)] = []
+
+    @model_validator(mode="after")
+    def metrics_are_for_cardio(self):
+        if self.cardio_metrics and self.kind != "cardio":
+            raise ValueError("Only cardio exercises have cardio_metrics")
+        if len(set(self.cardio_metrics)) != len(self.cardio_metrics):
+            raise ValueError("cardio_metrics must not repeat")
+        return self
 
 
 class ExerciseRead(SyncedRead, ExerciseWrite):
@@ -163,6 +198,16 @@ class SetWrite(BaseModel):
     weight_kg: WeightKg | None = None
     rir: Rir | None = None
     duration_seconds: Seconds | None = None
+    # Cardio (one set per session); level is the machine's level, resistance or damper.
+    distance_m: DistanceM | None = None
+    speed_kmh: SpeedKmh | None = None
+    incline_pct: InclinePct | None = None
+    level: MachineLevel | None = None
+    floors: Floors | None = None
+    avg_heart_rate: HeartRate | None = None
+    energy_kcal: Kilocalories | None = None
+    # The Apple Watch workout the cardio came from.
+    healthkit_workout_id: HealthKitId | None = None
     completed_at: AwareDatetime | None = None
 
 
@@ -232,6 +277,11 @@ class TemplateSetWrite(BaseModel):
     rep_min: Reps | None = None
     rep_max: Reps | None = None
     target_rir: Rir | None = None
+    # Cardio targets.
+    duration_seconds: Seconds | None = None
+    speed_kmh: SpeedKmh | None = None
+    incline_pct: InclinePct | None = None
+    level: MachineLevel | None = None
 
     @model_validator(mode="after")
     def rep_range_is_ordered(self):

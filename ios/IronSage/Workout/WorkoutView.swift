@@ -12,6 +12,7 @@ struct WorkoutView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var focus: SetField?
     @State private var isPickingExercise = false
+    @State private var isAddingCardio = false
     @State private var isConfirmingFinish = false
     @State private var isConfirmingDiscard = false
     @State private var finished: Workout?
@@ -39,12 +40,19 @@ struct WorkoutView: View {
                 }
 
                 ForEach(session.workout.exercises) { item in
-                    ExerciseSection(session: session, item: item, focus: $focus) { info = $0 }
+                    if store.exercises[item.exerciseId]?.isCardio == true {
+                        CardioSection(session: session, item: item) { info = $0 }
+                    } else {
+                        ExerciseSection(session: session, item: item, focus: $focus) { info = $0 }
+                    }
                 }
 
                 Section {
                     Button("Add exercise", systemImage: "plus") {
                         isPickingExercise = true
+                    }
+                    Button("Add cardio", systemImage: "figure.stair.stepper") {
+                        isAddingCardio = true
                     }
                 }
 
@@ -105,6 +113,9 @@ struct WorkoutView: View {
             }
             .sheet(isPresented: $isPickingExercise) {
                 ExercisePickerView { exercise in session.add(exercise) }
+            }
+            .sheet(isPresented: $isAddingCardio) {
+                CardioAddView(session: session)
             }
             .confirmationDialog("Finish this workout?", isPresented: $isConfirmingFinish, titleVisibility: .visible) {
                 Button("Finish workout") {
@@ -250,7 +261,7 @@ private struct ExerciseHeader: View {
                 .textCase(nil)
             Group {
                 if let templateItem {
-                    Text("Target \(TemplateTarget(item: templateItem).summary)")
+                    Text("Target \(TemplateTarget(item: templateItem, exercise: store.exercises[item.exerciseId], unit: store.weightUnit).summary)")
                 }
                 if let rest = item.restSeconds {
                     Text("Rest \(Duration.clock(TimeInterval(rest)))")

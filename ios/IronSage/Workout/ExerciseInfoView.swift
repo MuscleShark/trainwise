@@ -107,7 +107,9 @@ struct ExerciseInfoView: View {
 
     /// "Barbell · Total weight · Squat"
     private var summary: String {
-        var parts = [String(appLocalized: exercise.equipment.label), String(appLocalized: exercise.loadType.label)]
+        var parts = [String(appLocalized: exercise.equipment.label)]
+        // Cardio has no weight, so what the weight means doesn't apply.
+        if !exercise.isCardio { parts.append(String(appLocalized: exercise.loadType.label)) }
         if let movement { parts.append(String(appLocalized: movement.family.title)) }
         return parts.joined(separator: " · ")
     }
@@ -207,6 +209,7 @@ extension MovementFamily {
         case .shrug: "Shrug"
         case .hipMachine: "Hip machine"
         case .backExtension: "Back extension"
+        case .cardio: "Cardio"
         }
     }
 
@@ -237,6 +240,7 @@ extension MovementFamily {
         case .shrug: ["Hold the weight at your sides with straight arms.", "Lift your shoulders straight up toward your ears.", "Pause, then lower all the way."]
         case .hipMachine: ["Sit tall against the back pad.", "Move your knees out or in through the full range.", "Control the return; don't let the stack slam."]
         case .backExtension: ["Set your hips at the edge of the pad.", "Lower with a flat back.", "Rise until your body is straight, not past it."]
+        case .cardio: ["Start easy for a few minutes, then settle into your pace.", "For moderate effort you can talk, but not sing.", "Stand or sit tall, and hold the rails lightly if at all."]
         }
     }
 }
