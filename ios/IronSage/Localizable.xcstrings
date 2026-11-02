@@ -478,36 +478,6 @@
         }
       }
     },
-    "Couldn't load this page" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法加载此页面"
-          }
-        }
-      }
-    },
-    "Check your connection and try again, or open it in your browser." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请检查网络后重试，或在浏览器中打开。"
-          }
-        }
-      }
-    },
-    "Open in browser" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在浏览器中打开"
-          }
-        }
-      }
-    },
     "%@, estimate" : {
       "localizations" : {
         "zh-Hans" : {
@@ -674,16 +644,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本 %@"
-          }
-        }
-      }
-    },
-    "Same as iPhone" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "跟随 iPhone"
           }
         }
       }

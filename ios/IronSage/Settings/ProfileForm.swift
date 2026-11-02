@@ -154,14 +154,14 @@ private struct AppFooter: View {
         Section {
             VStack(spacing: 18) {
                 Menu {
+                    // The iPhone's language until one is picked here; the one in use is checked.
                     Picker("Language", selection: Binding(
-                        get: { AppLanguage.choice },
+                        get: { AppLanguage.isChinese ? AppLanguage.Choice.chinese : .english },
                         set: { choice in
                             AppLanguage.choose(choice)
                             coach.languageChanged()
                         }
                     )) {
-                        Text("Same as iPhone").tag(AppLanguage.Choice.system)
                         // Each language in its own words, as iOS lists them.
                         Text(verbatim: "English").tag(AppLanguage.Choice.english)
                         Text(verbatim: "简体中文").tag(AppLanguage.Choice.chinese)

@@ -313,14 +313,29 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.tabBars.buttons["我"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["连续周数"].exists)
 
-        // Back to the phone's language for the other tests.
+        // Only the two languages are offered, the one in use checked; back to English.
         app.buttons["profile"].tap()
         for _ in 0..<6 where !language.isHittable {
             app.swipeUp()
         }
         language.tap()
-        app.buttons["跟随 iPhone"].tap()
+        XCTAssertFalse(app.buttons["跟随 iPhone"].exists)
+        app.buttons["English"].tap()
         XCTAssertTrue(app.tabBars.buttons["Me"].waitForExistence(timeout: 10))
+    }
+
+    func testThePrivacyPolicyOpensWithoutANetwork() {
+        // Demo mode never goes online, so the text comes with the app.
+        app.tabBars.buttons["Me"].tap()
+        app.buttons["profile"].tap()
+        let privacy = app.buttons["Privacy policy"]
+        for _ in 0..<6 where !privacy.isHittable {
+            app.swipeUp()
+        }
+        privacy.tap()
+        XCTAssertTrue(app.staticTexts["What IronSage keeps"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+        XCTAssertTrue(privacy.waitForExistence(timeout: 5))
     }
 
     func testBodyFatCanBeEnteredAsARange() {

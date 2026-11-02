@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test app/lib/*.test.ts",
-    "api:types": "openapi-typescript ../api/openapi.json -o app/lib/api-types.ts"
+    "api:types": "openapi-typescript ../api/openapi.json -o app/lib/api-types.ts",
+    "legal:export": "node app/lib/legal-export.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.20",
