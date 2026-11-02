@@ -35,12 +35,13 @@ struct CardioSection: View {
                 .textCase(nil)
                 Spacer()
                 if let exercise {
-                    Button("How to do \(exercise.name(chinese: AppLanguage.isChinese))", systemImage: "info.circle") {
+                    Button {
                         showInfo(exercise)
+                    } label: {
+                        IconCircle(systemName: "info")
                     }
-                    .labelStyle(.iconOnly)
-                    .imageScale(.large)
                     .buttonStyle(.borderless)
+                    .accessibilityLabel(Text("How to do \(exercise.name(chinese: AppLanguage.isChinese))"))
                 }
                 Menu {
                     Button("Remove", systemImage: "trash", role: .destructive) {
@@ -49,8 +50,7 @@ struct CardioSection: View {
                         session.update { $0.exercises.removeAll { $0.id == item.id } }
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .imageScale(.large)
+                    IconCircle(systemName: "ellipsis")
                         .accessibilityLabel("Exercise options")
                 }
             }

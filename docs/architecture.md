@@ -54,11 +54,12 @@ Status (2026-10-25): the code for M1 and M2 is merged. TestFlight and testing on
 ### Screens
 
 1. **Onboarding**: Clerk sign-in (email code, Google, Apple); short profile (kg or lb, experience, goal; height and birthday optional); an explanation page, then the HealthKit permission prompt.
-2. **Today**: start a workout (empty or from a template); readiness card (M2); AI suggestion card or the subscription offer (M3).
+2. **Today**: the template day that's up next comes first, with the screen's one big Start button; an empty workout or another template below it. Readiness card (M2); AI suggestion card or the subscription offer (M3).
 3. **Workout logging** (the core screen):
    - Add exercises by search, equipment or muscle, or create a custom one (a specific machine).
    - One row per set, **prefilled with last time's load and reps** and labelled "Last: 60 kg × 8".
    - Completing a set **starts the rest timer**, which notifies even when the phone is locked.
+   - The workout can be hidden to use the other tabs. From iOS 26.1 a bar above the tabs (`tabViewBottomAccessory`) shows it with the rest left and opens it again; `WorkoutPresenter` keeps the session, so the timer goes on. Before 26.1, Today lists it under "In progress".
    - Optional RIR; warm-up sets can be marked.
    - Finishing shows a summary: total volume and new personal records. From M2 the workout is written to Apple Health.
 4. **History**: workouts by date; view, edit and delete.

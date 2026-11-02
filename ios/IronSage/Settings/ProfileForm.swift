@@ -177,7 +177,7 @@ private struct AppFooter: View {
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                     .padding(.horizontal, 14)
-                    .frame(minHeight: 36)
+                    .frame(minHeight: 44)
                     .overlay { Capsule().stroke(Color.secondary.opacity(0.35)) }
                 }
                 .tint(.primary)

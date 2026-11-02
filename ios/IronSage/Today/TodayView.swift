@@ -4,25 +4,40 @@ import SwiftUI
 
 struct TodayView: View {
     @Environment(LocalStore.self) private var store
-    @State private var session: WorkoutSession?
+    @Environment(WorkoutPresenter.self) private var workouts
 
     var body: some View {
         NavigationStack {
             List {
                 if let active = store.activeWorkout {
-                    Section {
-                        Button {
-                            session = WorkoutSession(workout: active, store: store)
-                        } label: {
-                            ActiveWorkoutRow(workout: active)
+                    // From iOS 26.1 the workout shows in the bar above the tabs instead.
+                    if !WorkoutPresenter.hasWorkoutBar {
+                        Section {
+                            Button {
+                                workouts.resume(active, store: store)
+                            } label: {
+                                ActiveWorkoutRow(workout: active)
+                            }
+                        } header: {
+                            Text("In progress")
                         }
-                    } header: {
-                        Text("In progress")
+                    }
+                } else if let upNext {
+                    // The day the plan says is next comes first, with the screen's one
+                    // big button; the other ways to start come after it.
+                    UpNextSection(template: upNext.template, day: upNext.day)
+                    Section("Or start another way") {
+                        Button("Empty workout", systemImage: "plus") {
+                            workouts.show(WorkoutSession.start(store: store))
+                        }
+                        NavigationLink(value: TemplateListRoute()) {
+                            Label("Another template", systemImage: "list.bullet.rectangle")
+                        }
                     }
                 } else {
                     Section {
                         Button("Start an empty workout", systemImage: "plus.circle.fill") {
-                            session = WorkoutSession.start(store: store)
+                            workouts.show(WorkoutSession.start(store: store))
                         }
                         .font(.headline)
                         NavigationLink(value: TemplateListRoute()) {
@@ -30,10 +45,6 @@ struct TodayView: View {
                         }
                     } footer: {
                         Text("Add exercises as you go. Sets start from what you did last time, with the next step suggested.")
-                    }
-
-                    if let upNext {
-                        UpNextSection(template: upNext.template, day: upNext.day, session: $session)
                     }
                 }
 
@@ -64,9 +75,6 @@ struct TodayView: View {
                 TemplateList()
                     .navigationTitle("Templates")
             }
-            .fullScreenCover(item: $session) { session in
-                WorkoutView(session: session)
-            }
         }
     }
 }
@@ -75,13 +83,14 @@ extension TodayView {
     private var upNext: (template: Template, day: TemplateDay)? { store.upNext }
 }
 
-/// The template day due next, with each exercise's suggested top set.
+/// The template day due next, with each exercise's suggested top set and a button that
+/// starts it.
 private struct UpNextSection: View {
     let template: Template
     let day: TemplateDay
-    @Binding var session: WorkoutSession?
     @Environment(LocalStore.self) private var store
     @Environment(CoachService.self) private var coach
+    @Environment(WorkoutPresenter.self) private var workouts
     @Environment(\.dynamicTypeSize) private var size
 
     var body: some View {
@@ -91,27 +100,13 @@ private struct UpNextSection: View {
         let advised = coach.advice(for: day)
         let advice = advised?.output
         Section {
-            Button {
-                let started = WorkoutSession.start(day, of: template, store: store, advice: advice)
-                if let advised {
-                    coach.recordApplied(advised, to: started.workout.id)
-                }
-                session = started
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(day.name(chinese: AppLanguage.isChinese))
-                            .font(.headline)
-                            .foregroundStyle(Color.primary)
-                        if template.days.count > 1 {
-                            Text(template.name(chinese: AppLanguage.isChinese))
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
-                        }
-                    }
-                    Spacer()
-                    Text("Start")
-                        .font(.subheadline.weight(.semibold))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(day.name(chinese: AppLanguage.isChinese))
+                    .font(.title3.weight(.semibold))
+                if template.days.count > 1 {
+                    Text(template.name(chinese: AppLanguage.isChinese))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
             if context.shortNight {
@@ -148,6 +143,17 @@ private struct UpNextSection: View {
                     .font(.subheadline)
                 }
             }
+            Button {
+                let started = WorkoutSession.start(day, of: template, store: store, advice: advice)
+                if let advised {
+                    coach.recordApplied(advised, to: started.workout.id)
+                }
+                workouts.show(started)
+            } label: {
+                Label("Start \(day.name(chinese: AppLanguage.isChinese))", systemImage: "play.fill")
+            }
+            .buttonStyle(BrandPrimaryButtonStyle())
+            .accessibilityIdentifier("startUpNext")
         } header: {
             Text("Up next")
         } footer: {
@@ -185,12 +191,14 @@ private struct ActiveWorkoutRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
+                // Explicit colors: inside a button, .primary and .secondary turn into a
+                // pale red that is hard to read.
                 Text(workout.title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.primary)
                 Text("Started \(workout.startedAt, style: .relative) ago")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.secondary)
             }
             Spacer()
             Text("Resume")

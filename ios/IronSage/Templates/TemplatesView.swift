@@ -31,11 +31,7 @@ struct TemplateList: View {
         let hidden = builtIn.filter { hiddenIDs.contains($0.id) }
         let own = store.templates.filter(\.isCustom)
         List {
-            Section("My templates") {
-                if own.isEmpty {
-                    Text("Create one with +, copy a program, or save a finished workout as a template from History.")
-                        .foregroundStyle(.secondary)
-                }
+            Section {
                 ForEach(own) { template in
                     NavigationLink(value: TemplateRoute(id: template.id)) {
                         TemplateRow(template: template)
@@ -45,6 +41,13 @@ struct TemplateList: View {
                             pendingDelete = template
                         }
                     }
+                }
+            } header: {
+                Text("My templates")
+            } footer: {
+                // Under the header, not in a row: a row looks like something to tap.
+                if own.isEmpty {
+                    Text("None yet. Create one with +, copy a program, or save a finished workout as a template from History.")
                 }
             }
 
@@ -228,7 +231,7 @@ private struct ProgramRow: View {
                     Chip(text: Text(guide.goal.label))
                 }
                 if let days = template.daysPerWeek, days == plannedDays {
-                    Chip(text: Text("Fits your \(days) days"), tinted: true)
+                    Chip(text: Text("Fits your \(days) days"), systemImage: "checkmark")
                 }
             }
             if let guide {
@@ -242,17 +245,23 @@ private struct ProgramRow: View {
 }
 
 /// A small label with a rounded background.
+/// A fact about a program. Plain text in a neutral color: a filled or red capsule
+/// would look like a button, and red is for things that can be tapped.
 private struct Chip: View {
     let text: Text
-    var tinted = false
+    var systemImage: String?
 
     var body: some View {
-        text
-            .font(.caption)
-            .foregroundStyle(tinted ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(tinted ? AnyShapeStyle(.tint.opacity(0.14)) : AnyShapeStyle(.quaternary), in: .capsule)
+        HStack(spacing: 3) {
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.caption2.weight(.bold))
+                    .accessibilityHidden(true)
+            }
+            text
+        }
+        .font(.caption.weight(.medium))
+        .foregroundStyle(Color.primary.opacity(0.75))
     }
 }
 
@@ -265,7 +274,7 @@ struct TemplateDetailView: View {
     @Environment(SyncEngine.self) private var sync
     @Environment(CoachService.self) private var coach
     @Environment(\.dismiss) private var dismiss
-    @State private var session: WorkoutSession?
+    @Environment(WorkoutPresenter.self) private var workouts
     @State private var editing: Template?
     @State private var isBlockedByActiveWorkout = false
     @State private var dayIndex = 0
@@ -305,7 +314,9 @@ struct TemplateDetailView: View {
                         }
                     }
                     .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4))
+                    // Room above and below: the row's rounded corners would cut into
+                    // the first and last lines this close to the edge.
+                    .listRowInsets(EdgeInsets(top: 14, leading: 4, bottom: 14, trailing: 4))
                 }
                 if let guide {
                     Section {
@@ -362,10 +373,8 @@ struct TemplateDetailView: View {
                         start(day, of: template)
                     } label: {
                         Label("Start \(day.name(chinese: chinese))", systemImage: "play.fill")
-                            .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(BrandPrimaryButtonStyle())
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
                     .accessibilityIdentifier("startDay")
@@ -415,9 +424,6 @@ struct TemplateDetailView: View {
         } message: {
             Text("Finish or discard it on the Today tab first.")
         }
-        .fullScreenCover(item: $session) { session in
-            WorkoutView(session: session)
-        }
     }
 
     private func setHidden(_ template: Template, _ hidden: Bool) {
@@ -435,25 +441,24 @@ struct TemplateDetailView: View {
         if let advised {
             coach.recordApplied(advised, to: started.workout.id)
         }
-        session = started
+        workouts.show(started)
     }
 }
 
-/// A day's name as a pill; the picked one is filled.
+/// A day's name as a pill, 44 points high; the picked one is outlined in red, so it
+/// doesn't compete with the filled Start button under it.
 private struct DayChipStyle: ButtonStyle {
     let isSelected: Bool
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.weight(isSelected ? .semibold : .regular))
-            .foregroundStyle(isSelected ? Color.appBackground : Color.primary)
-            .padding(.horizontal, 14)
-            .frame(minHeight: 36)
-            .background(isSelected ? AnyShapeStyle(.primary) : AnyShapeStyle(.clear), in: .capsule)
+            .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+            .padding(.horizontal, 16)
+            .frame(minHeight: 44)
+            .background(isSelected ? AnyShapeStyle(Color(.secondarySystemGroupedBackground)) : AnyShapeStyle(.clear), in: .capsule)
             .overlay {
-                if !isSelected {
-                    Capsule().stroke(.secondary.opacity(0.4))
-                }
+                Capsule().strokeBorder(isSelected ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.secondary.opacity(0.4)), lineWidth: isSelected ? 1.5 : 1)
             }
             .opacity(configuration.isPressed ? 0.7 : 1)
             .accessibilityAddTraits(isSelected ? .isSelected : [])

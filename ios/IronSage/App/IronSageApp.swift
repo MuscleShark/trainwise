@@ -29,6 +29,7 @@ struct IronSageApp: App {
                     .environment(services.health)
                     .environment(services.coach)
                     .environment(services.subscriptions)
+                    .environment(services.workouts)
                     .environment(\.services, services)
             case .failure(let error):
                 // Only reachable with a broken build configuration or a broken disk.
@@ -52,6 +53,9 @@ final class AppServices {
     let health: HealthService
     let coach: CoachService
     let subscriptions: SubscriptionService
+    /// The workout screen and its session, kept when the views are rebuilt in another
+    /// language.
+    let workouts = WorkoutPresenter()
     /// Debug builds launched with `-demo`: sample data in memory, no sign-in, no network.
     let isDemo: Bool
 

@@ -148,6 +148,8 @@ struct ExercisePickerView: View {
             }
             .labelStyle(.iconOnly)
             .font(.title3)
+            .frame(width: 44, height: 44)
+            .contentShape(.rect)
         }
         .buttonStyle(.borderless)
     }
