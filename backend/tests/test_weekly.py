@@ -535,3 +535,43 @@ def test_the_job_continues_by_starting_this_function_again(monkeypatch):
     monkeypatch.setenv("AWS_LAMBDA_FUNCTION_NAME", "trainwise-coach-prod")
     coach_handler.invoke_self(None, after_user_id=41)
     assert json.loads(calls[0]["Payload"]) == {"job": "weekly_summaries", "after_user_id": 41}
+
+
+# The coach worker has no sign-in settings (CLERK_ISSUER is only on the API function),
+# so the job and the worker must not import the API's sign-in code. The test suite sets
+# CLERK_ISSUER for everything, so this runs in a process of its own without it.
+WORKER_WITHOUT_SIGN_IN = """
+import sys, uuid
+from datetime import datetime, timezone
+
+import coach_handler
+from database import Base, SessionLocal, engine
+from models import User
+
+Base.metadata.create_all(bind=engine)
+with SessionLocal() as db:
+    db.add(User(email="lifter@example.com", coach_consent=True, coach_enabled=True))
+    db.commit()
+    monday = datetime(2026, 11, 2, 14, tzinfo=timezone.utc)
+    counts = coach_handler.start_weekly_summaries(db, monday, print)
+    assert counts["failed"] == 0, counts
+    assert coach_handler.run_weekly_summary(db, uuid.uuid4(), None) == "skipped"
+assert "security" not in sys.modules, "the coach worker imported the API's sign-in code"
+"""
+
+
+def test_the_job_and_the_worker_run_without_the_apis_sign_in_settings(tmp_path):
+    import os
+    import subprocess
+    from pathlib import Path
+
+    env = {key: value for key, value in os.environ.items() if key != "CLERK_ISSUER"}
+    env["DATABASE_URL"] = f"sqlite:///{tmp_path / 'coach.db'}"
+    result = subprocess.run(
+        [sys.executable, "-c", WORKER_WITHOUT_SIGN_IN],
+        cwd=Path(__file__).resolve().parents[1],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr

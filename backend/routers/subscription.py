@@ -1,34 +1,15 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import appstore
+from coach_access import has_coach_access, subscription_status, users_subscription
 from database import get_db
 from models import Subscription, User, utcnow
 from schemas import AppStoreNotification, SubscriptionRead, SubscriptionWrite
 from security import get_current_user
 
 router = APIRouter(tags=["Subscription"])
-
-
-def subscription_status(subscription: Subscription | None, now: datetime | None = None) -> str:
-    if subscription is None:
-        return "none"
-    if subscription.status == "revoked":
-        return "revoked"
-    return "active" if subscription.access_until > (now or utcnow()) else "expired"
-
-
-def users_subscription(db: Session, user: User) -> Subscription | None:
-    return db.scalar(select(Subscription).where(Subscription.user_id == user.id))
-
-
-def has_coach_access(db: Session, user: User) -> bool:
-    """An active subscription, or a test account allowed by hand (users.coach_enabled)."""
-    return user.coach_enabled or subscription_status(users_subscription(db, user)) == "active"
 
 
 def read(db: Session, user: User) -> SubscriptionRead:

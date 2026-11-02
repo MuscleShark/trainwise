@@ -61,8 +61,8 @@ def run_weekly_summary(db, summary_id: uuid.UUID, coach_model) -> str:
     job created the summary."""
     from coach.schemas import WeeklyInput
     from coach.service import summarize_week
+    from coach_access import has_coach_access
     from models import WeeklySummary
-    from routers.subscription import has_coach_access
 
     return work(
         db,
@@ -178,8 +178,8 @@ def start_weekly_summary(db, user_id: int, now: datetime, start: Callable) -> st
     from sqlalchemy.exc import IntegrityError
 
     import weekly
+    from coach_access import has_coach_access
     from models import User, WeeklySummary, utcnow
-    from routers.subscription import has_coach_access
     from sync import next_change_seq
 
     user = db.get(User, user_id)
