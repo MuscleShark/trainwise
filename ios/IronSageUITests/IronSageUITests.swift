@@ -69,8 +69,11 @@ final class IronSageUITests: XCTestCase {
         app.launch()
         // Up next is further down at this size; the list only makes rows as they scroll in.
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
+        // Hittable is not enough: the floating tab bar covers the bottom of the list,
+        // and a tap there lands on the tab bar instead.
         let start = app.buttons["startUpNext"]
-        for _ in 0..<6 where !start.isHittable {
+        let tabBar = app.tabBars.firstMatch
+        for _ in 0..<6 where !(start.isHittable && start.frame.maxY < tabBar.frame.minY) {
             app.swipeUp()
         }
         start.tap()
