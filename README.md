@@ -6,7 +6,7 @@ See [docs/architecture.md](docs/architecture.md) for the design, decisions and r
 
 ## Current Features
 
-The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and progress). It goes to TestFlight once there is an Apple Developer account; the backend is ready for it.
+The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and progress). The project is signed with the Apple Developer team `CY5V574249`; next are real-device testing and TestFlight.
 
 **API** (`/v1`, built for an offline-first iPhone app)
 
@@ -233,6 +233,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 Needs Xcode 26 or newer. Open `ios/IronSage.xcodeproj`, pick an iPhone simulator and run. The first build asks you to trust the OpenAPIGenerator plugin; it generates the API client.
 
+On an iPhone: sign in to Xcode with an Apple ID in the team (Xcode → Settings → Accounts), turn on Developer Mode on the phone (Settings → Privacy & Security), connect it and run. The project is signed automatically with team `CY5V574249` (`DEVELOPMENT_TEAM`); the first run registers the bundle id `app.ironsage.IronSage` with its HealthKit capability and makes a development profile. A build from Xcode calls staging.
+
 To try the screens without an account, run a Debug build with the launch argument `-demo` (Xcode: Product → Scheme → Edit Scheme → Arguments): sample exercises, workouts and Apple Health data in memory, no sign-in and no network.
 
 The app picks its API by how it was installed (`AppConfig.Server` in `ios/IronSageKit/Sources/IronSageCore/AppConfig.swift`): a build run from Xcode and a TestFlight install call staging, the App Store's calls production. So one build is tried on staging in TestFlight and goes to the App Store unchanged once the backend is promoted. Both addresses are build settings (`STAGING_API_URL`, `PRODUCTION_API_URL`), as is `CLERK_PUBLISHABLE_KEY` (both servers use the Clerk development instance); all are public, and the publishable key also ships in the web app. Staging's database is a copy of production's, so the same account signs in to both. When the app finds it now talks to the other server, it empties the phone's copy and downloads the user's data again.
@@ -307,8 +309,8 @@ The iPhone app's version 1 ships in three milestones ([details](docs/architectur
 - [x] Backend foundation: Clerk sign-in, `/v1` API with offline sync, exercise catalog, templates, account deletion, privacy and support pages
 - [x] **M1 Logging**: profile, workout logging that works offline, history, templates
 - [x] **M2 Health and progress**: Apple Health import and workout export, progress charts, personal records, readiness card
-- [ ] TestFlight and real-device testing (needs an Apple Developer account)
-- [ ] **M3 AI coach**: next-session suggestion with its reason, weekly summary, StoreKit 2 subscription; then App Store submission
+- [x] **M3 AI coach**: next-session suggestion with its reason, weekly summary, StoreKit 2 subscription
+- [ ] Real-device testing, TestFlight and App Store submission (Apple Developer team set up)
 
 Next, after version 1:
 
@@ -323,7 +325,7 @@ Version 2: nutrition logging, and a coach that can chat and adjust plans with to
 
 ## Project Status
 
-M1 and M2 are merged. Next are TestFlight, once there is an Apple Developer account, and the design of M3, the AI coach.
+M1, M2 and M3 are merged and production runs them. The Apple Developer account exists; next are real-device testing, TestFlight and App Store submission.
 
 ## License
 
