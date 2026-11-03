@@ -240,6 +240,8 @@ The staging API is the URL in the job summary (or CloudShell: `aws lambda get-fu
 
 ## Releasing the iPhone app
 
+The app is signed automatically with the Apple Developer team `CY5V574249` (`DEVELOPMENT_TEAM` in `ios/IronSage.xcodeproj`). Before the first upload: sign in to Xcode with an Apple ID in the team, sign the Paid Apps agreement in App Store Connect (subscriptions need it, even in the sandbox), and create the app there with the bundle id `app.ironsage.IronSage` ([step 8](#8-app-store-subscriptions-once-the-apple-developer-account-exists)). Archive with Product → Archive and upload from the Organizer (Distribute App → App Store Connect); add yourself as an internal tester in TestFlight.
+
 One build goes through both environments; where it was installed from decides the API (`AppConfig.Server`):
 
 1. Merge to `main`. CI passes and the backend deploys to staging.
