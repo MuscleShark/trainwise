@@ -195,7 +195,10 @@ enum DemoData {
 
     /// Cardio as an Apple Watch workout read from Apple Health.
     private static func watchWorkout(_ exercise: Exercise, minutes: Int, daysAgo: Int, distanceM: Double?, heart: Int, kcal: Int) -> Workout {
-        let start = Date.now.addingTimeInterval(-Double(daysAgo) * 86_400 - 3 * 3600)
+        // Three hours back, but never into the day before: just after midnight this
+        // morning's stairs would otherwise land yesterday and drop out of "today".
+        let day = Calendar.current.date(byAdding: .day, value: -daysAgo, to: Calendar.current.startOfDay(for: .now))!
+        let start = max(Date.now.addingTimeInterval(-Double(daysAgo) * 86_400 - 3 * 3600), day)
         let end = start.addingTimeInterval(TimeInterval(minutes * 60) + 4)
         let id = UUID().uuidString
         return Workout(title: exercise.nameEn, startedAt: start, endedAt: end, healthkitWorkoutId: id, exercises: [
