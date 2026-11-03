@@ -22,7 +22,7 @@ final class IronSageUITests: XCTestCase {
     }
 
     func testAWorkoutFromUpNextCanBeLoggedAndFinished() {
-        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
+        let start = app.buttons["startUpNext"]
         XCTAssertTrue(start.waitForExistence(timeout: 15))
         start.tap()
 
@@ -46,14 +46,34 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testAHiddenWorkoutStaysInTheBarAboveTheTabs() {
+        let start = app.buttons["startUpNext"]
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+        let markDone = app.buttons["Mark done"].firstMatch
+        XCTAssertTrue(markDone.waitForExistence(timeout: 10))
+        markDone.tap()
+        app.buttons["Hide"].tap()
+
+        // The rest keeps counting in the bar, and a tap opens the workout again with it.
+        let bar = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Rest'")).firstMatch
+        XCTAssertTrue(bar.waitForExistence(timeout: 10))
+        bar.tap()
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Rest"].exists)
+    }
+
     func testASetCanBeLoggedAtTheLargestTextSize() {
         app.terminate()
         app.launchArguments += ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         // Up next is further down at this size; the list only makes rows as they scroll in.
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
-        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
-        for _ in 0..<6 where !start.isHittable {
+        // Hittable is not enough: the floating tab bar covers the bottom of the list,
+        // and a tap there lands on the tab bar instead.
+        let start = app.buttons["startUpNext"]
+        let tabBar = app.tabBars.firstMatch
+        for _ in 0..<6 where !(start.isHittable && start.frame.maxY < tabBar.frame.minY) {
             app.swipeUp()
         }
         start.tap()
@@ -71,7 +91,7 @@ final class IronSageUITests: XCTestCase {
     }
 
     func testTheWorkoutScreenShowsHowToDoAnExercise() {
-        let start = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Legs'")).firstMatch
+        let start = app.buttons["startUpNext"]
         XCTAssertTrue(start.waitForExistence(timeout: 15))
         start.tap()
 
@@ -85,7 +105,7 @@ final class IronSageUITests: XCTestCase {
     }
 
     func testAnExerciseCanBeAddedFromItsHowToSheet() {
-        let empty = app.buttons["Start an empty workout"]
+        let empty = app.buttons["Empty workout"]
         XCTAssertTrue(empty.waitForExistence(timeout: 15))
         empty.tap()
         app.buttons["Add exercise"].firstMatch.tap()
@@ -103,7 +123,7 @@ final class IronSageUITests: XCTestCase {
     }
 
     func testCardioCanBeAddedFromTheWatchOrLoggedByHand() {
-        let empty = app.buttons["Start an empty workout"]
+        let empty = app.buttons["Empty workout"]
         XCTAssertTrue(empty.waitForExistence(timeout: 15))
         empty.tap()
         let addCardio = app.buttons["Add cardio"].firstMatch

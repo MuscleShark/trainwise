@@ -99,6 +99,8 @@ struct WorkoutView: View {
                             focus = nil
                             isConfirmingFinish = true
                         }
+                        .buttonStyle(.borderedProminent)
+                        .foregroundStyle(Color.brandOnAccent)
                         .disabled(!session.hasCompletedSets)
                     }
                 }
@@ -287,13 +289,13 @@ private struct ExerciseHeader: View {
 
     @ViewBuilder private var buttons: some View {
         if let exercise = store.exercises[item.exerciseId] {
-            Button("How to do \(exercise.name(chinese: AppLanguage.isChinese))", systemImage: "info.circle") {
+            Button {
                 showInfo(exercise)
+            } label: {
+                IconCircle(systemName: "info")
             }
-            .labelStyle(.iconOnly)
-            .imageScale(.large)
             .buttonStyle(.borderless)
-            .textCase(nil)
+            .accessibilityLabel(Text("How to do \(exercise.name(chinese: AppLanguage.isChinese))"))
         }
         Menu {
             Picker("Rest between sets", selection: Binding(
@@ -309,8 +311,7 @@ private struct ExerciseHeader: View {
                 session.update { $0.exercises.removeAll { $0.id == item.id } }
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
-                .imageScale(.large)
+            IconCircle(systemName: "ellipsis")
                 .accessibilityLabel("Exercise options")
         }
     }
@@ -347,7 +348,8 @@ private struct ExerciseHeader: View {
 private struct SetHeader: View {
     let unit: WeightUnit
     @Environment(\.dynamicTypeSize) private var size
-    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 68
+    @ScaledMetric(relativeTo: .body) private var repsWidth: CGFloat = 52
 
     var body: some View {
         if size < SetRow.stackedFrom {
@@ -355,8 +357,8 @@ private struct SetHeader: View {
                 Text("Set").frame(width: 30)
                 Text("Last time").frame(maxWidth: .infinity, alignment: .leading)
                 Text(unit.symbol).frame(width: weightWidth)
-                Text("Reps").frame(width: 48)
-                Image(systemName: "checkmark").frame(width: 32)
+                Text("Reps").frame(width: repsWidth)
+                Image(systemName: "checkmark").frame(width: 44)
                     .accessibilityLabel("Done")
             }
             .font(.caption.weight(.medium))
@@ -375,7 +377,8 @@ private struct SetRow: View {
     var focus: FocusState<SetField?>.Binding
     @Environment(\.dynamicTypeSize) private var size
     /// The weight field grows with the text, so "220.5" still fits.
-    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var weightWidth: CGFloat = 68
+    @ScaledMetric(relativeTo: .body) private var repsWidth: CGFloat = 52
     @ScaledMetric(relativeTo: .subheadline) private var badgeSide: CGFloat = 30
 
     /// From this text size a set takes two lines: what it is and last time, then the
@@ -413,8 +416,8 @@ private struct SetRow: View {
                         .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     weightField.frame(width: weightWidth)
-                    repsField.frame(width: 48)
-                    doneButton.frame(width: 32)
+                    repsField.frame(width: repsWidth)
+                    doneButton
                 }
             }
         }
@@ -448,8 +451,11 @@ private struct SetRow: View {
                 }
             }
             .font(.subheadline.weight(.semibold))
+            // Explicit colors: a menu's label takes the red tint otherwise, and the set
+            // number isn't a warning.
+            .foregroundStyle(Color.primary)
             .frame(minWidth: badgeSide, minHeight: badgeSide)
-            .background(.quaternary, in: .rect(cornerRadius: 6))
+            .background(Color(.tertiarySystemFill), in: .rect(cornerRadius: 8))
         }
         .accessibilityLabel(Text(set.setType.label))
     }
@@ -484,9 +490,19 @@ private struct SetRow: View {
             }
             session.toggleCompleted(setID: set.id, in: exerciseID)
         } label: {
-            Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.title2)
-                .foregroundStyle(set.isCompleted ? Color.accentColor : .secondary)
+            // A 44-point square, the smallest target Apple recommends: the button
+            // pressed most in the app, often with tired, sweaty hands.
+            Image(systemName: "checkmark")
+                .font(.body.weight(.bold))
+                .foregroundStyle(set.isCompleted ? Color.brandOnAccent : Color.secondary.opacity(0.5))
+                .frame(width: 44, height: 44)
+                .background(set.isCompleted ? Color.accentColor : Color.clear, in: .rect(cornerRadius: 10))
+                .overlay {
+                    if !set.isCompleted {
+                        RoundedRectangle(cornerRadius: 10).strokeBorder(Color.secondary.opacity(0.4), lineWidth: 1.5)
+                    }
+                }
+                .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(set.isCompleted ? Text("Mark not done") : Text("Mark done"))
@@ -544,8 +560,8 @@ struct NumberField: View {
             .keyboardType(decimals ? .decimalPad : .numberPad)
             .multilineTextAlignment(.center)
             .font(.body.monospacedDigit())
-            .padding(.vertical, 6)
-            .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 6))
+            .frame(minHeight: 44)
+            .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 10))
             .onAppear { text = Self.format(value) }
             .onChange(of: text) { _, newText in
                 let parsed = Self.parse(newText, decimals: decimals)
@@ -579,7 +595,7 @@ private struct RestTimerBar: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let remaining = timer.remaining(at: context.date)
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(remaining > 0 ? "Rest" : "Rest is over")
                         .font(.caption.weight(.semibold))
@@ -589,14 +605,22 @@ private struct RestTimerBar: View {
                         .contentTransition(.numericText(countsDown: true))
                 }
                 Spacer()
+                // Three equal buttons: skipping the rest isn't the one to push.
                 Button("−15 s") { session.extendRest(by: -15) }
                     .accessibilityLabel("15 seconds less")
                 Button("+15 s") { session.extendRest(by: 15) }
                     .accessibilityLabel("15 seconds more")
                 Button(remaining > 0 ? "Skip" : "Close") { session.skipRest() }
-                    .buttonStyle(.borderedProminent)
             }
+            // One line each, shrinking a little rather than wrapping; the bar stops
+            // growing at the size the set rows do, so the buttons still fit.
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
+            .controlSize(.large)
+            .tint(.primary)
             .padding(.horizontal)
             .padding(.vertical, 10)
             .background(.bar)

@@ -1,3 +1,4 @@
+import IronSageStore
 import SwiftUI
 
 enum AppTab: Hashable {
@@ -14,6 +15,8 @@ struct MainTabView: View {
     /// The open tab, so it stays open when the views are rebuilt in another language
     /// (picked on Me). A new launch starts on Today.
     private static var lastTab = AppTab.today
+    @Environment(WorkoutPresenter.self) private var workouts
+    @Environment(LocalStore.self) private var store
 
     var body: some View {
         TabView(selection: $tab) {
@@ -33,6 +36,7 @@ struct MainTabView: View {
                 MeView()
             }
         }
+        .workoutPresentation(workouts, store: store)
         .environment(\.selectTab) { tab = $0 }
         .onChange(of: tab) { Self.lastTab = tab }
     }
