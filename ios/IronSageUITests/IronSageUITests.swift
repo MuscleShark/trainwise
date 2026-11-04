@@ -69,13 +69,8 @@ final class IronSageUITests: XCTestCase {
         app.launch()
         // Up next is further down at this size; the list only makes rows as they scroll in.
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
-        // Hittable is not enough: the floating tab bar covers the bottom of the list,
-        // and a tap there lands on the tab bar instead.
         let start = app.buttons["startUpNext"]
-        let tabBar = app.tabBars.firstMatch
-        for _ in 0..<6 where !(start.isHittable && start.frame.maxY < tabBar.frame.minY) {
-            app.swipeUp()
-        }
+        scrollIntoClearView(start)
         start.tap()
         XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
 
@@ -366,12 +361,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Progress"].tap()
         let enter = app.buttons["Enter body fat"]
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
-        // The list builds rows as they scroll in, and iOS 26's tab bar floats over the
-        // list, so scroll until the button is there and clear of the tab bar.
-        let tabBar = app.tabBars.firstMatch
-        for _ in 0..<8 where !(enter.exists && enter.isHittable && enter.frame.maxY < tabBar.frame.minY - 8) {
-            app.swipeUp()
-        }
+        scrollIntoClearView(enter)
         enter.tap()
 
         // A range is the default; an exact number is the other choice.
@@ -383,5 +373,34 @@ final class IronSageUITests: XCTestCase {
 
         app.buttons["All body fat"].tap()
         XCTAssertTrue(app.staticTexts["About 25–30%"].waitForExistence(timeout: 5))
+    }
+
+    /// Scrolls until `element` sits between the navigation bar and the tab bar, then
+    /// waits for the list to stop. Hittable is not enough: iOS 26's bars float over
+    /// the list, so a tap on a part they cover lands on the bar, and a tap on a list
+    /// that is still moving only stops it. A fast swipe goes a different distance each
+    /// time, which can leave the element under the navigation bar, so swipes are slow.
+    private func scrollIntoClearView(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        let top = app.navigationBars.firstMatch
+        let bottom = app.tabBars.firstMatch
+        func isClear() -> Bool {
+            guard element.exists, element.isHittable else { return false }
+            let frame = element.frame
+            return frame.minY > (top.exists ? top.frame.maxY : 0)
+                && frame.maxY < (bottom.exists ? bottom.frame.minY - 8 : app.frame.maxY)
+        }
+        for _ in 0..<12 where !isClear() {
+            if element.exists, top.exists, element.frame.minY <= top.frame.maxY {
+                app.swipeDown(velocity: .slow)
+            } else {
+                app.swipeUp(velocity: .slow)
+            }
+        }
+        var last = CGRect.null
+        for _ in 0..<10 where element.exists && element.frame != last {
+            last = element.frame
+            usleep(300_000)
+        }
+        XCTAssertTrue(isClear(), "\(element) is not clear of the bars", file: file, line: line)
     }
 }

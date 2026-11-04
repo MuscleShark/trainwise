@@ -43,17 +43,6 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # A cold simulator takes minutes to boot, so it boots in the background while
-      # the package tests run and the app builds.
-      - name: Start booting a simulator
-        run: |
-          set -euo pipefail
-          device=$(xcrun simctl list devices available --json \
-            | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
-          echo "Simulator: $device"
-          echo "DEVICE=$device" >> "$GITHUB_ENV"
-          nohup xcrun simctl bootstatus "$device" -b > "$RUNNER_TEMP/simulator-boot.log" 2>&1 &
-
       - name: Cache Swift packages
         uses: actions/cache@v4
         with:
@@ -68,6 +57,18 @@ jobs:
       - name: Test IronSageKit
         working-directory: ios/IronSageKit
         run: swift test
+
+      # A cold simulator takes minutes to boot, so it boots in the background while
+      # the app builds. Not earlier: booting slows the package tests down about as
+      # much as it saves.
+      - name: Start booting a simulator
+        run: |
+          set -euo pipefail
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulator: $device"
+          echo "DEVICE=$device" >> "$GITHUB_ENV"
+          nohup xcrun simctl bootstatus "$device" -b > "$RUNNER_TEMP/simulator-boot.log" 2>&1 &
 
       # The OpenAPI generator runs as a package build plugin; CI has no one to
       # click "Trust & Enable", hence -skipPackagePluginValidation.
