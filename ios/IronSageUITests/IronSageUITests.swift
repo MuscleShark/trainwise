@@ -253,11 +253,12 @@ final class IronSageUITests: XCTestCase {
         year.tap()
         XCTAssertTrue(year.isSelected)
 
+        // The section is taller than the screen: its heading has scrolled away by the
+        // time its last row is clear of the tab bar.
+        let heading = app.staticTexts["Body fat"]
+        scrollIntoClearView(heading)
         let allBodyFat = app.buttons["All body fat"]
-        for _ in 0..<4 where !allBodyFat.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(app.staticTexts["Body fat"].exists)
+        scrollIntoClearView(allBodyFat)
         allBodyFat.tap()
         XCTAssertTrue(app.navigationBars["All body fat"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.firstMatch.tap()
@@ -273,9 +274,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let coach = app.switches["AI coach"]
-        for _ in 0..<4 where !coach.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(coach)
         XCTAssertTrue(coach.waitForExistence(timeout: 5))
         XCTAssertEqual(coach.value as? String, "1")
 
@@ -321,9 +320,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let language = app.buttons["language"]
-        for _ in 0..<6 where !language.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(language)
         XCTAssertTrue(language.waitForExistence(timeout: 5))
         language.tap()
         app.buttons["简体中文"].tap()
@@ -334,9 +331,7 @@ final class IronSageUITests: XCTestCase {
 
         // Only the two languages are offered, the one in use checked; back to English.
         app.buttons["profile"].tap()
-        for _ in 0..<6 where !language.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(language)
         language.tap()
         XCTAssertFalse(app.buttons["跟随 iPhone"].exists)
         app.buttons["English"].tap()
@@ -348,9 +343,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let privacy = app.buttons["Privacy policy"]
-        for _ in 0..<6 where !privacy.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(privacy)
         privacy.tap()
         XCTAssertTrue(app.staticTexts["What IronSage keeps"].waitForExistence(timeout: 5))
         app.buttons["Done"].tap()
