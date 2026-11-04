@@ -69,13 +69,8 @@ final class IronSageUITests: XCTestCase {
         app.launch()
         // Up next is further down at this size; the list only makes rows as they scroll in.
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 15))
-        // Hittable is not enough: the floating tab bar covers the bottom of the list,
-        // and a tap there lands on the tab bar instead.
         let start = app.buttons["startUpNext"]
-        let tabBar = app.tabBars.firstMatch
-        for _ in 0..<6 where !(start.isHittable && start.frame.maxY < tabBar.frame.minY) {
-            app.swipeUp()
-        }
+        scrollIntoClearView(start)
         start.tap()
         XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
 
@@ -110,7 +105,9 @@ final class IronSageUITests: XCTestCase {
         empty.tap()
         app.buttons["Add exercise"].firstMatch.tap()
 
-        // It's in both Recent and All exercises.
+        // Search first: with every exercise listed, each lookup in the sheet above it
+        // takes many seconds on CI.
+        app.searchFields.firstMatch.typeText("lateral raise")
         let info = app.buttons["How to do Dumbbell lateral raise"].firstMatch
         XCTAssertTrue(info.waitForExistence(timeout: 10))
         info.tap()
@@ -193,6 +190,8 @@ final class IronSageUITests: XCTestCase {
         name.tap()
         name.typeText("Home legs")
         app.buttons["Add exercise"].tap()
+        // Search first, so the lookups don't go through every exercise.
+        app.searchFields.firstMatch.typeText("back squat")
         let squat = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Back squat'")).firstMatch
         XCTAssertTrue(squat.waitForExistence(timeout: 10))
         squat.tap()
@@ -254,11 +253,12 @@ final class IronSageUITests: XCTestCase {
         year.tap()
         XCTAssertTrue(year.isSelected)
 
+        // The section is taller than the screen: its heading has scrolled away by the
+        // time its last row is clear of the tab bar.
+        let heading = app.staticTexts["Body fat"]
+        scrollIntoClearView(heading)
         let allBodyFat = app.buttons["All body fat"]
-        for _ in 0..<4 where !allBodyFat.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(app.staticTexts["Body fat"].exists)
+        scrollIntoClearView(allBodyFat)
         allBodyFat.tap()
         XCTAssertTrue(app.navigationBars["All body fat"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.firstMatch.tap()
@@ -274,9 +274,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let coach = app.switches["AI coach"]
-        for _ in 0..<4 where !coach.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(coach)
         XCTAssertTrue(coach.waitForExistence(timeout: 5))
         XCTAssertEqual(coach.value as? String, "1")
 
@@ -322,9 +320,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let language = app.buttons["language"]
-        for _ in 0..<6 where !language.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(language)
         XCTAssertTrue(language.waitForExistence(timeout: 5))
         language.tap()
         app.buttons["简体中文"].tap()
@@ -335,9 +331,7 @@ final class IronSageUITests: XCTestCase {
 
         // Only the two languages are offered, the one in use checked; back to English.
         app.buttons["profile"].tap()
-        for _ in 0..<6 where !language.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(language)
         language.tap()
         XCTAssertFalse(app.buttons["跟随 iPhone"].exists)
         app.buttons["English"].tap()
@@ -349,9 +343,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Me"].tap()
         app.buttons["profile"].tap()
         let privacy = app.buttons["Privacy policy"]
-        for _ in 0..<6 where !privacy.isHittable {
-            app.swipeUp()
-        }
+        scrollIntoClearView(privacy)
         privacy.tap()
         XCTAssertTrue(app.staticTexts["What IronSage keeps"].waitForExistence(timeout: 5))
         app.buttons["Done"].tap()
@@ -362,12 +354,7 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Progress"].tap()
         let enter = app.buttons["Enter body fat"]
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
-        // The list builds rows as they scroll in, and iOS 26's tab bar floats over the
-        // list, so scroll until the button is there and clear of the tab bar.
-        let tabBar = app.tabBars.firstMatch
-        for _ in 0..<8 where !(enter.exists && enter.isHittable && enter.frame.maxY < tabBar.frame.minY - 8) {
-            app.swipeUp()
-        }
+        scrollIntoClearView(enter)
         enter.tap()
 
         // A range is the default; an exact number is the other choice.
@@ -379,5 +366,34 @@ final class IronSageUITests: XCTestCase {
 
         app.buttons["All body fat"].tap()
         XCTAssertTrue(app.staticTexts["About 25–30%"].waitForExistence(timeout: 5))
+    }
+
+    /// Scrolls until `element` sits between the navigation bar and the tab bar, then
+    /// waits for the list to stop. Hittable is not enough: iOS 26's bars float over
+    /// the list, so a tap on a part they cover lands on the bar, and a tap on a list
+    /// that is still moving only stops it. A fast swipe goes a different distance each
+    /// time, which can leave the element under the navigation bar, so swipes are slow.
+    private func scrollIntoClearView(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        let top = app.navigationBars.firstMatch
+        let bottom = app.tabBars.firstMatch
+        func isClear() -> Bool {
+            guard element.exists, element.isHittable else { return false }
+            let frame = element.frame
+            return frame.minY > (top.exists ? top.frame.maxY : 0)
+                && frame.maxY < (bottom.exists ? bottom.frame.minY - 8 : app.frame.maxY)
+        }
+        for _ in 0..<12 where !isClear() {
+            if element.exists, top.exists, element.frame.minY <= top.frame.maxY {
+                app.swipeDown(velocity: .slow)
+            } else {
+                app.swipeUp(velocity: .slow)
+            }
+        }
+        var last = CGRect.null
+        for _ in 0..<10 where element.exists && element.frame != last {
+            last = element.frame
+            usleep(300_000)
+        }
+        XCTAssertTrue(isClear(), "\(element) is not clear of the bars", file: file, line: line)
     }
 }
