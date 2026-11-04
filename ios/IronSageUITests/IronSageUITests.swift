@@ -110,7 +110,9 @@ final class IronSageUITests: XCTestCase {
         empty.tap()
         app.buttons["Add exercise"].firstMatch.tap()
 
-        // It's in both Recent and All exercises.
+        // Search first: with every exercise listed, each lookup in the sheet above it
+        // takes many seconds on CI.
+        app.searchFields.firstMatch.typeText("lateral raise")
         let info = app.buttons["How to do Dumbbell lateral raise"].firstMatch
         XCTAssertTrue(info.waitForExistence(timeout: 10))
         info.tap()
@@ -193,6 +195,8 @@ final class IronSageUITests: XCTestCase {
         name.tap()
         name.typeText("Home legs")
         app.buttons["Add exercise"].tap()
+        // Search first, so the lookups don't go through every exercise.
+        app.searchFields.firstMatch.typeText("back squat")
         let squat = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Back squat'")).firstMatch
         XCTAssertTrue(squat.waitForExistence(timeout: 10))
         squat.tap()

@@ -85,7 +85,7 @@ Agreed before M1 started:
 | Progression | None in M1: sets are prefilled with last time's load and reps. Suggestions come with the coach in M3 |
 | Units | Stored in kg. Shown in lb when chosen. The + and − buttons move by 2.5 kg or 5 lb (1.25 kg or 2.5 lb per dumbbell or side); typed weights are kept as typed |
 | Hardware | The simulator during development; Apple Developer Program and TestFlight at the end of M1 for a real gym session |
-| CI | A macOS runner builds the app and runs the Swift tests on every pull request |
+| CI | A macOS runner builds the app and runs the Swift tests on every pull request that changes the app (`ios.yml`) |
 
 M1 ships as six pull requests: project skeleton (sign-in, generated API client, tabs, CI); local store, sync and catalog; workout logging; history; templates; settings, profile and localization.
 

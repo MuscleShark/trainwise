@@ -1,0 +1,99 @@
+name: iOS
+
+# The iPhone app, in its own workflow so the backend deploy (which waits for CI)
+# doesn't wait for the macOS runner too. Runs when the app, the API contract it is
+# generated from, or the workflows change; nothing else can change its result.
+on:
+  pull_request:
+    paths:
+      - "ios/**"
+      - "api/openapi.json"
+      - ".github/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "ios/**"
+      - "api/openapi.json"
+      - ".github/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same branch or PR cancels the run that is still in progress.
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS build and tests
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: ios
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # A cold simulator takes minutes to boot, so it boots in the background while
+      # the package tests run and the app builds.
+      - name: Start booting a simulator
+        run: |
+          set -euo pipefail
+          device=$(xcrun simctl list devices available --json \
+            | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone')))")
+          echo "Simulator: $device"
+          echo "DEVICE=$device" >> "$GITHUB_ENV"
+          nohup xcrun simctl bootstatus "$device" -b > "$RUNNER_TEMP/simulator-boot.log" 2>&1 &
+
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/IronSageKit/.build
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ios/**/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      # The API client is generated from api/openapi.json here, so a contract change
+      # that breaks the app fails this step.
+      - name: Test IronSageKit
+        working-directory: ios/IronSageKit
+        run: swift test
+
+      # The OpenAPI generator runs as a package build plugin; CI has no one to
+      # click "Trust & Enable", hence -skipPackagePluginValidation.
+      - name: Build the app for testing
+        run: |
+          xcodebuild build-for-testing \
+            -project IronSage.xcodeproj \
+            -scheme IronSage \
+            -destination "id=$DEVICE" \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Wait for the simulator
+        run: |
+          xcrun simctl bootstatus "$DEVICE" -b
+          cat "$RUNNER_TEMP/simulator-boot.log"
+
+      # UI tests click through the main flows in demo mode (no sign-in, no network).
+      # The StoreKit tests (IronSageTests) are skipped: StoreKit's local test service
+      # returns no products on GitHub's runners, so run them in Xcode before changing
+      # the subscription.
+      - name: Test the app on the simulator
+        run: |
+          xcodebuild test-without-building \
+            -project IronSage.xcodeproj \
+            -scheme IronSage \
+            -destination "id=$DEVICE" \
+            -skipPackagePluginValidation \
+            -skip-testing:IronSageTests
