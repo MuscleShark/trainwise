@@ -342,6 +342,9 @@ private struct WeightEntryView: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dismiss) private var dismiss
     @State private var value: Double?
+    /// What is typed. Read on every keystroke, so Save works without closing the
+    /// keyboard first (a formatted field only reads it when editing ends).
+    @State private var text = ""
     @State private var date = Date.now
     @FocusState private var isFocused: Bool
 
@@ -351,8 +354,11 @@ private struct WeightEntryView: View {
             Form {
                 LabeledContent("Weight") {
                     HStack(spacing: 4) {
-                        TextField("Weight", value: $value, format: .number.precision(.fractionLength(0...unit.decimals)))
+                        TextField("Weight", text: $text)
                             .keyboardType(.decimalPad)
+                            .onChange(of: text) { _, typed in
+                                value = NumberField.parse(typed, decimals: true).map { unit.rounded($0) }
+                            }
                             .multilineTextAlignment(.trailing)
                             .focused($isFocused)
                         Text(unit.symbol)
@@ -364,6 +370,7 @@ private struct WeightEntryView: View {
             .brandBackground()
             .navigationTitle("Enter my weight")
             .navigationBarTitleDisplayMode(.inline)
+            .keyboardDoneButton()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -399,6 +406,9 @@ private struct BodyFatEntryView: View {
     @AppStorage("IronSage.bodyFat.exact") private var isExact = false
     @State private var estimate: ClosedRange<Double>?
     @State private var value: Double?
+    /// What is typed. Read on every keystroke, so Save works without closing the
+    /// keyboard first (a formatted field only reads it when editing ends).
+    @State private var text = ""
     @State private var date = Date.now
     @FocusState private var isFocused: Bool
 
@@ -419,8 +429,11 @@ private struct BodyFatEntryView: View {
                 if isExact {
                     Section {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            TextField(String("17.8"), value: $value, format: .number.precision(.fractionLength(0...1)))
+                            TextField(String("17.8"), text: $text)
                                 .keyboardType(.decimalPad)
+                                .onChange(of: text) { _, typed in
+                                    value = NumberField.parse(typed, decimals: true).map { ($0 * 10).rounded() / 10 }
+                                }
                                 .multilineTextAlignment(.trailing)
                                 .font(.system(size: 44, weight: .bold))
                                 .monospacedDigit()
@@ -453,6 +466,7 @@ private struct BodyFatEntryView: View {
             }
             .brandBackground()
             .navigationTitle("Body fat")
+            .keyboardDoneButton()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

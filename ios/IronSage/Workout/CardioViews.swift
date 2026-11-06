@@ -377,6 +377,7 @@ private struct CardioLogView: View {
         .brandBackground()
         .navigationTitle(exercise.name(chinese: AppLanguage.isChinese))
         .navigationBarTitleDisplayMode(.inline)
+        .keyboardDoneButton()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Add") {

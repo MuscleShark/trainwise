@@ -10,6 +10,10 @@ import UserNotifications
 final class WorkoutSession: Identifiable {
     private(set) var workout: Workout
     private(set) var restTimer: RestTimer?
+    /// Exercises marked done, folded to one row so the next one is in reach. Kept on
+    /// the phone with the workout's id, so hiding the screen or closing the app keeps
+    /// them folded; not sent to the API.
+    private(set) var doneExerciseIDs: Set<UUID> = []
 
     @ObservationIgnored private let store: LocalStore
     /// Each exercise's suggestion, worked out once: it explains how the sets were
@@ -27,6 +31,9 @@ final class WorkoutSession: Identifiable {
         self.workout = workout
         self.store = store
         original = workout.isInProgress ? nil : workout
+        if workout.isInProgress {
+            doneExerciseIDs = DoneExercises.load(for: workout.id)
+        }
     }
 
     /// Starts and saves a new workout.
@@ -94,6 +101,16 @@ final class WorkoutSession: Identifiable {
         }
     }
 
+    /// Folds an exercise once it's done, or opens it again.
+    func setDone(_ done: Bool, exerciseID: UUID) {
+        if done {
+            doneExerciseIDs.insert(exerciseID)
+        } else {
+            doneExerciseIDs.remove(exerciseID)
+        }
+        DoneExercises.save(doneExerciseIDs, for: workout.id)
+    }
+
     /// Adds cardio logged in the add-cardio sheet, already done.
     func addCardio(_ exercise: Exercise, set: WorkoutSet) {
         var done = set
@@ -149,6 +166,7 @@ final class WorkoutSession: Identifiable {
     /// Ends the workout, dropping sets that were never done and exercises left empty.
     func finish() {
         skipRest()
+        DoneExercises.clear()
         // Cardio the Watch recorded during the workout belongs to it.
         let end = Date.now
         for recorded in store.finishedWorkouts where recorded.isFromAppleWatch {
@@ -191,6 +209,7 @@ final class WorkoutSession: Identifiable {
 
     func discard() {
         skipRest()
+        DoneExercises.clear()
         store.deleteWorkout(id: workout.id)
     }
 
@@ -200,6 +219,27 @@ final class WorkoutSession: Identifiable {
 
     var hasCompletedSets: Bool {
         workout.exercises.contains { $0.sets.contains(where: \.isCompleted) }
+    }
+}
+
+/// The exercises marked done in the workout in progress. There is one workout in
+/// progress at a time, so one entry: its id and the exercises.
+private enum DoneExercises {
+    private static let key = "IronSage.workout.doneExercises"
+
+    static func load(for workoutID: UUID) -> Set<UUID> {
+        guard let saved = UserDefaults.standard.stringArray(forKey: key),
+              saved.first == workoutID.uuidString
+        else { return [] }
+        return Set(saved.dropFirst().compactMap(UUID.init(uuidString:)))
+    }
+
+    static func save(_ ids: Set<UUID>, for workoutID: UUID) {
+        UserDefaults.standard.set([workoutID.uuidString] + ids.map(\.uuidString), forKey: key)
+    }
+
+    static func clear() {
+        UserDefaults.standard.removeObject(forKey: key)
     }
 }
 
