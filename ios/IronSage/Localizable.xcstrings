@@ -5911,6 +5911,26 @@
           }
         }
       }
+    },
+    "Name, equipment or muscle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称、器械或肌群"
+          }
+        }
+      }
+    },
+    "Clear filters" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除筛选"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
