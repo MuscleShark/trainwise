@@ -280,6 +280,9 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
+        // Each period names its dates above the chart.
+        app.segmentedControls["bodyRange"].buttons["Month"].tap()
+        XCTAssertTrue(app.staticTexts["bodyPeriod"].firstMatch.waitForExistence(timeout: 5))
         // Each muscle is one row, read as its name and its sets.
         let glutes = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Glutes' AND value == '5 sets'")).firstMatch
         scrollIntoClearView(glutes)

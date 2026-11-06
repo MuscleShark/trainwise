@@ -21,6 +21,7 @@ struct IronSageApp: App {
             case .success(let services):
                 RootView()
                     .dismissesKeyboardOnTap()
+                    .scrollDismissesKeyboard(.interactively)
                     .id(language)
                     .appLanguage(language)
                     .environment(Clerk.shared)
