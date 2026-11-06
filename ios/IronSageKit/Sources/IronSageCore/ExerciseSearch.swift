@@ -272,8 +272,8 @@ extension ExerciseSearch {
             + muscles.map { (words: $0.1, attribute: Attribute.muscles($0.0)) }
         for index in all.indices {
             // "yaling", "xiong": the pinyin of each Chinese word, as one Latin word.
-            let pinyin = all[index].words.filter(hasHan).map { pinyin($0).joined() }.filter { $0.count >= 3 }
-            all[index].words += pinyin
+            let spelled = all[index].words.filter { Self.hasHan($0) }.map { Self.pinyin($0).joined() }.filter { $0.count >= 3 }
+            all[index].words += spelled
         }
         return all
     }()
