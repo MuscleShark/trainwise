@@ -208,6 +208,30 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Workout"].exists)
     }
 
+    func testExercisesCanBeFoundByEquipmentAndMuscle() {
+        let empty = app.buttons["Empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        app.buttons["Add exercise"].firstMatch.tap()
+
+        // Typed: the equipment and a muscle group, no exercise name.
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.typeText("dumbbell shoulders")
+        XCTAssertTrue(app.buttons["How to do Dumbbell lateral raise"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["How to do Dumbbell curl"].exists)
+        XCTAssertFalse(app.buttons["How to do Overhead press"].exists)
+
+        // The buttons under the search field filter the same way.
+        search.buttons["Clear text"].tap()
+        app.buttons["filterMuscle"].tap()
+        app.buttons["Biceps"].tap()
+        XCTAssertTrue(app.buttons["How to do Dumbbell curl"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["How to do Barbell bench press"].exists)
+        app.buttons["Clear filters"].tap()
+        XCTAssertTrue(app.buttons["How to do Barbell bench press"].waitForExistence(timeout: 5))
+    }
+
     func testCardioCanBeAddedFromTheWatchOrLoggedByHand() {
         let empty = app.buttons["Empty workout"]
         XCTAssertTrue(empty.waitForExistence(timeout: 15))

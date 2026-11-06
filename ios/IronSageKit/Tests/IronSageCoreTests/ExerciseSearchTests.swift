@@ -78,3 +78,51 @@ private func names(_ query: String, chinese: Bool = false) -> [String] {
     #expect(ExerciseSearch.editDistance("squat", "squats") == 1)
     #expect(ExerciseSearch.editDistance("press", "bench") > 2)
 }
+
+// MARK: Equipment and muscles
+
+private let gym = [
+    Exercise(nameEn: "Dumbbell bench press", nameZh: "哑铃卧推", equipment: .dumbbell, loadType: .perSide, primaryMuscles: [.chest], secondaryMuscles: [.triceps], isCustom: false),
+    Exercise(nameEn: "Dumbbell curl", nameZh: "哑铃弯举", equipment: .dumbbell, loadType: .perSide, primaryMuscles: [.biceps], isCustom: false),
+    Exercise(nameEn: "Cable fly", nameZh: "绳索夹胸", equipment: .cable, loadType: .total, primaryMuscles: [.chest], isCustom: false),
+    Exercise(nameEn: "Triceps pushdown", nameZh: "绳索下压", equipment: .cable, loadType: .total, primaryMuscles: [.triceps], isCustom: false),
+    Exercise(nameEn: "Lat pulldown", nameZh: "高位下拉", equipment: .cable, loadType: .total, primaryMuscles: [.lats], secondaryMuscles: [.biceps], isCustom: false),
+    Exercise(nameEn: "Back squat", nameZh: "杠铃深蹲", equipment: .barbell, loadType: .total, primaryMuscles: [.quads, .glutes], secondaryMuscles: [.lowerBack], isCustom: false),
+    Exercise(nameEn: "Leg press", nameZh: "腿举", equipment: .machine, loadType: .total, primaryMuscles: [.quads], isCustom: false),
+]
+
+private func found(_ query: String, chinese: Bool = false) -> [String] {
+    ExerciseSearch(exercises: gym, chinese: chinese).search(query).map(\.exercise.nameEn)
+}
+
+@Test func equipmentFindsEveryExerciseThatUsesIt() {
+    #expect(Set(found("dumbbell")) == ["Dumbbell bench press", "Dumbbell curl"])
+    #expect(Set(found("绳索", chinese: true)) == ["Cable fly", "Triceps pushdown", "Lat pulldown"])
+    // Still being typed, and in pinyin.
+    #expect(Set(found("dumbb")) == ["Dumbbell bench press", "Dumbbell curl"])
+    #expect(Set(found("yaling", chinese: true)) == ["Dumbbell bench press", "Dumbbell curl"])
+}
+
+@Test func aMuscleFindsItsExercisesMainOnesFirst() {
+    #expect(found("chest") == ["Cable fly", "Dumbbell bench press"])
+    #expect(Set(found("胸", chinese: true)) == ["Cable fly", "Dumbbell bench press"])
+    // Triceps help on the bench press, so it comes after the pushdown.
+    #expect(found("triceps") == ["Triceps pushdown", "Dumbbell bench press"])
+    // A group: the back is the upper back, lats and lower back.
+    #expect(found("背", chinese: true).first == "Lat pulldown")
+    #expect(Set(found("legs")) == ["Back squat", "Leg press"])
+}
+
+@Test func equipmentAndMuscleTogetherNarrowIt() {
+    #expect(found("dumbbell chest") == ["Dumbbell bench press"])
+    #expect(found("哑铃胸", chinese: true) == ["Dumbbell bench press"])
+    #expect(found("cable triceps") == ["Triceps pushdown"])
+    // What's left matches the name.
+    #expect(found("cable pull") == ["Lat pulldown"])
+}
+
+@Test func aNameMatchStillComesBeforeAnEquipmentOrMuscleMatch() {
+    #expect(found("back squat").first == "Back squat")
+    #expect(found("腿举", chinese: true).first == "Leg press")
+    #expect(found("dumbbell curl").first == "Dumbbell curl")
+}

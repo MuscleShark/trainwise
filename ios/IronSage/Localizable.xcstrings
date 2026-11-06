@@ -458,16 +458,6 @@
         }
       }
     },
-    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets or records." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数和纪录。"
-          }
-        }
-      }
-    },
     "Open in Safari" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4442,16 +4432,6 @@
         }
       }
     },
-    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
-          }
-        }
-      }
-    },
     "Sleep" : {
       "localizations" : {
         "zh-Hans" : {
@@ -5838,6 +5818,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有。点右上角的 + 新建，复制一个计划，或在历史里把完成的训练存为模板。"
+          }
+        }
+      }
+    },
+    "Name, equipment or muscle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称、器械或肌群"
+          }
+        }
+      }
+    },
+    "Clear filters" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除筛选"
+          }
+        }
+      }
+    },
+    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets or records." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数和纪录。"
+          }
+        }
+      }
+    },
+    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
           }
         }
       }
