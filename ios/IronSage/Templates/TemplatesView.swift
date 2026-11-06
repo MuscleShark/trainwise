@@ -20,6 +20,9 @@ struct TemplateList: View {
     @State private var creating: Template?
     /// The level picked here; until then the profile's, or beginner.
     @State private var pickedLevel: Level?
+    /// The IronSage programs folded away, for someone who follows their own templates.
+    /// On this phone only.
+    @AppStorage("IronSage.programs.folded") private var areProgramsFolded = false
 
     private var profileLevel: Level? { store.profile?.experienceLevel }
     private var level: Level { pickedLevel ?? profileLevel ?? .beginner }
@@ -51,7 +54,14 @@ struct TemplateList: View {
                 }
             }
 
-            if !builtIn.isEmpty {
+            if !builtIn.isEmpty && areProgramsFolded {
+                Section {
+                } header: {
+                    programsHeader
+                } footer: {
+                    Text("Hidden on this iPhone. Tap Show to see them again.")
+                }
+            } else if !builtIn.isEmpty {
                 Section {
                     Picker("Level", selection: Binding(get: { level }, set: { pickedLevel = $0 })) {
                         ForEach(Level.allCases, id: \.self) { level in
@@ -63,7 +73,7 @@ struct TemplateList: View {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
                 } header: {
-                    Text("IronSage programs")
+                    programsHeader
                 } footer: {
                     if let note = levelNote {
                         Text(note)
@@ -134,6 +144,22 @@ struct TemplateList: View {
             }
         } message: { _ in
             Text("Workouts you did with it stay in History.")
+        }
+    }
+
+    /// "IronSage programs" with Hide or Show, like a section of Apple's own lists.
+    private var programsHeader: some View {
+        HStack {
+            Text("IronSage programs")
+            Spacer()
+            Button(areProgramsFolded ? "Show" : "Hide") {
+                withAnimation { areProgramsFolded.toggle() }
+            }
+            .font(.subheadline)
+            .textCase(nil)
+            .frame(minHeight: 44)
+            .accessibilityLabel(areProgramsFolded ? Text("Show IronSage programs") : Text("Hide IronSage programs"))
+            .accessibilityIdentifier("foldPrograms")
         }
     }
 

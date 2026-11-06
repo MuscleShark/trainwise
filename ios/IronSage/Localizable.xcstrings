@@ -5911,6 +5911,76 @@
           }
         }
       }
+    },
+    "Next" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一项"
+          }
+        }
+      }
+    },
+    "Done with this exercise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个动作做完了"
+          }
+        }
+      }
+    },
+    "Best %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最佳 %@"
+          }
+        }
+      }
+    },
+    "Show sets" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展开"
+          }
+        }
+      }
+    },
+    "Show IronSage programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 IronSage 训练计划"
+          }
+        }
+      }
+    },
+    "Hide IronSage programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起 IronSage 训练计划"
+          }
+        }
+      }
+    },
+    "Hidden on this iPhone. Tap Show to see them again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在这台 iPhone 上收起，轻点“显示”可以再看到。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
