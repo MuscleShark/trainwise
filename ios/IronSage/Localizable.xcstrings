@@ -4442,12 +4442,12 @@
         }
       }
     },
-    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow." : {
+    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。阴影区间（每周 10 到 20 组）是大多数人增长效果最好的范围。"
+            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
           }
         }
       }

@@ -586,8 +586,8 @@ private struct MeasurementListView: View {
 // MARK: Weekly sets
 
 /// Sets per muscle as rows, as in Apple Fitness: the muscle, a bar on a track, and the
-/// number, each in its own column so they line up. The track runs to 20 sets (or the
-/// most sets, when more) and shows the 10 to 20 band most people grow in.
+/// number, each in its own column so they line up. The track runs to 20 sets, the top
+/// of the range most people grow in (or the most sets, when more).
 private struct WeeklySetsSection: View {
     @Environment(LocalStore.self) private var store
     @Environment(\.dynamicTypeSize) private var size
@@ -620,7 +620,7 @@ private struct WeeklySetsSection: View {
                             Spacer()
                             count(item.sets)
                         }
-                        SetsBar(sets: item.sets, scale: scale, reference: reference)
+                        SetsBar(sets: item.sets, scale: scale)
                     }
                     .modifier(MuscleRowAccessibility(muscle: item.muscle, sets: item.sets))
                 }
@@ -630,7 +630,7 @@ private struct WeeklySetsSection: View {
                         GridRow {
                             Text(String(appLocalized: item.muscle.label))
                                 .lineLimit(1)
-                            SetsBar(sets: item.sets, scale: scale, reference: reference)
+                            SetsBar(sets: item.sets, scale: scale)
                             count(item.sets)
                                 .gridColumnAlignment(.trailing)
                         }
@@ -643,7 +643,7 @@ private struct WeeklySetsSection: View {
         } header: {
             Text("Sets per muscle")
         } footer: {
-            Text("A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow.")
+            Text("A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow.")
         }
     }
 
@@ -654,11 +654,10 @@ private struct WeeklySetsSection: View {
     }
 }
 
-/// One muscle's sets on a track from 0 to `scale`, with the reference band shaded.
+/// One muscle's sets on a track from 0 to `scale`.
 private struct SetsBar: View {
     let sets: Double
     let scale: Double
-    let reference: ClosedRange<Double>
 
     var body: some View {
         GeometryReader { proxy in
@@ -666,10 +665,6 @@ private struct SetsBar: View {
             let x = { (value: Double) in width * min(value, scale) / scale }
             ZStack(alignment: .leading) {
                 Capsule().fill(Color.primary.opacity(0.08))
-                Rectangle()
-                    .fill(Color.primary.opacity(0.08))
-                    .frame(width: x(reference.upperBound) - x(reference.lowerBound))
-                    .offset(x: x(reference.lowerBound))
                 Capsule()
                     .fill(Color.chartMark)
                     .frame(width: max(x(sets), 8))
