@@ -90,6 +90,20 @@ final class AppServices {
         if !isDemo {
             startOver(ifNotFrom: config.apiBaseURL)
         }
+        // A countdown left from a run that was closed belongs to a rest that's gone.
+        RestActivityController.end()
+        // The Dynamic Island's buttons. They run here, in the app; with no rest going
+        // (the app was closed meanwhile), they only remove the countdown.
+        RestActions.perform = { [workouts] action in
+            guard let session = workouts.session, session.restTimer != nil else {
+                RestActivityController.end()
+                return
+            }
+            switch action {
+            case .extend(let seconds): session.extendRest(by: seconds)
+            case .skip: session.skipRest()
+            }
+        }
     }
 
     /// The phone's data and sync position belong to one server. When the app now talks to
@@ -122,6 +136,7 @@ final class AppServices {
         coach.reset()
         subscriptions.reset()
         UserDefaults.standard.removeObject(forKey: Self.ownerKey)
+        WidgetData.update(store, signedIn: false)
     }
 
     /// Demo launches keep their settings out of the real app's.

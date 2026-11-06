@@ -1,4 +1,5 @@
 import ClerkKit
+import IronSageCore
 import IronSageStore
 import SwiftUI
 
@@ -12,6 +13,7 @@ struct RootView: View {
     @Environment(HealthService.self) private var health
     @Environment(CoachService.self) private var coach
     @Environment(SubscriptionService.self) private var subscriptions
+    @Environment(WorkoutPresenter.self) private var workouts
     @Environment(\.services) private var services
     @Environment(\.scenePhase) private var scenePhase
 
@@ -38,8 +40,13 @@ struct RootView: View {
             await sync.sync()
             await subscriptions.refresh()
             await coach.refresh()
+            updateWidgets()
         }
         .onChange(of: scenePhase) { _, phase in
+            // The widgets are seen once the app is away.
+            if phase == .background {
+                updateWidgets()
+            }
             if phase == .active, clerk.user != nil, services?.isDemo != true {
                 Task {
                     await health.importRecent()
@@ -58,9 +65,34 @@ struct RootView: View {
             }
         }
         .onOpenURL { url in
+            if url.scheme == WidgetLink.scheme {
+                openFromWidget(url)
+                return
+            }
             // Returns from Google sign-in in the browser.
             Task { try? await clerk.handle(url) }
         }
+    }
+
+    private func updateWidgets() {
+        WidgetData.update(store, signedIn: clerk.user != nil || services?.isDemo == true)
+    }
+
+    /// A widget's link: Today opens with the app; Start begins the template day due
+    /// next, as Today's button does, or goes back to the workout in progress.
+    private func openFromWidget(_ url: URL) {
+        guard url == WidgetLink.startUpNext, clerk.user != nil || services?.isDemo == true else { return }
+        if let active = store.activeWorkout {
+            workouts.resume(active, store: store)
+            return
+        }
+        guard let upNext = store.upNext else { return }
+        let advised = coach.advice(for: upNext.day)
+        let started = WorkoutSession.start(upNext.day, of: upNext.template, store: store, advice: advised?.output)
+        if let advised {
+            coach.recordApplied(advised, to: started.workout.id)
+        }
+        workouts.show(started)
     }
 
     /// Signed in, synced once (so an existing profile has arrived), and still none.

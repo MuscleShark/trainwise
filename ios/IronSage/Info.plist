@@ -27,7 +27,19 @@
 				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).widget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ironsage</string>
+			</array>
+		</dict>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>IronSage uses the camera when you take a new profile photo.</string>
 	<key>NSHealthShareUsageDescription</key>

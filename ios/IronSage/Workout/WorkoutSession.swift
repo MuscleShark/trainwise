@@ -137,11 +137,31 @@ final class WorkoutSession: Identifiable {
     func skipRest() {
         restTimer = nil
         RestNotifications.cancel()
+        RestActivityController.end()
     }
 
     private func startRest(_ timer: RestTimer) {
         restTimer = timer
         RestNotifications.schedule(for: timer)
+        RestActivityController.show(timer, next: nextSetText(or: timer.exerciseName))
+    }
+
+    /// "Next set: Back squat · Set 3 · 100 kg × 6", for the countdown outside the app:
+    /// the first set not checked off yet. The exercise just done when there's none.
+    private func nextSetText(or fallback: String) -> String {
+        let unit = store.weightUnit
+        for item in workout.exercises where store.exercises[item.exerciseId]?.isCardio != true {
+            guard let index = item.sets.firstIndex(where: { !$0.isCompleted }) else { continue }
+            let set = item.sets[index]
+            let number = item.sets[...index].filter { $0.setType != .warmup }.count
+            let parts = [
+                store.exerciseName(item.exerciseId),
+                set.setType == .warmup ? String(appLocalized: set.setType.label) : String(appLocalized: "Set \(number)"),
+                set.reps != nil || set.weightKg != nil ? unit.formatSet(set) : nil,
+            ].compactMap(\.self)
+            return String(appLocalized: "Next set: \(parts.joined(separator: " · "))")
+        }
+        return fallback
     }
 
     // MARK: End

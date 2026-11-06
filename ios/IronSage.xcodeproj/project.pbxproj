@@ -12,6 +12,7 @@
 		5E5140AC3F1EFC6A988D7B96 /* IronSageCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4BBF83BEBA74E20BC92798F4 /* IronSageCore */; };
 		AD7C148C6E6390A0CA3383BD /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2906D4874B02C29A65E7AFCB /* ClerkKitUI */; };
 		CFBD31196ED22D8F48EA3CD2 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = EA5C25D321A5C1AD4AA27CEA /* ClerkKit */; };
+		E1A1B1C1D1E1F1A1B1C1D10D /* IronSageWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E1A1B1C1D1E1F1A1B1C1D102 /* IronSageWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,13 +30,35 @@
 			remoteGlobalIDString = A159F6391DC11F147DC96697;
 			remoteInfo = IronSage;
 		};
+		E1A1B1C1D1E1F1A1B1C1D10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97B15087254ABC65C8AEA63E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1A1B1C1D1E1F1A1B1C1D101;
+			remoteInfo = IronSageWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E1A1B1C1D1E1F1A1B1C1D10C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E1A1B1C1D1E1F1A1B1C1D10D /* IronSageWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3E8C1A7D5B2F4D6E9A0B1C2D /* IronSage.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = IronSage.storekit; sourceTree = "<group>"; };
-		7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronSageTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A683105F0DCD7A114A01BA6 /* IronSage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IronSage.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronSageTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8C2E3F4A5B6C7D8E9F0A1B2C /* IronSageUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IronSageUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1A1B1C1D1E1F1A1B1C1D102 /* IronSageWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = IronSageWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,6 +68,13 @@
 				Info.plist,
 			);
 			target = A159F6391DC11F147DC96697 /* IronSage */;
+		};
+		E1A1B1C1D1E1F1A1B1C1D104 /* Exceptions for "IronSageWidgets" folder in "IronSageWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E1A1B1C1D1E1F1A1B1C1D101 /* IronSageWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -67,21 +97,22 @@
 			path = IronSageUITests;
 			sourceTree = "<group>";
 		};
+		E1A1B1C1D1E1F1A1B1C1D103 /* IronSageWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E1A1B1C1D1E1F1A1B1C1D104 /* Exceptions for "IronSageWidgets" folder in "IronSageWidgets" target */,
+			);
+			path = IronSageWidgets;
+			sourceTree = "<group>";
+		};
+		E1A1B1C1D1E1F1A1B1C1D105 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		EDD1BDC5B82A792ADDACFBA1 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CFBD31196ED22D8F48EA3CD2 /* ClerkKit in Frameworks */,
-				AD7C148C6E6390A0CA3383BD /* ClerkKitUI in Frameworks */,
-				54BA56B87D68A9FFD9571F1F /* IronSageAPI in Frameworks */,
-				5E5140AC3F1EFC6A988D7B96 /* IronSageCore in Frameworks */,
-				4C792B8C380704A292CA0AF6 /* IronSageStore in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		7B1D2E3F4A5B6C7D8E9F0A5B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -96,6 +127,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1A1B1C1D1E1F1A1B1C1D107 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EDD1BDC5B82A792ADDACFBA1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CFBD31196ED22D8F48EA3CD2 /* ClerkKit in Frameworks */,
+				AD7C148C6E6390A0CA3383BD /* ClerkKitUI in Frameworks */,
+				54BA56B87D68A9FFD9571F1F /* IronSageAPI in Frameworks */,
+				5E5140AC3F1EFC6A988D7B96 /* IronSageCore in Frameworks */,
+				4C792B8C380704A292CA0AF6 /* IronSageStore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -105,6 +155,7 @@
 				6A683105F0DCD7A114A01BA6 /* IronSage.app */,
 				7B1D2E3F4A5B6C7D8E9F0A2B /* IronSageTests.xctest */,
 				8C2E3F4A5B6C7D8E9F0A1B2C /* IronSageUITests.xctest */,
+				E1A1B1C1D1E1F1A1B1C1D102 /* IronSageWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,6 +166,8 @@
 				6C5AD591CE88870D948F14A8 /* IronSage */,
 				7B1D2E3F4A5B6C7D8E9F0A3B /* IronSageTests */,
 				8C2E3F4A5B6C7D8E9F0A1B3C /* IronSageUITests */,
+				E1A1B1C1D1E1F1A1B1C1D103 /* IronSageWidgets */,
+				E1A1B1C1D1E1F1A1B1C1D105 /* Shared */,
 				3E8C1A7D5B2F4D6E9A0B1C2D /* IronSage.storekit */,
 				69FF04A4E0C2BBCDE91100B2 /* Products */,
 			);
@@ -123,33 +176,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A159F6391DC11F147DC96697 /* IronSage */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 80A9D5CAB6D9EF4A58B06625 /* Build configuration list for PBXNativeTarget "IronSage" */;
-			buildPhases = (
-				361AD192F2A8758ED79B0C8C /* Sources */,
-				EDD1BDC5B82A792ADDACFBA1 /* Frameworks */,
-				3DA306ADA816092E0786589F /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				6C5AD591CE88870D948F14A8 /* IronSage */,
-			);
-			name = IronSage;
-			packageProductDependencies = (
-				EA5C25D321A5C1AD4AA27CEA /* ClerkKit */,
-				2906D4874B02C29A65E7AFCB /* ClerkKitUI */,
-				5B338C6AC74B13A7D94B93EF /* IronSageAPI */,
-				4BBF83BEBA74E20BC92798F4 /* IronSageCore */,
-				99E150754B28A277CE2F0F6A /* IronSageStore */,
-			);
-			productName = IronSage;
-			productReference = 6A683105F0DCD7A114A01BA6 /* IronSage.app */;
-			productType = "com.apple.product-type.application";
-		};
 		7B1D2E3F4A5B6C7D8E9F0A1B /* IronSageTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7B1D2E3F4A5B6C7D8E9F0A9B /* Build configuration list for PBXNativeTarget "IronSageTests" */;
@@ -192,6 +218,57 @@
 			productReference = 8C2E3F4A5B6C7D8E9F0A1B2C /* IronSageUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		A159F6391DC11F147DC96697 /* IronSage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 80A9D5CAB6D9EF4A58B06625 /* Build configuration list for PBXNativeTarget "IronSage" */;
+			buildPhases = (
+				361AD192F2A8758ED79B0C8C /* Sources */,
+				EDD1BDC5B82A792ADDACFBA1 /* Frameworks */,
+				3DA306ADA816092E0786589F /* Resources */,
+				E1A1B1C1D1E1F1A1B1C1D10C /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E1A1B1C1D1E1F1A1B1C1D10F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6C5AD591CE88870D948F14A8 /* IronSage */,
+				E1A1B1C1D1E1F1A1B1C1D105 /* Shared */,
+			);
+			name = IronSage;
+			packageProductDependencies = (
+				EA5C25D321A5C1AD4AA27CEA /* ClerkKit */,
+				2906D4874B02C29A65E7AFCB /* ClerkKitUI */,
+				5B338C6AC74B13A7D94B93EF /* IronSageAPI */,
+				4BBF83BEBA74E20BC92798F4 /* IronSageCore */,
+				99E150754B28A277CE2F0F6A /* IronSageStore */,
+			);
+			productName = IronSage;
+			productReference = 6A683105F0DCD7A114A01BA6 /* IronSage.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E1A1B1C1D1E1F1A1B1C1D101 /* IronSageWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1A1B1C1D1E1F1A1B1C1D109 /* Build configuration list for PBXNativeTarget "IronSageWidgets" */;
+			buildPhases = (
+				E1A1B1C1D1E1F1A1B1C1D106 /* Sources */,
+				E1A1B1C1D1E1F1A1B1C1D107 /* Frameworks */,
+				E1A1B1C1D1E1F1A1B1C1D108 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E1A1B1C1D1E1F1A1B1C1D103 /* IronSageWidgets */,
+				E1A1B1C1D1E1F1A1B1C1D105 /* Shared */,
+			);
+			name = IronSageWidgets;
+			productName = IronSageWidgets;
+			productReference = E1A1B1C1D1E1F1A1B1C1D102 /* IronSageWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -202,9 +279,6 @@
 				LastSwiftUpdateCheck = 2710;
 				LastUpgradeCheck = 2710;
 				TargetAttributes = {
-					A159F6391DC11F147DC96697 = {
-						CreatedOnToolsVersion = 27.1;
-					};
 					7B1D2E3F4A5B6C7D8E9F0A1B = {
 						CreatedOnToolsVersion = 27.1;
 						TestTargetID = A159F6391DC11F147DC96697;
@@ -212,6 +286,12 @@
 					8C2E3F4A5B6C7D8E9F0A1B1C = {
 						CreatedOnToolsVersion = 27.1;
 						TestTargetID = A159F6391DC11F147DC96697;
+					};
+					A159F6391DC11F147DC96697 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					E1A1B1C1D1E1F1A1B1C1D101 = {
+						CreatedOnToolsVersion = 27.1;
 					};
 				};
 			};
@@ -237,6 +317,7 @@
 				A159F6391DC11F147DC96697 /* IronSage */,
 				7B1D2E3F4A5B6C7D8E9F0A1B /* IronSageTests */,
 				8C2E3F4A5B6C7D8E9F0A1B1C /* IronSageUITests */,
+				E1A1B1C1D1E1F1A1B1C1D101 /* IronSageWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -257,6 +338,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8C2E3F4A5B6C7D8E9F0A1B6C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1A1B1C1D1E1F1A1B1C1D108 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -287,6 +375,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1A1B1C1D1E1F1A1B1C1D106 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -300,6 +395,11 @@
 			target = A159F6391DC11F147DC96697 /* IronSage */;
 			targetProxy = 8C2E3F4A5B6C7D8E9F0A1B8C /* PBXContainerItemProxy */;
 		};
+		E1A1B1C1D1E1F1A1B1C1D10F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1A1B1C1D1E1F1A1B1C1D101 /* IronSageWidgets */;
+			targetProxy = E1A1B1C1D1E1F1A1B1C1D10E /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -309,12 +409,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLERK_PUBLISHABLE_KEY = pk_test_aGVscGluZy1sYWR5YnVnLTM5NDUuY2xlcmsuYWNjb3VudHMuZGV2JA;
+				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = CY5V574249;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
 				INFOPLIST_FILE = IronSage/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -365,75 +465,6 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
-		};
-		9AE75E16C2D30D146FD60D6A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLERK_PUBLISHABLE_KEY = pk_test_aGVscGluZy1sYWR5YnVnLTM5NDUuY2xlcmsuYWNjb3VudHMuZGV2JA;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CY5V574249;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
-				INFOPLIST_FILE = IronSage/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 0.1.0;
-				PRODUCTION_API_URL = "https:/$()/po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws";
-				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STAGING_API_URL = "https:/$()/zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		ADA50F19AFF85CF239D028FF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-			};
-			name = Debug;
 		};
 		7B1D2E3F4A5B6C7D8E9F0AAB /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -513,6 +544,133 @@
 			};
 			name = Release;
 		};
+		9AE75E16C2D30D146FD60D6A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLERK_PUBLISHABLE_KEY = pk_test_aGVscGluZy1sYWR5YnVnLTM5NDUuY2xlcmsuYWNjb3VudHMuZGV2JA;
+				CODE_SIGN_ENTITLEMENTS = IronSage.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CY5V574249;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IronSage/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCTION_API_URL = "https:/$()/po2uvflgp2hps4adjpwjerzeca0jtxjn.lambda-url.us-east-2.on.aws";
+				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STAGING_API_URL = "https:/$()/zgtvuqa3w45yeburge3dlcoddu0yyfrs.lambda-url.us-east-2.on.aws";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		ADA50F19AFF85CF239D028FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E1A1B1C1D1E1F1A1B1C1D10A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = IronSageWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CY5V574249;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IronSageWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E1A1B1C1D1E1F1A1B1C1D10B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = IronSageWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CY5V574249;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IronSageWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.ironsage.IronSage.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -521,15 +679,6 @@
 			buildConfigurations = (
 				ADA50F19AFF85CF239D028FF /* Debug */,
 				5C056050C072CCF400FE380E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		80A9D5CAB6D9EF4A58B06625 /* Build configuration list for PBXNativeTarget "IronSage" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				9AE75E16C2D30D146FD60D6A /* Debug */,
-				4A2E2FC835F0913628DBCC81 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -543,11 +692,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		80A9D5CAB6D9EF4A58B06625 /* Build configuration list for PBXNativeTarget "IronSage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9AE75E16C2D30D146FD60D6A /* Debug */,
+				4A2E2FC835F0913628DBCC81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		8C2E3F4A5B6C7D8E9F0A1B9C /* Build configuration list for PBXNativeTarget "IronSageUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8C2E3F4A5B6C7D8E9F0A1BAC /* Debug */,
 				8C2E3F4A5B6C7D8E9F0A1BBC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E1A1B1C1D1E1F1A1B1C1D109 /* Build configuration list for PBXNativeTarget "IronSageWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1A1B1C1D1E1F1A1B1C1D10A /* Debug */,
+				E1A1B1C1D1E1F1A1B1C1D10B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

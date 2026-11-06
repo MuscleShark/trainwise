@@ -129,6 +129,7 @@ struct WorkoutView: View {
                         await sync.sync()
                         // The next session's plan just changed.
                         await coach.refresh()
+                        WidgetData.update(store, signedIn: true)
                     }
                 }
             } message: {
