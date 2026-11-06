@@ -69,15 +69,6 @@ private func workout(_ daysAgo: Int, _ items: [(Exercise, [(Double, Int)])], fin
     #expect(added.restSeconds == 90)
 }
 
-@Test func volumeCountsWorkingSetsAndBothDumbbells() {
-    var session = workout(0, [(bench, [(60, 8)]), (curl, [(12.5, 10)])])
-    session.exercises[0].sets.append(WorkoutSet(setType: .warmup, reps: 10, weightKg: 40, completedAt: day(0)))
-    session.exercises[0].sets.append(WorkoutSet(reps: 8, weightKg: 60))
-
-    let expected: Double = 60 * 8 + 12.5 * 10 * 2
-    #expect(WorkoutLog.volumeKg(of: session, exercises: exercises) == expected)
-}
-
 @Test func recordsNeedSomethingToBeat() {
     let history = [workout(3, [(bench, [(60, 8)])])]
 

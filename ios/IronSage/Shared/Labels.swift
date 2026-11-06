@@ -32,11 +32,6 @@ extension WeightUnit {
         guard let weight = set.weightKg, weight > 0 else { return "× \(reps)" }
         return "\(formatWithUnit(kilograms: weight)) × \(reps)"
     }
-
-    /// Totals such as volume, in whole units: "4,820 kg".
-    func formatTotal(kilograms: Double) -> String {
-        "\(value(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(0)))) \(String(appLocalized: symbol))"
-    }
 }
 
 extension Muscle {

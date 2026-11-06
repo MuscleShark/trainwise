@@ -1,6 +1,7 @@
 import IronSageCore
 import IronSageStore
 import SwiftUI
+import UIKit
 
 /// Logging a workout: one section per exercise, one row per set.
 struct WorkoutView: View {
@@ -72,6 +73,7 @@ struct WorkoutView: View {
             .safeAreaInset(edge: .bottom) {
                 if let timer = session.restTimer {
                     RestTimerBar(timer: timer, session: session)
+                        .modifier(ClearWhileTyping())
                 }
             }
             .toolbar {
@@ -104,13 +106,23 @@ struct WorkoutView: View {
                         .disabled(!session.hasCompletedSets)
                     }
                 }
+                // A number pad has no return key: Next goes weight, reps, the next set's
+                // weight, as in other workout loggers, and Done closes the keyboard
+                // (cardio's fields too, which aren't in `focus`).
                 ToolbarItemGroup(placement: .keyboard) {
                     if case .weight(let setID, let exerciseID) = focus {
                         Button("Less weight", systemImage: "minus") { stepWeight(setID, in: exerciseID, by: -1) }
                         Button("More weight", systemImage: "plus") { stepWeight(setID, in: exerciseID, by: 1) }
                     }
                     Spacer()
-                    Button("Done") { focus = nil }
+                    if let next = nextField(after: focus) {
+                        Button("Next") { focus = next }
+                    }
+                    Button("Done") {
+                        focus = nil
+                        Keyboard.dismiss()
+                    }
+                    .fontWeight(.semibold)
                 }
             }
             .sheet(isPresented: $isPickingExercise) {
@@ -119,7 +131,10 @@ struct WorkoutView: View {
             .sheet(isPresented: $isAddingCardio) {
                 CardioAddView(session: session)
             }
-            .confirmationDialog("Finish this workout?", isPresented: $isConfirmingFinish, titleVisibility: .visible) {
+            // Centered alerts, as in other workout loggers: on iOS 26 a confirmation dialog
+            // opens as a popover from the button at the top of the screen.
+            .alert("Finish this workout?", isPresented: $isConfirmingFinish) {
+                Button("Cancel", role: .cancel) {}
                 Button("Finish workout") {
                     session.finish()
                     finished = session.workout
@@ -131,12 +146,14 @@ struct WorkoutView: View {
                         await coach.refresh()
                     }
                 }
+                .keyboardShortcut(.defaultAction)
             } message: {
                 if session.hasUnfinishedSets {
                     Text("Sets you haven't checked off will be removed.")
                 }
             }
-            .confirmationDialog("Discard this workout?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {
+            .alert("Discard this workout?", isPresented: $isConfirmingDiscard) {
+                Button("Cancel", role: .cancel) {}
                 Button("Discard workout", role: .destructive) {
                     session.discard()
                     dismiss()
@@ -150,6 +167,23 @@ struct WorkoutView: View {
             .sheet(item: $info) { exercise in
                 ExerciseInfoView(exercise: exercise)
             }
+        }
+    }
+
+    /// The field after this one: a set's reps after its weight, then the next set's
+    /// weight in the same exercise. None after the last set.
+    private func nextField(after field: SetField?) -> SetField? {
+        switch field {
+        case .weight(let setID, _):
+            return .reps(setID)
+        case .reps(let setID):
+            guard let item = session.workout.exercises.first(where: { $0.sets.contains { $0.id == setID } }),
+                  let index = item.sets.firstIndex(where: { $0.id == setID }),
+                  index + 1 < item.sets.count
+            else { return nil }
+            return .weight(item.sets[index + 1].id, exercise: item.id)
+        case nil:
+            return nil
         }
     }
 
@@ -186,30 +220,51 @@ private struct ExerciseSection: View {
         let unit = store.weightUnit
         let last = WorkoutLog.lastSets(of: item.exerciseId, in: store.finishedWorkouts, before: session.workout.startedAt)
         Section {
-            SetHeader(unit: unit)
-            ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in
-                SetRow(
-                    session: session,
-                    exerciseID: item.id,
-                    set: set,
-                    number: workingNumber(at: index),
-                    previous: last.flatMap { index < $0.count ? $0[index] : nil },
-                    unit: unit,
-                    focus: focus
-                )
-            }
-            .onDelete { offsets in
-                session.update { workout in
-                    guard let e = workout.exercises.firstIndex(where: { $0.id == item.id }) else { return }
-                    workout.exercises[e].sets.remove(atOffsets: offsets)
+            if session.doneExerciseIDs.contains(item.id) && !session.isEditing {
+                DoneExerciseRow(item: item, unit: unit) {
+                    withAnimation { session.setDone(false, exerciseID: item.id) }
                 }
+            } else {
+                sets(unit: unit, last: last)
             }
-            Button("Add set", systemImage: "plus") {
-                session.addSet(to: item.id)
-            }
-            .font(.subheadline)
         } header: {
             ExerciseHeader(session: session, item: item, showInfo: showInfo)
+        }
+    }
+
+    @ViewBuilder private func sets(unit: WeightUnit, last: [WorkoutSet]?) -> some View {
+        SetHeader(unit: unit)
+        ForEach(Array(item.sets.enumerated()), id: \.element.id) { index, set in
+            SetRow(
+                session: session,
+                exerciseID: item.id,
+                set: set,
+                number: workingNumber(at: index),
+                previous: last.flatMap { index < $0.count ? $0[index] : nil },
+                unit: unit,
+                focus: focus
+            )
+        }
+        .onDelete { offsets in
+            session.update { workout in
+                guard let e = workout.exercises.firstIndex(where: { $0.id == item.id }) else { return }
+                workout.exercises[e].sets.remove(atOffsets: offsets)
+            }
+        }
+        Button("Add set", systemImage: "plus") {
+            session.addSet(to: item.id)
+        }
+        .font(.subheadline)
+        // Once a set is checked off: fold this exercise and go on to the next.
+        // Sets left unchecked stay, and Finish removes them as before.
+        if !session.isEditing && item.sets.contains(where: \.isCompleted) {
+            Button("Done with this exercise", systemImage: "checkmark.circle") {
+                focus.wrappedValue = nil
+                Keyboard.dismiss()
+                withAnimation { session.setDone(true, exerciseID: item.id) }
+            }
+            .font(.subheadline)
+            .accessibilityIdentifier("exerciseDone")
         }
     }
 
@@ -340,6 +395,60 @@ private struct ExerciseHeader: View {
     private var coachAdvice: CoachAdvice.Exercise? {
         guard !session.isEditing, templateItem != nil else { return nil }
         return coach.appliedAdvice(for: session.workout.id)?.advice(for: item.exerciseId)
+    }
+}
+
+/// An exercise marked done, in one row: the sets checked off and the best one. A tap
+/// shows the sets again.
+private struct DoneExerciseRow: View {
+    let item: WorkoutExercise
+    let unit: WeightUnit
+    let open: () -> Void
+
+    var body: some View {
+        let done = item.sets.filter(\.isCompleted)
+        Button(action: open) {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.accentColor)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(done.count) of \(item.sets.count) sets")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Color.primary)
+                    if let best = best(of: done) {
+                        Text("Best \(best)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer(minLength: 8)
+                Text("Show sets")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.down")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+            .frame(minHeight: 44)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("showSets")
+    }
+
+    /// The heaviest working set (the most reps at that weight), as "100 kg × 5".
+    private func best(of sets: [WorkoutSet]) -> String? {
+        let working = sets.filter { $0.setType != .warmup }
+        guard let top = (working.isEmpty ? sets : working).max(by: { ($0.weightKg ?? 0, $0.reps ?? 0) < ($1.weightKg ?? 0, $1.reps ?? 0) }),
+              let reps = top.reps
+        else { return nil }
+        if let weight = top.weightKg, weight > 0 {
+            return "\(unit.format(kilograms: weight)) × \(reps)"
+        }
+        return "× \(reps)"
     }
 }
 
@@ -485,6 +594,7 @@ private struct SetRow: View {
 
     private var doneButton: some View {
         Button {
+            focus.wrappedValue = nil
             if !set.isCompleted {
                 fillFromPrevious()
             }
@@ -585,6 +695,27 @@ struct NumberField: View {
     static func format(_ value: Double?) -> String {
         guard let value else { return "" }
         return value.formatted(.number.precision(.fractionLength(0...2)).grouping(.never))
+    }
+}
+
+/// Makes the rest bar clear while the keyboard is up: the bar rises with the keyboard,
+/// and the buttons above the keyboard would sit on top of its own. The rest keeps
+/// counting, and its notification still comes. Clear rather than removed: changing the
+/// layout as the keyboard comes up drops the buttons above it.
+private struct ClearWhileTyping: ViewModifier {
+    @State private var isKeyboardUp = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isKeyboardUp ? 0 : 1)
+            .allowsHitTesting(!isKeyboardUp)
+            .accessibilityHidden(isKeyboardUp)
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+                isKeyboardUp = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                isKeyboardUp = false
+            }
     }
 }
 

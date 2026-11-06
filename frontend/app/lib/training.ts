@@ -101,22 +101,6 @@ export function estimatedOneRepMax(weightKg: number, reps: number): number | nul
   return reps === 1 ? weightKg : weightKg * (1 + reps / 30);
 }
 
-/**
- * Weight × reps of the completed working sets. One dumbbell per side counts twice;
- * assisted sets count nothing.
- */
-export function volumeKg(workout: TrainingWorkout, loadTypes: Map<string, LoadType>): number {
-  let total = 0;
-  for (const item of workout.exercises) {
-    const loadType = loadTypes.get(item.exercise_id);
-    const factor = loadType === "per_side" ? 2 : loadType === "assisted" ? 0 : 1;
-    for (const set of workingSets(item.sets)) {
-      total += (set.weight_kg ?? 0) * (set.reps ?? 0) * factor;
-    }
-  }
-  return total;
-}
-
 /** Midnight at the start of the week containing `date`, in local time. */
 export function startOfWeek(date: Date, weekStartsOn: number): Date {
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -163,24 +147,6 @@ export function weekStreak(workouts: TrainingWorkout[], now: Date, weekStartsOn:
     week = addWeeks(week, -1);
   }
   return streak;
-}
-
-/** Volume of each of the last `count` weeks, oldest first, weeks without training included. */
-export function weeklyVolume(
-  workouts: TrainingWorkout[],
-  loadTypes: Map<string, LoadType>,
-  count: number,
-  now: Date,
-  weekStartsOn: number,
-): { start: Date; kilograms: number }[] {
-  const current = startOfWeek(now, weekStartsOn);
-  const weeks = Array.from({ length: count }, (_, index) => addWeeks(current, index - count + 1));
-  const volume = new Map<number, number>();
-  for (const workout of workouts.filter(isFinished)) {
-    const start = startOfWeek(new Date(workout.started_at), weekStartsOn).getTime();
-    volume.set(start, (volume.get(start) ?? 0) + volumeKg(workout, loadTypes));
-  }
-  return weeks.map((start) => ({ start, kilograms: volume.get(start.getTime()) ?? 0 }));
 }
 
 export type Range = "week" | "month" | "year" | "all";
