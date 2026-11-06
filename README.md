@@ -264,7 +264,7 @@ Clerk dashboard settings: email address with **verification code**, Google and A
 
 ## Quality Checks
 
-GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed. The iOS job is its own workflow (`ios.yml`), so the backend deploy doesn't wait for the macOS runner; it runs on pull requests and pushes to `main` that change `ios/`, `api/openapi.json` or `.github/`.
+GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed. The iOS job is its own workflow (`ios.yml`), so the backend deploy doesn't wait for the macOS runner; it runs on pull requests and pushes to `main` that change `ios/`, `api/openapi.json` or `.github/`, with a 45-minute limit (macOS runners vary a lot in speed).
 
 - Frontend ESLint
 - Frontend unit tests (`npm test`: Node's own test runner on `app/lib/*.test.ts`)

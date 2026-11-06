@@ -70,6 +70,11 @@ final class IronSageUITests: XCTestCase {
         let markDone = app.buttons["Mark done"].firstMatch
         XCTAssertTrue(markDone.waitForExistence(timeout: 10))
         markDone.tap()
+        // Without the rest bar: it redraws every second, so the app never idles and
+        // each lookup while scrolling waits for it, which takes minutes on CI.
+        let skip = app.buttons["Skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 5))
+        skip.tap()
 
         let done = app.buttons["exerciseDone"].firstMatch
         scrollIntoClearView(done)
@@ -82,12 +87,11 @@ final class IronSageUITests: XCTestCase {
 
         // Still folded after hiding the workout and opening it again.
         app.buttons["Hide"].tap()
-        let bar = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Rest'")).firstMatch
+        let bar = app.buttons.containing(NSPredicate(format: "label CONTAINS ' sets'")).firstMatch
         XCTAssertTrue(bar.waitForExistence(timeout: 10))
         bar.tap()
+        // The first exercise, so it opens near the top: no scrolling needed.
         XCTAssertTrue(folded.waitForExistence(timeout: 10))
-
-        scrollIntoClearView(folded)
         folded.tap()
         XCTAssertTrue(app.buttons["Mark not done"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["showSets"].exists)
