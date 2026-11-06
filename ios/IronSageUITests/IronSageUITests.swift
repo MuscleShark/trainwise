@@ -50,6 +50,19 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testTheWidgetsStartButtonStartsTheNextWorkout() {
+        XCTAssertTrue(app.buttons["startUpNext"].waitForExistence(timeout: 15))
+        // What the large widget's Start opens.
+        app.open(URL(string: "ironsage://start-up-next")!)
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Back squat"].exists)
+        // Again while it's in progress: the same workout, not a second one.
+        app.buttons["Hide"].tap()
+        app.open(URL(string: "ironsage://start-up-next")!)
+        XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label == 'Back squat'")).count, 1)
+    }
+
     func testAHiddenWorkoutStaysInTheBarAboveTheTabs() {
         let start = app.buttons["startUpNext"]
         XCTAssertTrue(start.waitForExistence(timeout: 15))

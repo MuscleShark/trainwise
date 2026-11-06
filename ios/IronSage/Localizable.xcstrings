@@ -5822,6 +5822,96 @@
         }
       }
     },
+    "Get ready for your next set." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备开始下一组训练。"
+          }
+        }
+      }
+    },
+    "Set %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 组"
+          }
+        }
+      }
+    },
+    "%lld weeks in a row" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连续 %lld 周"
+          }
+        }
+      }
+    },
+    "Slept %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "睡眠 %@"
+          }
+        }
+      }
+    },
+    "HRV %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HRV %@"
+          }
+        }
+      }
+    },
+    "Start a workout from a template to see what's next." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用模板开始一次训练后，这里会显示下一次训练。"
+          }
+        }
+      }
+    },
+    "Change rest" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整休息时间"
+          }
+        }
+      }
+    },
+    "Skip rest" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过休息"
+          }
+        }
+      }
+    },
+    "Seconds" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
+          }
+        }
+      }
+    },
     "Name, equipment or muscle" : {
       "localizations" : {
         "zh-Hans" : {
@@ -5858,16 +5948,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
-          }
-        }
-      }
-    },
-    "Get ready for your next set." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "准备开始下一组训练。"
           }
         }
       }
