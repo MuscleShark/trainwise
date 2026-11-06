@@ -32,15 +32,19 @@ final class IronSageUITests: XCTestCase {
         markDone.tap()
         XCTAssertTrue(app.buttons["Mark not done"].firstMatch.waitForExistence(timeout: 5))
 
+        // A centered alert, with Cancel, rather than a popover from the button.
         app.buttons["Finish"].tap()
-        let confirm = app.buttons["Finish workout"]
-        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
-        confirm.tap()
+        let alert = app.alerts["Finish this workout?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Cancel"].exists)
+        alert.buttons["Finish workout"].tap()
 
-        // The summary opens; Done closes it and the workout, back on Today.
+        // The summary opens, with the sets and no volume; Done closes it and the
+        // workout, back on Today.
         let done = app.buttons["Done"]
         XCTAssertTrue(done.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Volume is weight × reps of the working sets; one dumbbell per side counts twice."].exists)
+        XCTAssertTrue(app.staticTexts["Sets"].exists)
+        XCTAssertFalse(app.staticTexts["Volume"].exists)
         done.tap()
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.navigationBars["Workout"].exists)
@@ -150,15 +154,33 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Cardio"].waitForExistence(timeout: 10))
     }
 
-    func testTheProgressTabShowsBodyWeightAndVolume() {
+    func testTheProgressTabShowsBodyWeightAndSetsPerMuscle() {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
-        let volume = app.staticTexts["Weekly volume"]
-        for _ in 0..<4 where !volume.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(volume.waitForExistence(timeout: 5))
+        // Each muscle is one row, read as its name and its sets.
+        let glutes = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Glutes' AND value == '5 sets'")).firstMatch
+        scrollIntoClearView(glutes)
+        XCTAssertFalse(app.staticTexts["Weekly volume"].exists)
+    }
+
+    func testDiscardingAWorkoutAsksInACenteredAlert() {
+        let empty = app.buttons["Empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        let discard = app.buttons["Discard workout"]
+        XCTAssertTrue(discard.waitForExistence(timeout: 10))
+        discard.tap()
+        let alert = app.alerts["Discard this workout?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        alert.buttons["Cancel"].tap()
+        XCTAssertTrue(alert.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Workout"].exists)
+
+        discard.tap()
+        app.alerts["Discard this workout?"].buttons["Discard workout"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
     func testAProgramCanBeHiddenAndShownAgain() {

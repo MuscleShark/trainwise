@@ -1,6 +1,6 @@
 "use client";
 
-import { cardioParts, formatWeight, liftingSets, startOfWeek, volumeKg, type TrainingSet } from "../../lib/training";
+import { cardioParts, formatWeight, liftingSets, startOfWeek, type TrainingSet } from "../../lib/training";
 import { useReview } from "../data";
 import { fullDay, weekRange } from "../format";
 
@@ -41,8 +41,7 @@ export default function HistoryPage() {
                       </span>
                       <span className="text-sm text-steel tabular-nums">
                         {fullDay(started, locale)} · {minutes === null ? t.inProgress : t.minutes(minutes)} ·{" "}
-                        {t.sets(sets)} · {formatWeight(volumeKg(workout, training.loadTypes), training.unit, locale)}{" "}
-                        {training.unit}
+                        {t.sets(sets)}
                       </span>
                     </summary>
                     <div className="space-y-4 border-t border-ink/10 px-4 py-4">

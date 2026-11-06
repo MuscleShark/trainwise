@@ -124,9 +124,6 @@ struct WorkoutDetailView: View {
                 if let endedAt = workout.endedAt {
                     LabeledContent("Duration", value: Duration.clock(endedAt.timeIntervalSince(workout.startedAt)))
                 }
-                if !Cardio.isCardioOnly(workout, exercises: store.exercises) {
-                    LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
-                }
                 if workout.isFromAppleWatch {
                     LabeledContent("Recorded by", value: "Apple Watch")
                 }

@@ -64,20 +64,6 @@ public enum WorkoutLog {
         return reps == 1 ? weightKg : weightKg * (1 + Double(reps) / 30)
     }
 
-    /// Total weight moved in the workout's completed, non-warm-up sets. One dumbbell
-    /// per side counts twice; assisted sets count nothing.
-    public static func volumeKg(of workout: Workout, exercises: [UUID: Exercise]) -> Double {
-        workout.exercises.reduce(0) { total, item in
-            let factor: Double = switch exercises[item.exerciseId]?.loadType {
-            case .perSide: 2
-            case .assisted: 0
-            default: 1
-            }
-            return total + item.sets
-                .filter { $0.isCompleted && $0.setType != .warmup }
-                .reduce(0) { $0 + ($1.weightKg ?? 0) * Double($1.reps ?? 0) * factor }
-        }
-    }
 
     public struct PersonalRecord: Hashable, Sendable {
         public enum Kind: Hashable, Sendable {

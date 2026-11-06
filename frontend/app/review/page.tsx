@@ -12,16 +12,14 @@ import {
   liftingSets,
   rangeStart,
   toUnit,
-  volumeKg,
   WEEKLY_AFTER_DAYS,
-  weeklyVolume,
   weekStreak,
   workoutsThisWeek,
   type Range,
 } from "../lib/training";
-import { BarChart, LineChart } from "./charts";
+import { LineChart } from "./charts";
 import { useReview } from "./data";
-import { axisDate, fullDay, percent, shortDay, weekRange, wholeNumber } from "./format";
+import { axisDate, fullDay, percent, shortDay, wholeNumber } from "./format";
 
 const RANGES: Range[] = ["week", "month", "year", "all"];
 
@@ -53,22 +51,6 @@ export default function OverviewPage() {
             <Stat label={t.weeksInARow} value={wholeNumber(weekStreak(sessions, now, weekStartsOn), locale)} />
           </dl>
 
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold">{t.weeklyVolume}</h2>
-            <p className="mt-1 max-w-2xl text-sm text-steel">{t.weeklyVolumeNote(training.unit)}</p>
-            <div className="mt-5 rounded-sm bg-card p-4 sm:p-5">
-              <BarChart
-                title={t.weeklyVolume}
-                labelHeading={t.week}
-                formatValue={(value) => wholeNumber(value, locale)}
-                bars={weeklyVolume(finished, training.loadTypes, 12, now, weekStartsOn).map((week) => ({
-                  axisLabel: shortDay(week.start, locale),
-                  label: weekRange(week.start, locale),
-                  value: toUnit(week.kilograms, training.unit),
-                }))}
-              />
-            </div>
-          </section>
         </>
       )}
 
@@ -235,8 +217,7 @@ function RecentWorkouts() {
             <li key={workout.id} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3">
               <span className="font-medium">{workout.title}</span>
               <span className="text-sm text-steel tabular-nums">
-                {fullDay(new Date(workout.started_at), locale)} · {t.sets(sets)} ·{" "}
-                {formatWeight(volumeKg(workout, training.loadTypes), training.unit, locale)} {training.unit}
+                {fullDay(new Date(workout.started_at), locale)} · {t.sets(sets)}
               </span>
             </li>
           );

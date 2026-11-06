@@ -2,7 +2,7 @@ import IronSageCore
 import IronSageStore
 import SwiftUI
 
-/// Shown when a workout is finished: how long, how much, and any new records.
+/// Shown when a workout is finished: how long, the sets, and any new records.
 struct WorkoutSummaryView: View {
     let finished: Workout
     @Environment(LocalStore.self) private var store
@@ -31,7 +31,6 @@ struct WorkoutSummaryView: View {
                         .flatMap(\.sets).compactMap(\.durationSeconds).reduce(0, +)
                     if !lifting.isEmpty {
                         LabeledContent("Sets", value: lifting.map(\.sets.count).reduce(0, +).formatted())
-                        LabeledContent("Volume", value: unit.formatTotal(kilograms: WorkoutLog.volumeKg(of: workout, exercises: store.exercises)))
                     }
                     if cardioSeconds > 0 {
                         LabeledContent("Cardio", value: CardioText.minutes(cardioSeconds))
@@ -39,8 +38,6 @@ struct WorkoutSummaryView: View {
                     if let average = workout.avgHeartRate, let maximum = workout.maxHeartRate {
                         LabeledContent("Heart rate", value: String(appLocalized: "\(average) avg, \(maximum) max"))
                     }
-                } footer: {
-                    Text("Volume is weight × reps of the working sets; one dumbbell per side counts twice.")
                 }
 
                 if !records.isEmpty {

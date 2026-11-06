@@ -119,7 +119,10 @@ struct WorkoutView: View {
             .sheet(isPresented: $isAddingCardio) {
                 CardioAddView(session: session)
             }
-            .confirmationDialog("Finish this workout?", isPresented: $isConfirmingFinish, titleVisibility: .visible) {
+            // Centered alerts, as in other workout loggers: on iOS 26 a confirmation dialog
+            // opens as a popover from the button at the top of the screen.
+            .alert("Finish this workout?", isPresented: $isConfirmingFinish) {
+                Button("Cancel", role: .cancel) {}
                 Button("Finish workout") {
                     session.finish()
                     finished = session.workout
@@ -131,12 +134,14 @@ struct WorkoutView: View {
                         await coach.refresh()
                     }
                 }
+                .keyboardShortcut(.defaultAction)
             } message: {
                 if session.hasUnfinishedSets {
                     Text("Sets you haven't checked off will be removed.")
                 }
             }
-            .confirmationDialog("Discard this workout?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {
+            .alert("Discard this workout?", isPresented: $isConfirmingDiscard) {
+                Button("Cancel", role: .cancel) {}
                 Button("Discard workout", role: .destructive) {
                     session.discard()
                     dismiss()
