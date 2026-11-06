@@ -1,6 +1,6 @@
 import Foundation
 
-/// Training across weeks: sets per muscle and volume.
+/// Training across weeks: sets per muscle, workouts and streaks.
 public enum TrainingProgress {
     /// A weekly set count where most people grow, used as a light reference on the chart.
     public static let setsReference: ClosedRange<Double> = 10...20
@@ -29,25 +29,6 @@ public enum TrainingProgress {
         return sets
             .map { (muscle: $0.key, sets: $0.value) }
             .sorted { $0.sets != $1.sets ? $0.sets > $1.sets : Muscle.allCases.firstIndex(of: $0.muscle)! < Muscle.allCases.firstIndex(of: $1.muscle)! }
-    }
-
-    /// Volume of each of the last `count` weeks, oldest first, including weeks without
-    /// training. The last one is the week containing `now`.
-    public static func weeklyVolume(
-        in workouts: [Workout],
-        exercises: [UUID: Exercise],
-        weeks count: Int,
-        now: Date = .now,
-        calendar: Calendar = .current
-    ) -> [(start: Date, kilograms: Double)] {
-        guard count > 0, let current = calendar.dateInterval(of: .weekOfYear, for: now)?.start else { return [] }
-        let starts = (0..<count).reversed().compactMap { calendar.date(byAdding: .weekOfYear, value: -$0, to: current) }
-        var volume: [Date: Double] = [:]
-        for workout in workouts where !workout.isInProgress {
-            guard let start = calendar.dateInterval(of: .weekOfYear, for: workout.startedAt)?.start else { continue }
-            volume[start, default: 0] += WorkoutLog.volumeKg(of: workout, exercises: exercises)
-        }
-        return starts.map { ($0, volume[$0] ?? 0) }
     }
 
     /// Finished workouts in the week containing `now`.

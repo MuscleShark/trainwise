@@ -20,6 +20,7 @@ struct IronSageApp: App {
             switch setup {
             case .success(let services):
                 RootView()
+                    .dismissesKeyboardOnTap()
                     .id(language)
                     .appLanguage(language)
                     .environment(Clerk.shared)
@@ -85,6 +86,8 @@ final class AppServices {
         #if DEBUG
         if isDemo {
             DemoData.fill(store, coach: coach)
+            // Each demo launch starts with the programs shown, like a new install.
+            UserDefaults.standard.removeObject(forKey: "IronSage.programs.folded")
         }
         #endif
         if !isDemo {

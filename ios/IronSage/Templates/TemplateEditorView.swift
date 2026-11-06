@@ -241,6 +241,7 @@ private struct TemplateCardioEditor: View {
         }
         .brandBackground()
         .navigationTitle(store.exerciseName(item.exerciseId))
+        .keyboardDoneButton()
         .navigationBarTitleDisplayMode(.inline)
     }
 

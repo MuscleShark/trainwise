@@ -105,6 +105,7 @@ struct ProfileSetupView: View {
             }
             .brandBackground()
             .navigationTitle("About you")
+            .keyboardDoneButton()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Continue") {
@@ -139,6 +140,7 @@ struct ProfileSettingsView: View {
         }
         .brandBackground()
         .navigationTitle("Profile")
+        .keyboardDoneButton()
         .onDisappear {
             Task { await sync.sync() }
         }

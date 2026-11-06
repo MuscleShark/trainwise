@@ -2,8 +2,9 @@ import IronSageCore
 import IronSageStore
 import SwiftUI
 
-/// Search by name, alias or pinyin, filter by equipment or muscle, or create an
-/// exercise with the typed name.
+/// Search by name, alias, pinyin, equipment or muscle ("哑铃胸"), filter with the
+/// equipment and muscle buttons under the search field, as in other workout loggers,
+/// or create an exercise with the typed name.
 struct ExercisePickerView: View {
     /// Only lifting or only cardio; nil lets the filter menu choose.
     var only: ExerciseKind?
@@ -22,6 +23,12 @@ struct ExercisePickerView: View {
     var body: some View {
         NavigationStack {
             List {
+                if !store.availableExercises.isEmpty {
+                    filters
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                        .listRowSeparator(.hidden)
+                }
                 if store.availableExercises.isEmpty {
                     ContentUnavailableView(
                         "No exercises yet",
@@ -57,7 +64,7 @@ struct ExercisePickerView: View {
                 }
             }
             .brandBackground()
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Name, alias or pinyin"))
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Name, equipment or muscle"))
             .searchFocused($isSearching)
             .onAppear { isSearching = true }
             .autocorrectionDisabled()
@@ -67,9 +74,6 @@ struct ExercisePickerView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .primaryAction) {
-                    filterMenu
                 }
             }
             .task(id: store.availableExercises) {
@@ -93,6 +97,14 @@ struct ExercisePickerView: View {
             (equipment == nil || result.exercise.equipment == equipment)
                 && (muscle == nil || result.exercise.primaryMuscles.contains(muscle!))
                 && (kind == nil || result.exercise.kind == kind)
+        }
+    }
+
+    private var kindTitle: LocalizedStringResource {
+        switch kind {
+        case .cardio: "Cardio"
+        case .strength: "Lifting"
+        case nil: "Type"
         }
     }
 
@@ -154,35 +166,59 @@ struct ExercisePickerView: View {
         .buttonStyle(.borderless)
     }
 
-    private var filterMenu: some View {
-        Menu {
-            if only == nil {
-                Picker("Type", selection: $kind) {
-                    Text("Lifting and cardio").tag(ExerciseKind?.none)
-                    Text("Lifting").tag(ExerciseKind?.some(.strength))
-                    Text("Cardio").tag(ExerciseKind?.some(.cardio))
+    /// Equipment and muscle (and lifting or cardio, when both can be added), each a
+    /// button that opens its list; a chosen one is filled and says what it is.
+    private var filters: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                // First, so it stays in view however many filters are on.
+                if equipment != nil || muscle != nil || kind != nil {
+                    Button {
+                        equipment = nil
+                        muscle = nil
+                        kind = nil
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(.secondarySystemGroupedBackground), in: .circle)
+                            .overlay { Circle().strokeBorder(Color.primary.opacity(0.12)) }
+                            .frame(width: 44, height: 44)
+                            .contentShape(.circle)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear filters")
                 }
-                .pickerStyle(.menu)
-            }
-            Picker("Equipment", selection: $equipment) {
-                Text("Any equipment").tag(Equipment?.none)
-                ForEach(Equipment.allCases, id: \.self) { item in
-                    Text(item.label).tag(Equipment?.some(item))
+                if only == nil {
+                    FilterChip(title: kindTitle, isOn: kind != nil, identifier: "filterType") {
+                        Picker("Type", selection: $kind) {
+                            Text("Lifting and cardio").tag(ExerciseKind?.none)
+                            Text("Lifting").tag(ExerciseKind?.some(.strength))
+                            Text("Cardio").tag(ExerciseKind?.some(.cardio))
+                        }
+                    }
+                }
+                FilterChip(title: equipment?.label ?? "Equipment", isOn: equipment != nil, identifier: "filterEquipment") {
+                    Picker("Equipment", selection: $equipment) {
+                        Text("Any equipment").tag(Equipment?.none)
+                        ForEach(Equipment.allCases, id: \.self) { item in
+                            Text(item.label).tag(Equipment?.some(item))
+                        }
+                    }
+                }
+                FilterChip(title: muscle?.label ?? "Muscle", isOn: muscle != nil, identifier: "filterMuscle") {
+                    Picker("Muscle", selection: $muscle) {
+                        Text("Any muscle").tag(Muscle?.none)
+                        ForEach(Muscle.allCases, id: \.self) { item in
+                            Text(item.label).tag(Muscle?.some(item))
+                        }
+                    }
                 }
             }
-            .pickerStyle(.menu)
-            Picker("Muscle", selection: $muscle) {
-                Text("Any muscle").tag(Muscle?.none)
-                ForEach(Muscle.allCases, id: \.self) { item in
-                    Text(item.label).tag(Muscle?.some(item))
-                }
-            }
-            .pickerStyle(.menu)
-        } label: {
-            Label("Filter", systemImage: equipment == nil && muscle == nil && kind == nil
-                ? "line.3.horizontal.decrease.circle"
-                : "line.3.horizontal.decrease.circle.fill")
+            .padding(.vertical, 4)
         }
+        .scrollIndicators(.hidden)
     }
 
     private func pick(_ exercise: Exercise) {
@@ -271,5 +307,39 @@ struct CreateExerciseView: View {
             isCustom: true
         ))
         dismiss()
+    }
+}
+
+/// A capsule button that opens a menu, filled when its filter is on.
+private struct FilterChip<Content: View>: View {
+    let title: LocalizedStringResource
+    let isOn: Bool
+    let identifier: String
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        Menu {
+            content()
+        } label: {
+            HStack(spacing: 4) {
+                Text(title)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.semibold))
+                    .accessibilityHidden(true)
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(isOn ? Color.brandOnAccent : Color.primary)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 36)
+            .background(isOn ? Color.accentColor : Color(.secondarySystemGroupedBackground), in: .capsule)
+            .overlay {
+                if !isOn {
+                    Capsule().strokeBorder(Color.primary.opacity(0.12))
+                }
+            }
+            .contentShape(.capsule)
+            .frame(minHeight: 44)
+        }
+        .accessibilityIdentifier(identifier)
     }
 }

@@ -52,16 +52,6 @@ struct TrainingProgressTests {
         #expect(sets.map(\.sets) == [3, 2, 1.5, 1.5, 1])
     }
 
-    @Test func weeklyVolumeIncludesEmptyWeeksOldestFirst() {
-        let volume = TrainingProgress.weeklyVolume(in: [
-            workout(1, [(bench, [set(100, 5)])]),
-            workout(-6, [(curl, [set(10, 10)])]),  // per side: 200
-            workout(-20, [(bench, [set(100, 1)])]),  // three weeks back: outside
-        ], exercises: exercises, weeks: 3, now: day(2), calendar: calendar)
-        #expect(volume.map(\.kilograms) == [0, 200, 500])
-        #expect(volume.last?.start == calendar.dateInterval(of: .weekOfYear, for: day(0))!.start)
-    }
-
     @Test func workoutsThisWeekCountsOnlyFinishedOnesInTheWeek() {
         let count = TrainingProgress.workoutsThisWeek(in: [
             workout(0, [(bench, [set(100, 5)])]),

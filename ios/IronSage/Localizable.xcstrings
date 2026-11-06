@@ -458,16 +458,6 @@
         }
       }
     },
-    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets, volume or records." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数、训练量和纪录。"
-          }
-        }
-      }
-    },
     "Open in Safari" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3022,16 +3012,6 @@
         }
       }
     },
-    "Next set: %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下一组：%@"
-          }
-        }
-      }
-    },
     "No exercises yet" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3812,26 +3792,6 @@
         }
       }
     },
-    "Volume" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "训练量"
-          }
-        }
-      }
-    },
-    "Volume is weight × reps of the working sets; one dumbbell per side counts twice." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "训练量是正式组的重量 × 次数；单侧重量（如单个哑铃）按两倍计算。"
-          }
-        }
-      }
-    },
     "W" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4468,56 +4428,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每个肌群的组数"
-          }
-        }
-      }
-    },
-    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。阴影区间（每周 10 到 20 组）是大多数人增长效果最好的范围。"
-          }
-        }
-      }
-    },
-    "Finish a workout to see your weekly volume." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成一次训练后，这里会显示每周训练量。"
-          }
-        }
-      }
-    },
-    "Volume per week, in %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周训练量，单位 %@"
-          }
-        }
-      }
-    },
-    "Weekly volume" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周训练量"
-          }
-        }
-      }
-    },
-    "Weight × reps of the working sets, per week." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周正式组的重量 × 次数。"
           }
         }
       }
@@ -5998,6 +5908,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "秒"
+          }
+        }
+      }
+    },
+    "Name, equipment or muscle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称、器械或肌群"
+          }
+        }
+      }
+    },
+    "Clear filters" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除筛选"
+          }
+        }
+      }
+    },
+    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets or records." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数和纪录。"
+          }
+        }
+      }
+    },
+    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
+          }
+        }
+      }
+    },
+    "%@ sets" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 组"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一项"
+          }
+        }
+      }
+    },
+    "Done with this exercise" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个动作做完了"
+          }
+        }
+      }
+    },
+    "Best %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最佳 %@"
+          }
+        }
+      }
+    },
+    "Show sets" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展开"
+          }
+        }
+      }
+    },
+    "Show IronSage programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 IronSage 训练计划"
+          }
+        }
+      }
+    },
+    "Hide IronSage programs" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起 IronSage 训练计划"
+          }
+        }
+      }
+    },
+    "Hidden on this iPhone. Tap Show to see them again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在这台 iPhone 上收起，轻点“显示”可以再看到。"
           }
         }
       }

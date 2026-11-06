@@ -63,8 +63,10 @@ test("the review shows what the app saved, read-only", async ({ page, request })
   await expect(page.getByText("1/3")).toBeVisible();
   await expect(page.getByText("80.5 kg")).toBeVisible();
   await expect(page.getByText("Push day")).toBeVisible();
-  // Two working sets of 60 × 8; the warm-up doesn't count.
-  await expect(page.getByText(/2 sets · 960 kg/)).toBeVisible();
+  // Two working sets; the warm-up doesn't count. No training volume is shown.
+  await expect(page.getByText(/· 2 sets$/)).toBeVisible();
+  await expect(page.getByText(/960/)).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Weekly volume" })).toHaveCount(0);
 
   await page.getByRole("link", { name: "History" }).click();
   await page.getByText("Push day").click();

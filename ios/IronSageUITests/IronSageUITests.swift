@@ -32,15 +32,19 @@ final class IronSageUITests: XCTestCase {
         markDone.tap()
         XCTAssertTrue(app.buttons["Mark not done"].firstMatch.waitForExistence(timeout: 5))
 
+        // A centered alert, with Cancel, rather than a popover from the button.
         app.buttons["Finish"].tap()
-        let confirm = app.buttons["Finish workout"]
-        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
-        confirm.tap()
+        let alert = app.alerts["Finish this workout?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Cancel"].exists)
+        alert.buttons["Finish workout"].tap()
 
-        // The summary opens; Done closes it and the workout, back on Today.
+        // The summary opens, with the sets and no volume; Done closes it and the
+        // workout, back on Today.
         let done = app.buttons["Done"]
         XCTAssertTrue(done.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts["Volume is weight × reps of the working sets; one dumbbell per side counts twice."].exists)
+        XCTAssertTrue(app.staticTexts["Sets"].exists)
+        XCTAssertFalse(app.staticTexts["Volume"].exists)
         done.tap()
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.navigationBars["Workout"].exists)
@@ -74,6 +78,91 @@ final class IronSageUITests: XCTestCase {
         bar.tap()
         XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Rest"].exists)
+    }
+
+    func testAnExerciseMarkedDoneFoldsAndOpensAgain() {
+        let start = app.buttons["startUpNext"]
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+        let markDone = app.buttons["Mark done"].firstMatch
+        XCTAssertTrue(markDone.waitForExistence(timeout: 10))
+        markDone.tap()
+        // Without the rest bar: it redraws every second, so the app never idles and
+        // each lookup while scrolling waits for it, which takes minutes on CI.
+        let skip = app.buttons["Skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 5))
+        skip.tap()
+
+        let done = app.buttons["exerciseDone"].firstMatch
+        scrollIntoClearView(done)
+        done.tap()
+        // Back squat folds to one row; its set fields go.
+        let folded = app.buttons["showSets"].firstMatch
+        XCTAssertTrue(folded.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH '1 of '")).firstMatch.exists)
+        XCTAssertFalse(app.buttons["Mark not done"].exists)
+
+        // Still folded after hiding the workout and opening it again.
+        app.buttons["Hide"].tap()
+        let bar = app.buttons.containing(NSPredicate(format: "label CONTAINS ' sets'")).firstMatch
+        XCTAssertTrue(bar.waitForExistence(timeout: 10))
+        bar.tap()
+        // The first exercise, so it opens near the top: no scrolling needed.
+        XCTAssertTrue(folded.waitForExistence(timeout: 10))
+        folded.tap()
+        XCTAssertTrue(app.buttons["Mark not done"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["showSets"].exists)
+    }
+
+    func testTheKeyboardGoesOnWithNextAndClosesOnATapOutside() {
+        let start = app.buttons["startUpNext"]
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+        let weight = app.textFields["Weight"].firstMatch
+        XCTAssertTrue(weight.waitForExistence(timeout: 10))
+        weight.tap()
+        XCTAssertTrue(hasFocus(weight))
+
+        // A number pad has no return key: Next goes to the reps.
+        app.buttons["Next"].tap()
+        XCTAssertTrue(hasFocus(app.textFields["Reps"].firstMatch))
+
+        // A tap outside the fields closes the keyboard.
+        app.navigationBars["Workout"].staticTexts["Workout"].tap()
+        XCTAssertTrue(waitForNoFocus())
+
+        // So does Done.
+        weight.tap()
+        XCTAssertTrue(hasFocus(weight))
+        app.buttons["Done"].tap()
+        XCTAssertTrue(waitForNoFocus())
+
+        // And with the rest timer running after a set: the next set's weight still has
+        // Next and Done above the keyboard.
+        app.buttons["Mark done"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Rest"].waitForExistence(timeout: 5))
+        let nextWeight = app.textFields.matching(identifier: "Weight").element(boundBy: 1)
+        nextWeight.tap()
+        XCTAssertTrue(hasFocus(nextWeight))
+        XCTAssertTrue(app.buttons["Next"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+        XCTAssertTrue(waitForNoFocus())
+    }
+
+    func testAWeightCanBeSavedWithoutClosingTheKeyboard() {
+        app.tabBars.buttons["Progress"].tap()
+        XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
+        let enter = app.buttons["Enter my weight"].firstMatch
+        scrollIntoClearView(enter)
+        enter.tap()
+        let field = app.textFields["Weight"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertTrue(hasFocus(field))
+        field.typeText("81.5")
+        let save = app.navigationBars["Enter my weight"].buttons["Save"]
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(app.navigationBars["Enter my weight"].waitForNonExistence(timeout: 5))
     }
 
     func testASetCanBeLoggedAtTheLargestTextSize() {
@@ -132,6 +221,30 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Workout"].exists)
     }
 
+    func testExercisesCanBeFoundByEquipmentAndMuscle() {
+        let empty = app.buttons["Empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        app.buttons["Add exercise"].firstMatch.tap()
+
+        // Typed: the equipment and a muscle group, no exercise name.
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.typeText("dumbbell shoulders")
+        XCTAssertTrue(app.buttons["How to do Dumbbell lateral raise"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["How to do Dumbbell curl"].exists)
+        XCTAssertFalse(app.buttons["How to do Overhead press"].exists)
+
+        // The buttons under the search field filter the same way.
+        search.buttons["Clear text"].tap()
+        app.buttons["filterMuscle"].tap()
+        app.buttons["Biceps"].tap()
+        XCTAssertTrue(app.buttons["How to do Dumbbell curl"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["How to do Barbell bench press"].exists)
+        app.buttons["Clear filters"].tap()
+        XCTAssertTrue(app.buttons["How to do Barbell bench press"].waitForExistence(timeout: 5))
+    }
+
     func testCardioCanBeAddedFromTheWatchOrLoggedByHand() {
         let empty = app.buttons["Empty workout"]
         XCTAssertTrue(empty.waitForExistence(timeout: 15))
@@ -163,15 +276,33 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Cardio"].waitForExistence(timeout: 10))
     }
 
-    func testTheProgressTabShowsBodyWeightAndVolume() {
+    func testTheProgressTabShowsBodyWeightAndSetsPerMuscle() {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
-        let volume = app.staticTexts["Weekly volume"]
-        for _ in 0..<4 where !volume.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(volume.waitForExistence(timeout: 5))
+        // Each muscle is one row, read as its name and its sets.
+        let glutes = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Glutes' AND value == '5 sets'")).firstMatch
+        scrollIntoClearView(glutes)
+        XCTAssertFalse(app.staticTexts["Weekly volume"].exists)
+    }
+
+    func testDiscardingAWorkoutAsksInACenteredAlert() {
+        let empty = app.buttons["Empty workout"]
+        XCTAssertTrue(empty.waitForExistence(timeout: 15))
+        empty.tap()
+        let discard = app.buttons["Discard workout"]
+        XCTAssertTrue(discard.waitForExistence(timeout: 10))
+        discard.tap()
+        let alert = app.alerts["Discard this workout?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        alert.buttons["Cancel"].tap()
+        XCTAssertTrue(alert.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Workout"].exists)
+
+        discard.tap()
+        app.alerts["Discard this workout?"].buttons["Discard workout"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
     func testAProgramCanBeHiddenAndShownAgain() {
@@ -187,6 +318,22 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Hidden programs"].waitForExistence(timeout: 5))
         app.buttons["Show"].tap()
         app.navigationBars.buttons.firstMatch.tap()
+        XCTAssertTrue(program.waitForExistence(timeout: 5))
+    }
+
+    func testTheProgramsCanBeHiddenAndShownAgain() {
+        app.tabBars.buttons["Templates"].tap()
+        let program = app.buttons.containing(NSPredicate(format: "label BEGINSWITH 'Upper / lower: strength and size'")).firstMatch
+        XCTAssertTrue(program.waitForExistence(timeout: 10))
+        let fold = app.buttons["foldPrograms"]
+        XCTAssertEqual(fold.label, "Hide IronSage programs")
+        fold.tap()
+        XCTAssertTrue(program.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(app.segmentedControls["programLevel"].exists)
+        XCTAssertTrue(app.staticTexts["Hidden on this iPhone. Tap Show to see them again."].exists)
+
+        XCTAssertEqual(fold.label, "Show IronSage programs")
+        fold.tap()
         XCTAssertTrue(program.waitForExistence(timeout: 5))
     }
 
@@ -379,6 +526,26 @@ final class IronSageUITests: XCTestCase {
 
         app.buttons["All body fat"].tap()
         XCTAssertTrue(app.staticTexts["About 25–30%"].waitForExistence(timeout: 5))
+    }
+
+    /// Whether `field` has the keyboard. Read from the field rather than the keyboard,
+    /// which a simulator with a hardware keyboard connected doesn't show.
+    private func hasFocus(_ field: XCUIElement) -> Bool {
+        for _ in 0..<10 {
+            if (field.value(forKey: "hasKeyboardFocus") as? Bool) == true { return true }
+            usleep(300_000)
+        }
+        return false
+    }
+
+    /// Whether, within a few seconds, no text field has the keyboard.
+    private func waitForNoFocus() -> Bool {
+        let focused = app.textFields.matching(NSPredicate(format: "hasKeyboardFocus == true"))
+        for _ in 0..<10 {
+            if focused.count == 0 { return true }
+            usleep(300_000)
+        }
+        return false
     }
 
     /// Scrolls until `element` sits between the navigation bar and the tab bar, then
