@@ -113,10 +113,7 @@ private struct EstimatedMaxChart: View {
                 // Room at both ends so the first and last points and dates aren't cut off.
                 .chartXScale(range: .plotDimension(padding: 16))
                 .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        AxisValueLabel(format: .dateTime.month(.abbreviated).day(), collisionResolution: .greedy(minimumSpacing: 8))
-                    }
+                    dateAxisMarks(from: points[0].date, to: latest.date)
                 }
                 .chartYAxis {
                     AxisMarks(position: .leading) { _ in

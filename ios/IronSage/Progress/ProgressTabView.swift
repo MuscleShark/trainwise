@@ -226,12 +226,11 @@ extension BodyTrend.Range {
         }
     }
 
-    var axisFormat: Date.FormatStyle {
+    /// "Oct 7 – Nov 6" above the chart, with the years once the period is longer.
+    var periodFormat: Date.IntervalFormatStyle {
         switch self {
-        case .week: .dateTime.weekday(.abbreviated)
-        case .month: .dateTime.month(.abbreviated).day()
-        case .year: .dateTime.month(.abbreviated)
-        case .all: .dateTime.month(.abbreviated).year(.twoDigits)
+        case .week, .month: .interval.month(.abbreviated).day()
+        case .year, .all: .interval.year().month(.abbreviated).day()
         }
     }
 }
@@ -254,40 +253,43 @@ private struct BodyChart: View {
                 .foregroundStyle(.secondary)
         } else {
             let name = String(appLocalized: title)
-            Chart(points, id: \.date) { point in
-                if let estimate = point.estimate {
-                    RuleMark(x: .value("Date", point.date), yStart: .value(name, estimate.lowerBound), yEnd: .value(name, estimate.upperBound))
-                        .lineStyle(StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .foregroundStyle(Color.chartMark.opacity(0.22))
+            VStack(alignment: .leading, spacing: 8) {
+                Text(domain.lowerBound..<domain.upperBound, format: range.periodFormat)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("bodyPeriod")
+                Chart(points, id: \.date) { point in
+                    if let estimate = point.estimate {
+                        RuleMark(x: .value("Date", point.date), yStart: .value(name, estimate.lowerBound), yEnd: .value(name, estimate.upperBound))
+                            .lineStyle(StrokeStyle(lineWidth: 8, lineCap: .round))
+                            .foregroundStyle(Color.chartMark.opacity(0.22))
+                    }
+                    LineMark(x: .value("Date", point.date), y: .value(name, point.value))
+                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                        .foregroundStyle(Color.chartMark)
+                    if marksEachPoint || point == points.last {
+                        PointMark(x: .value("Date", point.date), y: .value(name, point.value))
+                            .symbol {
+                                PointSymbol(isEstimate: point.estimate != nil)
+                            }
+                    }
                 }
-                LineMark(x: .value("Date", point.date), y: .value(name, point.value))
-                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                    .foregroundStyle(Color.chartMark)
-                if marksEachPoint || point == points.last {
-                    PointMark(x: .value("Date", point.date), y: .value(name, point.value))
-                        .symbol {
-                            PointSymbol(isEstimate: point.estimate != nil)
-                        }
+                .chartYScale(domain: .automatic(includesZero: false))
+                .chartXScale(domain: domain, range: .plotDimension(padding: 8))
+                .chartXAxis {
+                    dateAxisMarks(from: domain.lowerBound, to: domain.upperBound)
                 }
+                .chartYAxis {
+                    AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                        AxisValueLabel()
+                    }
+                }
+                .frame(height: chartHeight)
+                .chartTextSize()
+                .padding(.vertical, 4)
+                .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
             }
-            .chartYScale(domain: .automatic(includesZero: false))
-            .chartXScale(domain: domain, range: .plotDimension(padding: 8))
-            .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                    AxisValueLabel(format: range.axisFormat)
-                }
-            }
-            .chartYAxis {
-                AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                    AxisValueLabel()
-                }
-            }
-            .frame(height: chartHeight)
-            .chartTextSize()
-            .padding(.vertical, 4)
-            .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
             if marksEachPoint, points.contains(where: { $0.estimate != nil }) {
                 HStack(spacing: 18) {
                     HStack(spacing: 6) {

@@ -8,7 +8,10 @@ import UIKit
 /// - a number pad has no return key, so a screen with number fields puts Done above
 ///   it (`keyboardDoneButton()`; the workout screen has its own, with Next);
 /// - return closes a text field's keyboard;
-/// - scrolling a list closes it.
+/// - dragging a list down into the keyboard pushes it away, the keyboard following the
+///   finger as in Messages (`.scrollDismissesKeyboard(.interactively)`, once at the
+///   root). In a sheet whose list is at its top, the drag moves the sheet instead, as
+///   everywhere in iOS.
 enum Keyboard {
     /// Ends editing in whichever field has the keyboard, wherever it is.
     @MainActor static func dismiss() {
