@@ -61,7 +61,7 @@ Status (2026-10-25): the code for M1 and M2 is merged. TestFlight and testing on
    - Completing a set **starts the rest timer**, which notifies even when the phone is locked.
    - The workout can be hidden to use the other tabs. From iOS 26.1 a bar above the tabs (`tabViewBottomAccessory`) shows it with the rest left and opens it again; `WorkoutPresenter` keeps the session, so the timer goes on. Before 26.1, Today lists it under "In progress".
    - Optional RIR; warm-up sets can be marked.
-   - Finishing shows a summary: total volume and new personal records. From M2 the workout is written to Apple Health.
+   - Finishing shows a summary: duration, sets and new personal records (no training volume). From M2 the workout is written to Apple Health.
 4. **History**: workouts by date; view, edit and delete.
 5. **Exercise detail** (M2): all past sets, estimated one-rep max chart, personal records.
 6. **Progress** (M2): body-weight trend from Apple Health, weekly sets per muscle group.

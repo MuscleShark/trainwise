@@ -9,14 +9,11 @@ import {
   exerciseSessions,
   formatWeight,
   liftingSets,
-  type LoadType,
   type Measurement,
   recentExercises,
   records,
   type TrainingSet,
   type TrainingWorkout,
-  volumeKg,
-  weeklyVolume,
   weekStreak,
   workoutsThisWeek,
 } from "./training.ts";
@@ -24,10 +21,6 @@ import {
 const MONDAY = 1;
 const BENCH = "bench";
 const CURL = "curl";
-const loadTypes = new Map<string, LoadType>([
-  [BENCH, "total"],
-  [CURL, "per_side"],
-]);
 
 /** Monday 2 November 2026 at noon local time, plus `days`. */
 function day(days: number): Date {
@@ -71,14 +64,6 @@ test("the one-rep max estimate covers 1 to 12 reps", () => {
   assert.equal(estimatedOneRepMax(0, 5), null);
 });
 
-test("volume counts completed working sets, one dumbbell per side twice", () => {
-  const session = workout(0, [
-    [BENCH, [set(100, 5), set(60, 10, { warmup: true }), set(100, 5, { done: false })]],
-    [CURL, [set(10, 10)]],
-  ]);
-  assert.equal(volumeKg(session, loadTypes), 700);
-});
-
 test("this week counts finished workouts in it", () => {
   const workouts = [
     workout(0, [[BENCH, [set(100, 5)]]]),
@@ -100,25 +85,6 @@ test("the streak counts weeks in a row and holds until this week ends", () => {
   assert.equal(weekStreak(workouts.slice(1), day(2), MONDAY), 2);
   assert.equal(weekStreak(workouts.slice(1), day(9), MONDAY), 0);
   assert.equal(weekStreak([], day(2), MONDAY), 0);
-});
-
-test("weekly volume includes weeks without training, oldest first", () => {
-  const volume = weeklyVolume(
-    [
-      workout(1, [[BENCH, [set(100, 5)]]]),
-      workout(-6, [[CURL, [set(10, 10)]]]),
-      workout(-20, [[BENCH, [set(100, 1)]]]),
-    ],
-    loadTypes,
-    3,
-    day(2),
-    MONDAY,
-  );
-  assert.deepEqual(
-    volume.map((week) => week.kilograms),
-    [0, 200, 500],
-  );
-  assert.equal(volume[2].start.getTime(), new Date(2026, 10, 2).getTime());
 });
 
 function fat(days: number, value: number): Measurement {

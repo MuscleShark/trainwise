@@ -3,8 +3,8 @@ import IronSageCore
 import IronSageStore
 import SwiftUI
 
-/// The Progress tab: body weight and body fat, weekly sets per muscle, weekly volume,
-/// weekly cardio, and a way into each exercise's progress.
+/// The Progress tab: body weight and body fat, weekly sets per muscle, weekly cardio,
+/// and a way into each exercise's progress.
 struct ProgressTabView: View {
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
@@ -21,7 +21,6 @@ struct ProgressTabView: View {
                 BodyWeightSection(range: $range) { entering = Entering(kind: .weight) }
                 BodyFatSection(range: range) { entering = Entering(kind: .bodyFat) }
                 WeeklySetsSection()
-                WeeklyVolumeSection()
                 CardioProgressSection()
                 ExercisesSection()
             }
@@ -600,11 +599,13 @@ private struct MeasurementListView: View {
 
 // MARK: Weekly sets
 
+/// Sets per muscle as rows, as in Apple Fitness: the muscle, a bar on a track, and the
+/// number, each in its own column so they line up. The track runs to 20 sets, the top
+/// of the range most people grow in (or the most sets, when more).
 private struct WeeklySetsSection: View {
     @Environment(LocalStore.self) private var store
+    @Environment(\.dynamicTypeSize) private var size
     @State private var weeksBack = 0
-    /// Each muscle's row, growing with the text so the names don't overlap.
-    @ChartHeight(26, maximum: 42) private var rowHeight
 
     var body: some View {
         let calendar = Calendar.current
@@ -612,6 +613,7 @@ private struct WeeklySetsSection: View {
         let week = calendar.dateInterval(of: .weekOfYear, for: day)!
         let sets = TrainingProgress.weeklySets(in: store.finishedWorkouts, exercises: store.exercises, week: week)
         let reference = TrainingProgress.setsReference
+        let scale = max(reference.upperBound, sets.first?.sets ?? 0)
         Section {
             Picker("Week", selection: $weeksBack) {
                 Text("This week").tag(0)
@@ -623,102 +625,82 @@ private struct WeeklySetsSection: View {
             if sets.isEmpty {
                 Text("No sets this week yet.")
                     .foregroundStyle(.secondary)
-            } else {
-                Chart {
-                    ForEach(sets, id: \.muscle) { item in
-                        RectangleMark(
-                            xStart: .value("Reference low", reference.lowerBound),
-                            xEnd: .value("Reference high", reference.upperBound),
-                            y: .value("Muscle", String(appLocalized: item.muscle.label)),
-                            height: .fixed(rowHeight)
-                        )
-                        .foregroundStyle(Color.primary.opacity(0.06))
-                        BarMark(
-                            x: .value("Sets", item.sets),
-                            y: .value("Muscle", String(appLocalized: item.muscle.label)),
-                            height: .fixed(14)
-                        )
-                        .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 4, topTrailingRadius: 4))
-                        .foregroundStyle(Color.chartMark)
-                        .annotation(position: .trailing, spacing: 4) {
-                            Text(item.sets.formatted(.number.precision(.fractionLength(0...1))))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .monospacedDigit()
+            } else if size.isAccessibilitySize {
+                // The name gets its own line, so the bar keeps the whole width.
+                ForEach(sets, id: \.muscle) { item in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(String(appLocalized: item.muscle.label))
+                            Spacer()
+                            count(item.sets)
                         }
+                        SetsBar(sets: item.sets, scale: scale)
+                    }
+                    .modifier(MuscleRowAccessibility(muscle: item.muscle, sets: item.sets))
+                }
+            } else {
+                Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 14) {
+                    ForEach(sets, id: \.muscle) { item in
+                        GridRow {
+                            Text(String(appLocalized: item.muscle.label))
+                                .lineLimit(1)
+                            SetsBar(sets: item.sets, scale: scale)
+                            count(item.sets)
+                                .gridColumnAlignment(.trailing)
+                        }
+                        .modifier(MuscleRowAccessibility(muscle: item.muscle, sets: item.sets))
                     }
                 }
-                .chartXScale(domain: 0...max(reference.upperBound + 2, (sets.first?.sets ?? 0) + 3))
-                .chartXAxis {
-                    AxisMarks(values: [0, reference.lowerBound, reference.upperBound]) { _ in
-                        AxisValueLabel()
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(preset: .extended, position: .leading) { _ in
-                        AxisValueLabel()
-                    }
-                }
-                .frame(height: CGFloat(sets.count) * rowHeight + 24)
-                .chartTextSize()
-                .accessibilityLabel(Text("Sets per muscle"))
+                .font(.subheadline)
+                .padding(.vertical, 4)
             }
         } header: {
             Text("Sets per muscle")
         } footer: {
-            Text("A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow.")
+            Text("A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow.")
         }
+    }
+
+    private func count(_ sets: Double) -> some View {
+        Text(sets.formatted(.number.precision(.fractionLength(0...1))))
+            .font(.subheadline.weight(.semibold))
+            .monospacedDigit()
     }
 }
 
-// MARK: Weekly volume
-
-private struct WeeklyVolumeSection: View {
-    @Environment(LocalStore.self) private var store
-    @ChartHeight(160, maximum: 240) private var chartHeight
+/// One muscle's sets on a track from 0 to `scale`.
+private struct SetsBar: View {
+    let sets: Double
+    let scale: Double
 
     var body: some View {
-        let unit = store.weightUnit
-        let weeks = TrainingProgress.weeklyVolume(in: store.finishedWorkouts, exercises: store.exercises, weeks: 8)
-        Section {
-            if weeks.allSatisfy({ $0.kilograms == 0 }) {
-                Text("Finish a workout to see your weekly volume.")
-                    .foregroundStyle(.secondary)
-            } else {
-                Chart(weeks, id: \.start) { week in
-                    BarMark(
-                        x: .value("Week", week.start, unit: .weekOfYear),
-                        y: .value("Volume", unit.value(fromKilograms: week.kilograms)),
-                        width: .ratio(0.6)
-                    )
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
-                    .foregroundStyle(Color.chartMark)
-                }
-                .chartXAxis {
-                    AxisMarks(values: .stride(by: .weekOfYear, count: 2)) { _ in
-                        AxisValueLabel(format: .dateTime.month(.abbreviated).day(), centered: true)
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { value in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        AxisValueLabel {
-                            if let amount = value.as(Double.self) {
-                                Text(amount.formatted(.number.notation(.compactName)))
-                            }
-                        }
-                    }
-                }
-                .frame(height: chartHeight)
-                .chartTextSize()
-                .padding(.vertical, 4)
-                .accessibilityLabel(Text("Volume per week, in \(String(appLocalized: unit.symbol))"))
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let x = { (value: Double) in width * min(value, scale) / scale }
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.primary.opacity(0.08))
+                Capsule()
+                    .fill(Color.chartMark)
+                    .frame(width: max(x(sets), 8))
             }
-        } header: {
-            Text("Weekly volume")
-        } footer: {
-            Text("Weight × reps of the working sets, per week.")
+            .clipShape(Capsule())
         }
+        .frame(height: 10)
+        .frame(maxWidth: .infinity)
+        .accessibilityHidden(true)
+    }
+}
+
+/// "Glutes, 5 sets", read as one row.
+private struct MuscleRowAccessibility: ViewModifier {
+    let muscle: Muscle
+    let sets: Double
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(String(appLocalized: muscle.label)))
+            .accessibilityValue(Text("\(sets.formatted(.number.precision(.fractionLength(0...1)))) sets"))
     }
 }
 
@@ -798,7 +780,7 @@ private struct CardioProgressSection: View {
         } header: {
             Text("Cardio")
         } footer: {
-            Text("The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets, volume or records.")
+            Text("The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets or records.")
         }
     }
 }

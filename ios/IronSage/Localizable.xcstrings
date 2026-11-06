@@ -458,12 +458,12 @@
         }
       }
     },
-    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets, volume or records." : {
+    "The shaded band is the WHO guideline for adults: 150 to 300 minutes of moderate cardio a week, or half that if it's vigorous. Cardio isn't counted in sets or records." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数、训练量和纪录。"
+            "value" : "灰色带是世界卫生组织给成年人的建议：每周 150 到 300 分钟中等强度有氧，高强度的话减半。有氧不计入组数和纪录。"
           }
         }
       }
@@ -3022,16 +3022,6 @@
         }
       }
     },
-    "Next set: %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "下一组：%@"
-          }
-        }
-      }
-    },
     "No exercises yet" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3812,26 +3802,6 @@
         }
       }
     },
-    "Volume" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "训练量"
-          }
-        }
-      }
-    },
-    "Volume is weight × reps of the working sets; one dumbbell per side counts twice." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "训练量是正式组的重量 × 次数；单侧重量（如单个哑铃）按两倍计算。"
-          }
-        }
-      }
-    },
     "W" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4472,52 +4442,12 @@
         }
       }
     },
-    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. The shaded band, 10 to 20 sets a week, is where most people grow." : {
+    "A set counts 1 for the main muscles of the exercise and ½ for the ones that help. 10 to 20 sets a week is where most people grow." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。阴影区间（每周 10 到 20 组）是大多数人增长效果最好的范围。"
-          }
-        }
-      }
-    },
-    "Finish a workout to see your weekly volume." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成一次训练后，这里会显示每周训练量。"
-          }
-        }
-      }
-    },
-    "Volume per week, in %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周训练量，单位 %@"
-          }
-        }
-      }
-    },
-    "Weekly volume" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周训练量"
-          }
-        }
-      }
-    },
-    "Weight × reps of the working sets, per week." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每周正式组的重量 × 次数。"
+            "value" : "一组训练对动作的主要肌群计 1 组，对辅助肌群计 ½ 组。每周 10 到 20 组是大多数人增长效果最好的范围。"
           }
         }
       }
@@ -5908,6 +5838,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有。点右上角的 + 新建，复制一个计划，或在历史里把完成的训练存为模板。"
+          }
+        }
+      }
+    },
+    "Get ready for your next set." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备开始下一组训练。"
+          }
+        }
+      }
+    },
+    "%@ sets" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 组"
           }
         }
       }

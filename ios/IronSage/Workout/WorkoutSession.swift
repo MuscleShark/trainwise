@@ -256,7 +256,7 @@ enum RestNotifications {
             guard (try? await center.requestAuthorization(options: [.alert, .sound])) == true else { return }
             let content = UNMutableNotificationContent()
             content.title = String(appLocalized: "Rest is over")
-            content.body = String(appLocalized: "Next set: \(timer.exerciseName)")
+            content.body = String(appLocalized: "Get ready for your next set.")
             content.sound = .default
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
             try? await center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
