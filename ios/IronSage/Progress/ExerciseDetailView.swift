@@ -56,78 +56,111 @@ struct ExerciseDetailView: View {
     }
 }
 
-/// Estimated one-rep max by session, as a line with a point per session. Touching the
-/// chart shows that session's value.
+/// Estimated one-rep max by session, a point per session, over the chosen period (see
+/// ChartParts.swift for how the charts work). Touching the chart shows that session's
+/// value above it and its date over the line.
 private struct EstimatedMaxChart: View {
     let sessions: [ExerciseProgress.Session]
     let unit: WeightUnit
-    @State private var selected: Date?
+    @AppStorage("IronSage.oneRepMax.range") private var range = BodyTrend.Range.all
+    /// Where the finger is, before snapping to the nearest session.
+    @State private var finger: Date?
     @ChartHeight(200, maximum: 300) private var chartHeight
+
+    private static let ranges: [BodyTrend.Range] = [.month, .quarter, .year, .all]
 
     private struct Point: Identifiable {
         let id: UUID
         let date: Date
         let kilograms: Double
-        /// In the user's unit, for the chart's axis.
+        /// In the user's unit, for the chart.
         let value: Double
     }
 
     var body: some View {
-        let points = sessions.compactMap { session in
+        let all = sessions.compactMap { session in
             session.estimatedOneRepMax.map { Point(id: session.workoutID, date: session.date, kilograms: $0, value: unit.value(fromKilograms: $0)) }
         }
         .sorted { $0.date < $1.date }
-        let symbol = String(appLocalized: unit.symbol)
 
-        if points.count < 2 {
+        if all.count < 2 {
             Text("The chart appears after two sessions with sets of 1 to 12 reps.")
                 .foregroundStyle(.secondary)
         } else {
-            let shown = selected.flatMap { date in points.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) } }
-            let latest = points[points.count - 1]
-            VStack(alignment: .leading, spacing: 8) {
-                let headline = shown ?? latest
+            let start = range.start()
+            let points = all.filter { start == nil || $0.date >= start! }
+            let shown = finger.flatMap { date in points.nearest(to: date, by: \.date) }
+            let headline = shown ?? points.last ?? all[all.count - 1]
+            VStack(alignment: .leading, spacing: 4) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(unit.formatWithUnit(kilograms: headline.kilograms))
                         .font(.title2.weight(.bold))
                         .monospacedDigit()
+                        .contentTransition(.numericText())
+                    // Kept in place while hidden: the date is over the line then.
                     Text(headline.date.shortDay)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .opacity(shown == nil ? 1 : 0)
                 }
-                Chart(points) { point in
-                    LineMark(x: .value("Date", point.date), y: .value("Estimated 1RM", point.value))
-                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                        .foregroundStyle(Color.chartMark)
-                        .interpolationMethod(.monotone)
-                    PointMark(x: .value("Date", point.date), y: .value("Estimated 1RM", point.value))
-                        .symbolSize(point.id == shown?.id ? 120 : 64)
-                        .foregroundStyle(Color.chartMark)
-                    if point.id == shown?.id {
-                        RuleMark(x: .value("Date", point.date))
-                            .lineStyle(StrokeStyle(lineWidth: 1))
-                            .foregroundStyle(.secondary.opacity(0.5))
-                    }
+                if points.isEmpty {
+                    Text("Nothing in this period")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 8)
+                } else {
+                    chart(points, shown: shown)
                 }
-                .chartYScale(domain: .automatic(includesZero: false))
-                // Room at both ends so the first and last points and dates aren't cut off.
-                .chartXScale(range: .plotDimension(padding: 16))
-                .chartXAxis {
-                    dateAxisMarks(from: points[0].date, to: latest.date)
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading) { _ in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        AxisValueLabel()
-                    }
-                }
-                .chartXSelection(value: $selected)
-                .frame(height: chartHeight)
-                .chartTextSize()
-                .accessibilityLabel(Text("Estimated 1RM by session, in \(symbol)"))
+                ChartRangeButtons(range: $range, options: Self.ranges)
             }
             .padding(.vertical, 4)
+            .onChange(of: range) { finger = nil }
         }
+    }
+
+    private func chart(_ points: [Point], shown: Point?) -> some View {
+        let cut = shown.flatMap { point in points.firstIndex { $0.id == point.id } } ?? points.count - 1
+        return Chart {
+            ForEach(Array(points[...cut])) { point in
+                LineMark(x: .value("Date", point.date), y: .value("Estimated 1RM", point.value), series: .value("Part", "before"))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(Color.chartMark)
+                    .interpolationMethod(.monotone)
+            }
+            ForEach(Array(points[cut...])) { point in
+                LineMark(x: .value("Date", point.date), y: .value("Estimated 1RM", point.value), series: .value("Part", "after"))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(Color.chartMark.opacity(0.25))
+                    .interpolationMethod(.monotone)
+            }
+            ForEach(points) { point in
+                PointMark(x: .value("Date", point.date), y: .value("Estimated 1RM", point.value))
+                    .symbolSize(40)
+                    .foregroundStyle(Color.chartMark.opacity(point.date > points[cut].date ? 0.25 : 1))
+            }
+            if let shown {
+                RuleMark(x: .value("Date", shown.date))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(Color.secondary.opacity(0.6))
+                    .annotation(position: .top, spacing: 6, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        ChartDateLabel(date: shown.date)
+                    }
+                PointMark(x: .value("Date", shown.date), y: .value("Estimated 1RM", shown.value))
+                    .symbol { ChartTouchDot() }
+            }
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartYScale(domain: .automatic(includesZero: false))
+        // Room at both ends so the first and last points aren't cut off.
+        .chartXScale(range: .plotDimension(padding: 16))
+        .chartXSelection(value: $finger)
+        .sensoryFeedback(.selection, trigger: shown?.id)
+        .frame(height: chartHeight)
+        // Room over the line for the touched session's date.
+        .padding(.top, 24)
+        .accessibilityLabel(Text("Estimated 1RM by session over \(String(appLocalized: range.spoken)), in \(String(appLocalized: unit.symbol))"))
+        .accessibilityIdentifier("oneRepMaxChart")
     }
 }
 

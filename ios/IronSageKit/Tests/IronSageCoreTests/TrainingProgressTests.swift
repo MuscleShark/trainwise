@@ -122,6 +122,8 @@ struct TrainingProgressTests {
         #expect(week.map(\.value) == [18])
         let month = BodyTrend.points(measurements, kind: .bodyFat, range: .month, now: day(0), calendar: calendar)
         #expect(month.map(\.value) == [19, 18])
+        let quarter = BodyTrend.points(measurements, kind: .bodyFat, range: .quarter, now: day(0), calendar: calendar)
+        #expect(quarter.map(\.value) == [20, 19, 18])
         let all = BodyTrend.points(measurements, kind: .bodyFat, range: .all, now: day(0), calendar: calendar)
         #expect(all.map(\.value) == [20, 19, 18])
         #expect(BodyTrend.latest(measurements, kind: .bodyFat)?.value == 18)
