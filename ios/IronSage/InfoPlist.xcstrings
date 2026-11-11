@@ -3,7 +3,6 @@
   "strings" : {
     "CFBundleDisplayName" : {
       "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21,7 +20,6 @@
     },
     "CFBundleName" : {
       "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -39,7 +37,6 @@
     },
     "NSCameraUsageDescription" : {
       "comment" : "Why IronSage uses the camera.",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -57,7 +54,6 @@
     },
     "NSHealthShareUsageDescription" : {
       "comment" : "Why IronSage reads Apple Health data.",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -75,7 +71,6 @@
     },
     "NSHealthUpdateUsageDescription" : {
       "comment" : "Why IronSage writes to Apple Health.",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
