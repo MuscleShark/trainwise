@@ -280,9 +280,10 @@ final class IronSageUITests: XCTestCase {
         app.tabBars.buttons["Progress"].tap()
         XCTAssertTrue(app.navigationBars["Progress"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Body weight"].waitForExistence(timeout: 5))
-        // Each period names its dates above the chart.
-        app.segmentedControls["bodyRange"].buttons["Month"].tap()
-        XCTAssertTrue(app.staticTexts["bodyPeriod"].firstMatch.waitForExistence(timeout: 5))
+        // The chart has no axes; the period is picked under it.
+        XCTAssertTrue(app.descendants(matching: .any)["bodyChart"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["range.month"].firstMatch.isSelected)
+        XCTAssertTrue(app.buttons["range.quarter"].firstMatch.exists)
         // Each muscle is one row, read as its name and its sets.
         let glutes = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Glutes' AND value == '5 sets'")).firstMatch
         scrollIntoClearView(glutes)
@@ -411,7 +412,7 @@ final class IronSageUITests: XCTestCase {
 
     func testBodyWeightAndBodyFatFollowThePeriod() {
         app.tabBars.buttons["Progress"].tap()
-        let year = app.segmentedControls["bodyRange"].buttons["Year"]
+        let year = app.buttons["range.year"].firstMatch
         XCTAssertTrue(year.waitForExistence(timeout: 10))
         year.tap()
         XCTAssertTrue(year.isSelected)
@@ -430,7 +431,7 @@ final class IronSageUITests: XCTestCase {
         for _ in 0..<4 where !year.isHittable {
             app.swipeDown()
         }
-        app.segmentedControls["bodyRange"].buttons["Month"].tap()
+        app.buttons["range.month"].firstMatch.tap()
     }
 
     func testTurningTheCoachOffAsksFirst() {

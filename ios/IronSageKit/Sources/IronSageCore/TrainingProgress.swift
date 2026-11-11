@@ -104,13 +104,14 @@ public enum BodyWeight {
 /// Body measurements over a chosen period, for the body weight and body fat charts.
 public enum BodyTrend {
     public enum Range: String, CaseIterable, Hashable, Sendable {
-        case week, month, year, all
+        case week, month, quarter, year, all
 
         /// The first moment shown, or nil for everything.
         public func start(now: Date = .now, calendar: Calendar = .current) -> Date? {
             switch self {
             case .week: calendar.date(byAdding: .day, value: -7, to: now)
             case .month: calendar.date(byAdding: .month, value: -1, to: now)
+            case .quarter: calendar.date(byAdding: .month, value: -3, to: now)
             case .year: calendar.date(byAdding: .year, value: -1, to: now)
             case .all: nil
             }

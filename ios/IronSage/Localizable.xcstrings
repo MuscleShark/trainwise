@@ -4232,16 +4232,6 @@
         }
       }
     },
-    "Estimated 1RM by session, in %@" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每次训练的估算 1RM，单位 %@"
-          }
-        }
-      }
-    },
     "Records" : {
       "localizations" : {
         "zh-Hans" : {
@@ -6028,6 +6018,76 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已在这台 iPhone 上收起，轻点“显示”可以再看到。"
+          }
+        }
+      }
+    },
+    "1W" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1周"
+          }
+        }
+      }
+    },
+    "1M" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1月"
+          }
+        }
+      }
+    },
+    "3M" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3月"
+          }
+        }
+      }
+    },
+    "1Y" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1年"
+          }
+        }
+      }
+    },
+    "3 months" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3个月"
+          }
+        }
+      }
+    },
+    "the last 3 months" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近三个月"
+          }
+        }
+      }
+    },
+    "Estimated 1RM by session over %@, in %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@每次训练的估算 1RM，单位 %2$@"
           }
         }
       }

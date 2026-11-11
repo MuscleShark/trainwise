@@ -19,7 +19,7 @@ struct ProgressTabView: View {
             List {
                 WeeklySummaryCard()
                 BodyWeightSection(range: $range) { entering = Entering(kind: .weight) }
-                BodyFatSection(range: range) { entering = Entering(kind: .bodyFat) }
+                BodyFatSection(range: $range) { entering = Entering(kind: .bodyFat) }
                 WeeklySetsSection()
                 CardioProgressSection()
                 ExercisesSection()
@@ -68,15 +68,18 @@ private struct MeasurementListRoute: Hashable {
 
 // MARK: Body weight and body fat
 
-/// The latest weight. One from Apple Health is shown with its date and the question
-/// whether it is still current; if it isn't, or there is none, the user types it in.
-/// The period chosen here applies to the body fat chart too.
+/// The latest weight, over the chart: touching the chart shows that day's weight
+/// instead. One from Apple Health also asks whether it is still current; if it isn't,
+/// or there is none, the user types it in. The period chosen here applies to the body
+/// fat chart too.
 private struct BodyWeightSection: View {
     @Binding var range: BodyTrend.Range
     let enter: () -> Void
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
     @AppStorage("IronSage.weight.confirmed") private var confirmedIDs = ""
+    /// The date of the point being touched on the chart.
+    @State private var touched: Date?
 
     private var confirmed: Set<UUID> {
         Set(confirmedIDs.split(separator: ",").compactMap { UUID(uuidString: String($0)) })
@@ -88,6 +91,9 @@ private struct BodyWeightSection: View {
         Section {
             if let latest {
                 let asking = BodyWeight.needsConfirmation(latest, confirmed: confirmed)
+                let kilograms = BodyTrend.points(store.bodyMeasurements, kind: .weight, range: range)
+                let shown = touched.flatMap { date in kilograms.first { $0.date == date } }
+                LatestRow(value: unit.formatWithUnit(kilograms: shown?.value ?? latest.value), date: shown == nil ? latest.measuredAt : nil)
                 if asking {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Apple Health has \(unit.formatWithUnit(kilograms: latest.value)) from \(latest.measuredAt.shortDay). Is that still your weight?")
@@ -100,13 +106,14 @@ private struct BodyWeightSection: View {
                         .font(.subheadline.weight(.semibold))
                     }
                     .padding(.vertical, 4)
-                } else {
-                    LatestRow(value: unit.formatWithUnit(kilograms: latest.value), date: latest.measuredAt)
                 }
-                BodyRangePicker(range: $range)
-                let points = BodyTrend.points(store.bodyMeasurements, kind: .weight, range: range)
-                    .map { BodyTrend.Point(date: $0.date, value: unit.value(fromKilograms: $0.value)) }
-                BodyChart(points: points, range: range, title: "Body weight", unit: String(appLocalized: unit.symbol))
+                BodyChart(
+                    points: kilograms.map { BodyTrend.Point(date: $0.date, value: unit.value(fromKilograms: $0.value)) },
+                    range: $range,
+                    touched: $touched,
+                    title: "Body weight",
+                    unit: String(appLocalized: unit.symbol)
+                )
                 if !asking {
                     Button("Enter my weight", systemImage: "plus", action: enter)
                 }
@@ -130,24 +137,33 @@ private struct BodyWeightSection: View {
 
 /// The latest body fat, from Apple Health (smart scales save it there) or typed in.
 private struct BodyFatSection: View {
-    let range: BodyTrend.Range
+    @Binding var range: BodyTrend.Range
     let enter: () -> Void
     @Environment(LocalStore.self) private var store
     @Environment(HealthService.self) private var health
+    /// The date of the point being touched on the chart.
+    @State private var touched: Date?
 
     var body: some View {
         let latest = BodyTrend.latest(store.bodyMeasurements, kind: .bodyFat)
         Section {
             if let latest {
-                LatestRow(value: BodyFat.format(latest), date: latest.measuredAt, isEstimate: latest.estimate != nil)
+                let points = BodyTrend.points(store.bodyMeasurements, kind: .bodyFat, range: range)
+                let shown = touched.flatMap { date in points.first { $0.date == date } }
+                LatestRow(
+                    value: shown.map(BodyFat.format) ?? BodyFat.format(latest),
+                    date: shown == nil ? latest.measuredAt : nil,
+                    isEstimate: latest.estimate != nil
+                )
                 if let change = BodyFat.estimateChange(store.bodyMeasurements) {
                     Text(BodyFat.describe(change))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 BodyChart(
-                    points: BodyTrend.points(store.bodyMeasurements, kind: .bodyFat, range: range),
-                    range: range,
+                    points: points,
+                    range: $range,
+                    touched: $touched,
                     title: "Body fat",
                     unit: "%",
                     marksEachPoint: true
@@ -171,142 +187,139 @@ private struct BodyFatSection: View {
     }
 }
 
+/// The number over a body chart: the latest value with its date, or, while the chart
+/// is touched, the touched point's value (its date is over the line then).
 private struct LatestRow: View {
     let value: String
-    let date: Date
+    /// Nil while the chart is touched.
+    let date: Date?
     var isEstimate = false
 
     var body: some View {
         LabeledContent {
-            if isEstimate {
-                Text("\(date.shortDay), estimate")
-            } else {
-                Text(date.shortDay)
+            // Kept in place while hidden, so the row doesn't change height.
+            Group {
+                if isEstimate {
+                    Text("\((date ?? .now).shortDay), estimate")
+                } else {
+                    Text((date ?? .now).shortDay)
+                }
             }
+            .opacity(date == nil ? 0 : 1)
         } label: {
             Text(value)
                 .font(.title2.weight(.bold))
                 .monospacedDigit()
+                .contentTransition(.numericText())
         }
     }
 }
 
-/// Week, month, year or everything, for both body charts.
-private struct BodyRangePicker: View {
-    @Binding var range: BodyTrend.Range
-
-    var body: some View {
-        Picker("Period", selection: $range) {
-            ForEach(BodyTrend.Range.allCases, id: \.self) { range in
-                Text(range.label).tag(range)
-            }
-        }
-        .pickerStyle(.segmented)
-        .accessibilityIdentifier("bodyRange")
-    }
-}
-
-extension BodyTrend.Range {
-    var label: LocalizedStringResource {
-        switch self {
-        case .week: "Week"
-        case .month: "Month"
-        case .year: "Year"
-        case .all: "All"
-        }
-    }
-
-    /// "the last month", for VoiceOver.
-    var spoken: LocalizedStringResource {
-        switch self {
-        case .week: "the last 7 days"
-        case .month: "the last month"
-        case .year: "the last year"
-        case .all: "all time"
-        }
-    }
-
-    /// "Oct 7 – Nov 6" above the chart, with the years once the period is longer.
-    var periodFormat: Date.IntervalFormatStyle {
-        switch self {
-        case .week, .month: .interval.month(.abbreviated).day()
-        case .year, .all: .interval.year().month(.abbreviated).day()
-        }
-    }
-}
-
-/// A body measurement over the chosen period, already in the unit shown.
+/// A body measurement over the chosen period, already in the unit shown, with the
+/// period's buttons under it (see ChartParts.swift for how the charts work).
 private struct BodyChart: View {
     let points: [BodyTrend.Point]
-    let range: BodyTrend.Range
+    @Binding var range: BodyTrend.Range
+    /// The date of the touched point, for the number above the chart.
+    @Binding var touched: Date?
     let title: LocalizedStringResource
     let unit: String
     /// Body fat marks every entry: a dot when measured, a band when estimated. Body
     /// weight, often daily, marks only the latest.
     var marksEachPoint = false
+    /// Where the finger is, before snapping to the nearest point.
+    @State private var finger: Date?
     @ChartHeight(160, maximum: 240) private var chartHeight
 
     var body: some View {
-        if points.isEmpty {
-            Text("Nothing in this period")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        } else {
-            let name = String(appLocalized: title)
-            VStack(alignment: .leading, spacing: 8) {
-                Text(domain.lowerBound..<domain.upperBound, format: range.periodFormat)
-                    .font(.footnote)
+        VStack(alignment: .leading, spacing: 4) {
+            if points.isEmpty {
+                Text("Nothing in this period")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("bodyPeriod")
-                Chart(points, id: \.date) { point in
-                    if let estimate = point.estimate {
-                        RuleMark(x: .value("Date", point.date), yStart: .value(name, estimate.lowerBound), yEnd: .value(name, estimate.upperBound))
-                            .lineStyle(StrokeStyle(lineWidth: 8, lineCap: .round))
-                            .foregroundStyle(Color.chartMark.opacity(0.22))
-                    }
-                    LineMark(x: .value("Date", point.date), y: .value(name, point.value))
-                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                        .foregroundStyle(Color.chartMark)
-                    if marksEachPoint || point == points.last {
-                        PointMark(x: .value("Date", point.date), y: .value(name, point.value))
-                            .symbol {
-                                PointSymbol(isEstimate: point.estimate != nil)
-                            }
-                    }
-                }
-                .chartYScale(domain: .automatic(includesZero: false))
-                .chartXScale(domain: domain, range: .plotDimension(padding: 8))
-                .chartXAxis {
-                    dateAxisMarks(from: domain.lowerBound, to: domain.upperBound)
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
-                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        AxisValueLabel()
-                    }
-                }
-                .frame(height: chartHeight)
-                .chartTextSize()
-                .padding(.vertical, 4)
-                .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
+                    .padding(.vertical, 8)
+            } else {
+                chart
             }
-            if marksEachPoint, points.contains(where: { $0.estimate != nil }) {
-                HStack(spacing: 18) {
-                    HStack(spacing: 6) {
-                        PointSymbol(isEstimate: false)
-                        Text("Measured")
-                    }
-                    HStack(spacing: 6) {
-                        PointSymbol(isEstimate: true)
-                            .background { Capsule().fill(Color.chartMark.opacity(0.22)).frame(width: 8, height: 18) }
-                        Text("Estimate")
-                    }
+            ChartRangeButtons(range: $range)
+        }
+        .onChange(of: range) { touched = nil }
+        if marksEachPoint, points.contains(where: { $0.estimate != nil }) {
+            HStack(spacing: 18) {
+                HStack(spacing: 6) {
+                    PointSymbol(isEstimate: false)
+                    Text("Measured")
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
+                HStack(spacing: 6) {
+                    PointSymbol(isEstimate: true)
+                        .background { Capsule().fill(Color.chartMark.opacity(0.22)).frame(width: 8, height: 18) }
+                    Text("Estimate")
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private var chart: some View {
+        let name = String(appLocalized: title)
+        let touchedIndex = touched.flatMap { date in points.firstIndex { $0.date == date } }
+        let cut = touchedIndex ?? points.count - 1
+        return Chart {
+            ForEach(points, id: \.date) { point in
+                if let estimate = point.estimate {
+                    RuleMark(x: .value("Date", point.date), yStart: .value(name, estimate.lowerBound), yEnd: .value(name, estimate.upperBound))
+                        .lineStyle(StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .foregroundStyle(Color.chartMark.opacity(0.18))
+                }
+            }
+            ForEach(Array(points[...cut]), id: \.date) { point in
+                LineMark(x: .value("Date", point.date), y: .value(name, point.value), series: .value("Part", "before"))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(Color.chartMark)
+            }
+            ForEach(Array(points[cut...]), id: \.date) { point in
+                LineMark(x: .value("Date", point.date), y: .value(name, point.value), series: .value("Part", "after"))
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(Color.chartMark.opacity(0.25))
+            }
+            if marksEachPoint {
+                ForEach(points, id: \.date) { point in
+                    PointMark(x: .value("Date", point.date), y: .value(name, point.value))
+                        .symbol { PointSymbol(isEstimate: point.estimate != nil) }
+                }
+            }
+            if let touchedIndex {
+                let point = points[touchedIndex]
+                RuleMark(x: .value("Date", point.date))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .foregroundStyle(Color.secondary.opacity(0.6))
+                    .annotation(position: .top, spacing: 6, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        ChartDateLabel(date: point.date)
+                    }
+                PointMark(x: .value("Date", point.date), y: .value(name, point.value))
+                    .symbol { ChartTouchDot() }
+            } else if !marksEachPoint, let last = points.last {
+                PointMark(x: .value("Date", last.date), y: .value(name, last.value))
+                    .symbol { PointSymbol(isEstimate: false) }
             }
         }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartYScale(domain: .automatic(includesZero: false))
+        .chartXScale(domain: domain, range: .plotDimension(padding: 8))
+        .chartXSelection(value: $finger)
+        .onChange(of: finger) {
+            touched = finger.flatMap { date in points.nearest(to: date, by: \.date)?.date }
+        }
+        .sensoryFeedback(.selection, trigger: touched)
+        .frame(height: chartHeight)
+        // Room over the line for the touched point's date.
+        .padding(.top, 24)
+        .padding(.bottom, 4)
+        .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
+        .accessibilityIdentifier("bodyChart")
     }
 
     /// The whole period, so a few points don't stretch across the chart; all time spans
@@ -530,6 +543,13 @@ extension BodyFat {
     /// "18.5%", or an estimate: "About 15–20%", "Under 10%", "40% or more".
     static func format(_ measurement: BodyMeasurement) -> String {
         guard let estimate = measurement.estimate else { return format(measurement.value) }
+        if estimate == estimates.first || estimate == estimates.last { return label(estimate) }
+        return String(appLocalized: "About \(label(estimate))")
+    }
+
+    /// The same for a point on the chart.
+    static func format(_ point: BodyTrend.Point) -> String {
+        guard let estimate = point.estimate else { return format(point.value) }
         if estimate == estimates.first || estimate == estimates.last { return label(estimate) }
         return String(appLocalized: "About \(label(estimate))")
     }
