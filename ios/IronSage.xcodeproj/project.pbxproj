@@ -417,6 +417,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IronSage/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "IronSage uses the camera when you take a new profile photo.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, body weight, body fat and the cardio workouts your Apple Watch records to show your progress and suggest your next sessions.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "IronSage saves your strength workouts and the body weight and body fat you enter to Apple Health.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -558,6 +563,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IronSage/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IronSage;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "IronSage uses the camera when you take a new profile photo.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "IronSage reads your sleep, heart rate variability, resting heart rate, workout heart rate and active energy, body weight, body fat and the cardio workouts your Apple Watch records to show your progress and suggest your next sessions.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "IronSage saves your strength workouts and the body weight and body fat you enter to Apple Health.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
