@@ -103,6 +103,16 @@ struct ChartTouchDot: View {
     }
 }
 
+/// The dates a chart's line covers: from the first point to the last, so it runs the
+/// whole width whatever the period; a single point sits in the middle.
+func chartSpan(_ dates: [Date]) -> ClosedRange<Date> {
+    guard let first = dates.min(), let last = dates.max(), first < last else {
+        let day = dates.first ?? .now
+        return day.addingTimeInterval(-43_200)...day.addingTimeInterval(43_200)
+    }
+    return first...last
+}
+
 extension Array {
     /// The element whose date is nearest to `date`.
     func nearest(to date: Date, by key: (Element) -> Date) -> Element? {

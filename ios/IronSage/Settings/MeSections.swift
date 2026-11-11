@@ -201,6 +201,7 @@ private struct Sparkline: View {
                 .foregroundStyle(Color.chartMark)
         }
         .chartYScale(domain: .automatic(includesZero: false))
+        .chartXScale(domain: chartSpan(points.map(\.date)))
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .frame(width: 96, height: 36)

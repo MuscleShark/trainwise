@@ -153,7 +153,7 @@ private struct EstimatedMaxChart: View {
         .chartYAxis(.hidden)
         .chartYScale(domain: .automatic(includesZero: false))
         // Room at both ends so the first and last points aren't cut off.
-        .chartXScale(range: .plotDimension(padding: 16))
+        .chartXScale(domain: chartSpan(points.map(\.date)), range: .plotDimension(padding: 16))
         .chartXSelection(value: $finger)
         .sensoryFeedback(.selection, trigger: shown?.id)
         .frame(height: chartHeight)
