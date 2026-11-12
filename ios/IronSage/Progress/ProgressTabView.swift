@@ -308,7 +308,7 @@ private struct BodyChart: View {
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
         .chartYScale(domain: .automatic(includesZero: false))
-        .chartXScale(domain: domain, range: .plotDimension(padding: 8))
+        .chartXScale(domain: chartSpan(points.map(\.date)), range: .plotDimension(padding: 8))
         .chartXSelection(value: $finger)
         .onChange(of: finger) {
             touched = finger.flatMap { date in points.nearest(to: date, by: \.date)?.date }
@@ -320,15 +320,6 @@ private struct BodyChart: View {
         .padding(.bottom, 4)
         .accessibilityLabel(Text("\(name) over \(String(appLocalized: range.spoken)), in \(unit)"))
         .accessibilityIdentifier("bodyChart")
-    }
-
-    /// The whole period, so a few points don't stretch across the chart; all time spans
-    /// the points themselves.
-    private var domain: ClosedRange<Date> {
-        let first = points.first?.date ?? .now
-        let start = range.start().map { min($0, first) } ?? first
-        let end = max(points.last?.date ?? .now, range == .all ? first : .now)
-        return start...max(end, start.addingTimeInterval(86_400))
     }
 }
 
