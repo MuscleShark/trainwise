@@ -5,6 +5,7 @@
 
     },
     "“%@” will be removed from all your devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -1516,6 +1517,7 @@
       }
     },
     "Delete this workout?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -1526,6 +1528,7 @@
       }
     },
     "Delete workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {

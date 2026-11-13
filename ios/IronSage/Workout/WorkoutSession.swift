@@ -263,13 +263,16 @@ private enum DoneExercises {
     }
 }
 
-/// A notification when rest is over, so it reaches a locked phone.
+/// A notification when rest is over, so it reaches a locked phone. It is time
+/// sensitive, so a Focus such as Sleep lets it through (unless it's turned off in
+/// Settings › Notifications › IronSage). There is only ever one: a new rest, skipping
+/// it or coming back to the app removes the last.
 enum RestNotifications {
     private static let id = "rest-timer"
 
     static func schedule(for timer: RestTimer) {
+        cancel()
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: [id])
         let seconds = timer.remaining()
         guard seconds > 1 else { return }
         Task {
@@ -278,12 +281,22 @@ enum RestNotifications {
             content.title = String(appLocalized: "Rest is over")
             content.body = String(appLocalized: "Get ready for your next set.")
             content.sound = .default
+            content.interruptionLevel = .timeSensitive
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
             try? await center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
     }
 
+    /// Removes the coming notification and the one already on the lock screen.
     static func cancel() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id])
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [id])
+        removeDelivered()
+    }
+
+    /// Removes the notification already on the lock screen: back in the app, the rest
+    /// bar says rest is over.
+    static func removeDelivered() {
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id])
     }
 }

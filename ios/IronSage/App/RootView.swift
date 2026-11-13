@@ -47,6 +47,9 @@ struct RootView: View {
             if phase == .background {
                 updateWidgets()
             }
+            if phase == .active {
+                RestNotifications.removeDelivered()
+            }
             if phase == .active, clerk.user != nil, services?.isDemo != true {
                 Task {
                     await health.importRecent()
