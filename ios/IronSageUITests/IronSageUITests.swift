@@ -309,6 +309,22 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["Workout"].exists)
     }
 
+    func testAWorkoutIsDeletedWithASwipeAndNoQuestion() {
+        app.tabBars.buttons["History"].tap()
+        // The first week's header: "3 workouts".
+        let count = app.staticTexts.matching(NSPredicate(format: "label MATCHES '[0-9]+ workouts?'")).firstMatch
+        XCTAssertTrue(count.waitForExistence(timeout: 10))
+        let before = Int(count.label.split(separator: " ")[0])!
+        XCTAssertGreaterThan(before, 1, "The demo's first week needs more than one workout.")
+        let workout = app.collectionViews.firstMatch.buttons.firstMatch
+        workout.swipeLeft()
+        app.buttons["Delete"].tap()
+        let after = "\(before - 1) workout\(before - 1 == 1 ? "" : "s")"
+        XCTAssertTrue(app.staticTexts[after].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.sheets.firstMatch.exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists)
+    }
+
     func testAProgramCanBeHiddenAndShownAgain() {
         app.tabBars.buttons["Templates"].tap()
         // The demo profile is intermediate, so the list opens on that level.

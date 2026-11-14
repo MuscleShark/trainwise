@@ -5,7 +5,8 @@ import WidgetKit
 
 /// The rest countdown on the lock screen (and the Always-On display) and in the
 /// Dynamic Island. The system counts it down by itself; at zero (the activity's stale
-/// date) it says rest is over, until the app starts the next rest or ends it.
+/// date) it says rest is over and counts up how long it has run over, until the app
+/// starts the next rest or ends it.
 struct RestLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RestActivityAttributes.self) { context in
@@ -72,7 +73,8 @@ struct RestLiveActivity: Widget {
     }
 }
 
-/// The time left, counted down by the system; a check mark once rest is over.
+/// The time left, counted down by the system. Once rest is over, how long it has run
+/// over ("+0:45"), or a check mark where there is room for little.
 private struct RestCountdown: View {
     let state: RestActivityAttributes.ContentState
     let isOver: Bool
@@ -80,7 +82,13 @@ private struct RestCountdown: View {
 
     var body: some View {
         if isOver || state.endsAt <= .now {
-            Image(systemName: "checkmark")
+            if short {
+                Image(systemName: "checkmark")
+            } else {
+                RestOvertime(endsAt: state.endsAt)
+                    .multilineTextAlignment(.trailing)
+                    .minimumScaleFactor(0.8)
+            }
         } else {
             Text(timerInterval: state.startedAt...state.endsAt, countsDown: true, showsHours: false)
                 .monospacedDigit()
@@ -108,9 +116,15 @@ private struct RestLockScreenView: View {
                 }
             }
             if isOver {
-                Text(context.attributes.overTitle)
-                    .font(.title.weight(.semibold))
-                    .foregroundStyle(Brand.onDark)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(context.attributes.overTitle)
+                        .foregroundStyle(Brand.onDark)
+                    Spacer()
+                    RestOvertime(endsAt: context.state.endsAt)
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(Brand.accentOnDark)
+                }
+                .font(.title.weight(.semibold))
             } else {
                 Text(timerInterval: context.state.startedAt...context.state.endsAt, countsDown: true, showsHours: false)
                     .font(.system(size: 40, weight: .semibold))
@@ -129,5 +143,19 @@ private struct RestLockScreenView: View {
                 .lineLimit(2)
         }
         .padding(16)
+    }
+}
+
+/// How long rest has run over, counted up by the system from the end of the rest:
+/// "+0:45". It stops at an hour; by then the workout is long over.
+private struct RestOvertime: View {
+    let endsAt: Date
+
+    var body: some View {
+        // One text, so the sign stays next to the digits: a timer alone takes the width
+        // of its longest time.
+        let timer = Text(timerInterval: endsAt...endsAt.addingTimeInterval(3_600), countsDown: false, showsHours: false)
+        Text("+\(timer)")
+            .monospacedDigit()
     }
 }

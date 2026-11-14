@@ -7,7 +7,6 @@ struct HistoryView: View {
     @Environment(LocalStore.self) private var store
     @Environment(SyncEngine.self) private var sync
     @Environment(HealthService.self) private var health
-    @State private var pendingDelete: Workout?
 
     var body: some View {
         NavigationStack {
@@ -21,7 +20,7 @@ struct HistoryView: View {
                             }
                             .swipeActions {
                                 Button("Delete", systemImage: "trash", role: .destructive) {
-                                    pendingDelete = workout
+                                    store.delete(workout, health: health, sync: sync)
                                 }
                             }
                         }
@@ -48,22 +47,18 @@ struct HistoryView: View {
                 ExerciseDetailView(exerciseID: route.id)
             }
             .refreshable { await sync.sync() }
-            .confirmationDialog(
-                "Delete this workout?",
-                isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
-                titleVisibility: .visible,
-                presenting: pendingDelete
-            ) { workout in
-                Button("Delete workout", role: .destructive) {
-                    store.deleteWorkout(id: workout.id)
-                    Task {
-                        await health.removeFromHealth(workout)
-                        await sync.sync()
-                    }
-                }
-            } message: { workout in
-                Text("“\(workout.title)” will be removed from all your devices.")
-            }
+        }
+    }
+}
+
+extension LocalStore {
+    /// Deletes a finished workout here, in Apple Health and, with the next sync, on the
+    /// other devices. It asks nothing first: a swipe or a menu is already a choice.
+    func delete(_ workout: Workout, health: HealthService, sync: SyncEngine) {
+        deleteWorkout(id: workout.id)
+        Task {
+            await health.removeFromHealth(workout)
+            await sync.sync()
         }
     }
 }
@@ -102,7 +97,6 @@ struct WorkoutDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @ScaledMetric(relativeTo: .subheadline) private var badgeWidth: CGFloat = 28
     @State private var editing: WorkoutSession?
-    @State private var isConfirmingDelete = false
     @State private var isSavingTemplate = false
     @State private var templateName = ""
 
@@ -205,7 +199,8 @@ struct WorkoutDetailView: View {
                         isSavingTemplate = true
                     }
                     Button("Delete", systemImage: "trash", role: .destructive) {
-                        isConfirmingDelete = true
+                        store.delete(workout, health: health, sync: sync)
+                        dismiss()
                     }
                 }
             }
@@ -225,18 +220,6 @@ struct WorkoutDetailView: View {
             }
         } message: {
             Text("Starts with the same exercises and sets. It appears under My templates.")
-        }
-        .confirmationDialog("Delete this workout?", isPresented: $isConfirmingDelete, titleVisibility: .visible) {
-            Button("Delete workout", role: .destructive) {
-                store.deleteWorkout(id: workout.id)
-                Task {
-                    await health.removeFromHealth(workout)
-                    await sync.sync()
-                }
-                dismiss()
-            }
-        } message: {
-            Text("“\(workout.title)” will be removed from all your devices.")
         }
     }
 }
