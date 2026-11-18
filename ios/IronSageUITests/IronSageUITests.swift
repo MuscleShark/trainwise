@@ -27,6 +27,8 @@ final class IronSageUITests: XCTestCase {
         start.tap()
 
         XCTAssertTrue(app.navigationBars["Workout"].waitForExistence(timeout: 10))
+        // The time so far sits beside the title.
+        XCTAssertTrue(app.navigationBars["Workout"].staticTexts["Duration"].exists)
         let markDone = app.buttons["Mark done"].firstMatch
         XCTAssertTrue(markDone.waitForExistence(timeout: 5))
         markDone.tap()
@@ -128,7 +130,7 @@ final class IronSageUITests: XCTestCase {
         XCTAssertTrue(hasFocus(app.textFields["Reps"].firstMatch))
 
         // A tap outside the fields closes the keyboard.
-        app.navigationBars["Workout"].staticTexts["Workout"].tap()
+        app.navigationBars["Workout"].staticTexts["Workout"].firstMatch.tap()
         XCTAssertTrue(waitForNoFocus())
 
         // So does Done.

@@ -6,22 +6,22 @@ import Foundation
 // countdown on the lock screen and in the Dynamic Island, the app starts, updates and
 // ends it.
 
-/// The rest countdown after a set, shown while the app isn't on screen. The words come
-/// from the app already in its language (the in-app pick included), so the extension
-/// needs no strings of its own for it.
+/// The rest countdown after a set, shown while the app isn't on screen. Once rest is
+/// over it shows the time trained so far; the rest-over notification says rest is over,
+/// so the lock screen doesn't say it twice. The words come from the app already in its
+/// language (the in-app pick included), so the extension needs no strings of its own
+/// for it.
 nonisolated struct RestActivityAttributes: ActivityAttributes {
     nonisolated struct ContentState: Codable, Hashable, Sendable {
         var startedAt: Date
         var endsAt: Date
-        /// "Next: Back squat · set 3 · 100 kg × 6", or the exercise just done when the
-        /// workout has no set left.
-        var next: String
     }
 
-    /// "Rest", "Rest is over" and "Get ready for your next set." in the app's language.
+    /// When the workout started, for the time trained once rest is over.
+    var workoutStartedAt: Date
+    /// "Rest" and "Workout" in the app's language.
     var restTitle: String
-    var overTitle: String
-    var overDetail: String
+    var workoutTitle: String
     var lessLabel: String
     var moreLabel: String
     var skipLabel: String
