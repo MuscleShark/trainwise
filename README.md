@@ -23,6 +23,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 **Web**
 
 - Landing page, Clerk sign-in, and an account page (sign out, delete account)
+- Shared plans (`/p/<code>`, no sign-in): a template someone shared, in English or Chinese by the browser's language, with a button that opens it in the app (`ironsage://shared/<code>`); `/.well-known/apple-app-site-association` lets the same link open the app on an iPhone that has it
 - Privacy policy and support pages in English and Chinese (`frontend/app/components/legal-content.ts`); the app ships a copy of the same text (`npm run legal:export` writes `ios/IronSage/Settings/legal.json`, and a test fails until it is current)
 - Training review after sign-in (read-only; the iPhone app is where things change), in English or Chinese following the browser:
   - Overview (`/review`): workouts in all, this week against the planned days, weeks in a row, body weight and body fat over a week, month, year or all time, and recent workouts
