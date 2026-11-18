@@ -27,8 +27,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The PR after each TestFlight upload only bumps the build number (and the line in
+  # docs/deployment.md): it can't change what the tests check, so it skips the macOS
+  # runner, which takes half an hour and is often queued. Anything else runs it.
+  changes:
+    name: iOS changes
+    runs-on: ubuntu-latest
+    outputs:
+      test: ${{ steps.decide.outputs.test }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to test
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "$EVENT" in
+            pull_request) base=$PR_BASE ;;
+            push) base=$BEFORE ;;
+            *) base="" ;;
+          esac
+          # Run by hand, a new branch, or a base that isn't here: test.
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "test=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          only=$(.github/scripts/only-build-number.sh "$base" HEAD)
+          echo "Only the build number and docs changed: $only"
+          echo "test=$( [ "$only" = true ] && echo false || echo true )" >> "$GITHUB_OUTPUT"
+
   ios:
     name: iOS build and tests
+    needs: changes
+    if: needs.changes.outputs.test == 'true'
     runs-on: macos-26
     # macOS runners vary a lot: the build alone takes 10 to 14 minutes on a slow one,
     # and the UI tests about as long again.

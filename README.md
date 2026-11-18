@@ -267,7 +267,7 @@ Clerk dashboard settings: email address with **verification code**, Google and A
 
 ## Quality Checks
 
-GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed. The iOS job is its own workflow (`ios.yml`), so the backend deploy doesn't wait for the macOS runner; it runs on pull requests and pushes to `main` that change `ios/`, `api/openapi.json` or `.github/`, with a 45-minute limit (macOS runners vary a lot in speed).
+GitHub Actions runs the following checks on every push to `main`. On a pull request, a first job looks at the changed files and runs only the affected checks: `backend/` runs the backend, infrastructure and E2E checks, `frontend/` the frontend and E2E checks, `infra/` the infrastructure checks, and a change to `api/openapi.json` or `.github/` runs everything. A skipped check counts as passed. The iOS job is its own workflow (`ios.yml`), so the backend deploy doesn't wait for the macOS runner; it runs on pull requests and pushes to `main` that change `ios/`, `api/openapi.json` or `.github/`, with a 45-minute limit (macOS runners vary a lot in speed). A change that only bumps the build number (`CURRENT_PROJECT_VERSION`) and touches docs, as the PR after each TestFlight upload does, skips it: a first job on Linux decides with `.github/scripts/only-build-number.sh`.
 
 - Frontend ESLint
 - Frontend unit tests (`npm test`: Node's own test runner on `app/lib/*.test.ts`)
@@ -277,7 +277,7 @@ GitHub Actions runs the following checks on every push to `main`. On a pull requ
 - Backend API tests (pytest) with a coverage report in the job summary; CI fails below 90% coverage (`pytest --cov` locally); the same tests run again on PostgreSQL (`TEST_DATABASE_URL=postgresql+psycopg://… pytest` locally)
 - Infrastructure checks: CDK unit tests and `cdk synth`
 - iOS (macOS runner): `swift test` for IronSageKit, then UI tests on a simulator (`ios/IronSageUITests`) that click through the main flows in demo mode. The simulator boots while the app builds. The StoreKit tests (`ios/IronSageTests`) only run in Xcode: StoreKit's local test service returns no products on GitHub's runners
-- End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`)
+- End-to-end browser tests (Playwright) against a real FastAPI backend and PostgreSQL database, signing in through the Clerk development instance (repository variable `CLERK_PUBLISHABLE_KEY`, repository secret `CLERK_SECRET_KEY`; Dependabot's PRs read their own copy of the secret, under Settings › Secrets and variables › Dependabot)
 - CodeQL security analysis for Python and TypeScript (also runs weekly)
 
 Routine dependency version updates are not automated. Dependabot security alerts stay enabled in the repository settings. When a dependency has a known vulnerability, GitHub shows an alert and may open a security-fix pull request.
