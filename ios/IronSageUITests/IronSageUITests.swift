@@ -327,6 +327,24 @@ final class IronSageUITests: XCTestCase {
         XCTAssertFalse(app.alerts.firstMatch.exists)
     }
 
+    func testASharedPlanLinkCanBePastedInTemplates() {
+        app.tabBars.buttons["Templates"].tap()
+        app.buttons["Add a shared plan"].tap()
+        XCTAssertTrue(app.navigationBars["Add a shared plan"].waitForExistence(timeout: 5))
+        let open = app.navigationBars["Add a shared plan"].buttons["Open"]
+        XCTAssertFalse(open.isEnabled)
+
+        let field = app.textViews["sharedPlanLink"].exists ? app.textViews["sharedPlanLink"] : app.textFields["sharedPlanLink"]
+        field.tap()
+        field.typeText("hello")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH \"That isn't a link\"")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(open.isEnabled)
+
+        field.typeText(" https://ironsage.app/p/k3T9xQ2mLa")
+        XCTAssertTrue(open.isEnabled)
+        XCTAssertTrue(app.buttons["Paste"].exists)
+    }
+
     func testAProgramCanBeHiddenAndShownAgain() {
         app.tabBars.buttons["Templates"].tap()
         // The demo profile is intermediate, so the list opens on that level.

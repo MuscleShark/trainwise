@@ -68,6 +68,11 @@ struct RootView: View {
             }
         }
         .onOpenURL { url in
+            // A shared plan: its web link (Associated Domains) or the web page's button.
+            if let code = SharedPlanLink.code(of: url) {
+                SharedPlanOpener.shared.open(code: code)
+                return
+            }
             if url.scheme == WidgetLink.scheme {
                 openFromWidget(url)
                 return

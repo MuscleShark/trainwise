@@ -17,6 +17,7 @@ struct MainTabView: View {
     private static var lastTab = AppTab.today
     @Environment(WorkoutPresenter.self) private var workouts
     @Environment(LocalStore.self) private var store
+    private var opener = SharedPlanOpener.shared
 
     var body: some View {
         TabView(selection: $tab) {
@@ -37,6 +38,18 @@ struct MainTabView: View {
             }
         }
         .workoutPresentation(workouts, store: store)
+        // A shared plan's link (ironsage.app/p/<code>), over whichever tab is open.
+        .sheet(item: Binding(get: { opener.opened }, set: { opener.opened = $0 })) { opened in
+            NavigationStack {
+                SharedPlanView(code: opened.code)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { opener.opened = nil }
+                        }
+                    }
+            }
+            .environment(\.selectTab) { tab = $0 }
+        }
         .environment(\.selectTab) { tab = $0 }
         .onChange(of: tab) { Self.lastTab = tab }
     }
