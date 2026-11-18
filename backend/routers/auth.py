@@ -14,6 +14,7 @@ from models import (
     TemplateDay,
     TemplateExercise,
     TemplateSet,
+    TemplateShare,
     User,
     WeeklySummary,
     Workout,
@@ -62,6 +63,7 @@ def delete_me(
     db.execute(delete(WorkoutSet).where(WorkoutSet.workout_exercise_id.in_(workout_exercises)))
     db.execute(delete(WorkoutExercise).where(WorkoutExercise.workout_id.in_(workouts)))
     db.execute(delete(Workout).where(Workout.user_id == current_user.id))
+    db.execute(delete(TemplateShare).where(TemplateShare.owner_user_id == current_user.id))
     db.execute(delete(TemplateSet).where(TemplateSet.template_exercise_id.in_(template_exercises)))
     db.execute(delete(TemplateExercise).where(TemplateExercise.template_day_id.in_(days)))
     db.execute(delete(TemplateDay).where(TemplateDay.template_id.in_(templates)))

@@ -15,6 +15,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 - Cardio in the same workouts: an exercise of `kind` cardio lists what it logs besides time (`cardio_metrics`), and a session is one set with the time, distance, speed, incline, the machine's level, floors, average heart rate, active energy and, when an Apple Watch recorded it, that workout's id (migration 0011); the weekly summary counts it as minutes, not as workouts or sets
 - Built-in exercise catalog (160 exercises, 9 of them cardio, English and Chinese, with search aliases such as "RDL" and "卧推") plus users' own exercises, such as a specific machine
 - Training templates with rep ranges and target RIR, including four built-in programs (`backend/template_catalog.py`)
+- Sharing a template with a link (`ironsage.app/p/<code>`): a snapshot anyone can read without signing in, copied into the reader's own templates with any custom exercises it uses (`backend/routers/shares.py`)
 - Body measurements (weight, body fat, girths) and daily readiness (sleep, HRV, resting heart rate); body fat can be an estimated range (`value_low`/`value_high`, migration 0010) with its middle as the value
 - Sync: client-generated UUIDs, soft deletes and `GET /v1/sync?since=N` for "changes since"
 - Account deletion: removes all of the user's data and the Clerk user
@@ -76,7 +77,7 @@ The iPhone app covers milestones M1 (workout logging) and M2 (Apple Health and p
 trainwise/
 ├── backend/
 │   ├── routers/                  # /v1 endpoints (auth, profile, exercises, workouts,
-│   │                             #   templates, body, sync)
+│   │                             #   templates, sharing, body, sync)
 │   ├── migrations/               # Alembic database migrations
 │   ├── scripts/build_lambda.sh   # builds the Lambda package
 │   ├── tests/

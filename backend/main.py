@@ -15,6 +15,7 @@ from routers import (
     coach,
     exercises,
     profiles,
+    shares,
     subscription,
     sync,
     templates,
@@ -104,6 +105,7 @@ v1.include_router(profiles.router)
 v1.include_router(exercises.router)
 v1.include_router(workouts.router)
 v1.include_router(templates.router)
+v1.include_router(shares.router)
 v1.include_router(body.router)
 v1.include_router(coach.router)
 v1.include_router(subscription.router)
