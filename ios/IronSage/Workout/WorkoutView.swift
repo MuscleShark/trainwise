@@ -32,11 +32,6 @@ struct WorkoutView: View {
                         LabeledContent("Date") {
                             Text(session.workout.startedAt, format: .dateTime.weekday().month().day().hour().minute())
                         }
-                    } else {
-                        LabeledContent("Duration") {
-                            Text(session.workout.startedAt, style: .timer)
-                                .monospacedDigit()
-                        }
                     }
                 }
 
@@ -95,6 +90,18 @@ struct WorkoutView: View {
                 } else {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Hide", systemImage: "chevron.down") { dismiss() }
+                    }
+                    // The time so far beside the title, in sight wherever the list is.
+                    ToolbarItem(placement: .principal) {
+                        HStack(spacing: 6) {
+                            Text("Workout")
+                                .font(.headline)
+                            Text(session.workout.startedAt, style: .timer)
+                                .font(.headline.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                                .accessibilityLabel(Text("Duration"))
+                                .accessibilityValue(Text(session.workout.startedAt, style: .timer))
+                        }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Finish") {

@@ -17,13 +17,12 @@ enum RestActivityController {
 
     /// Starts or updates the countdown. Turned off in Settings › IronSage › Live
     /// Activities, it does nothing; the rest-over notification still comes.
-    static func show(_ timer: RestTimer, next: String) {
+    static func show(_ timer: RestTimer, workoutStartedAt: Date) {
         let state = RestActivityAttributes.ContentState(
             startedAt: timer.endsAt.addingTimeInterval(-TimeInterval(max(timer.totalSeconds, 1))),
-            endsAt: timer.endsAt,
-            next: next
+            endsAt: timer.endsAt
         )
-        // At the stale date the views say rest is over, with nothing to send.
+        // At the stale date the views switch to the time trained, with nothing to send.
         let content = ActivityContent(state: state, staleDate: timer.endsAt)
         if let id = current?.id {
             // Looked up inside the task: an activity can't be handed to one.
@@ -36,7 +35,7 @@ enum RestActivityController {
         }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         do {
-            _ = try Activity.request(attributes: attributes, content: content, pushType: nil)
+            _ = try Activity.request(attributes: attributes(workoutStartedAt: workoutStartedAt), content: content, pushType: nil)
         } catch {
             log.error("Starting the rest Live Activity failed: \(error, privacy: .public)")
         }
@@ -52,11 +51,11 @@ enum RestActivityController {
         }
     }
 
-    private static var attributes: RestActivityAttributes {
+    private static func attributes(workoutStartedAt: Date) -> RestActivityAttributes {
         RestActivityAttributes(
+            workoutStartedAt: workoutStartedAt,
             restTitle: String(appLocalized: "Rest"),
-            overTitle: String(appLocalized: "Rest is over"),
-            overDetail: String(appLocalized: "Get ready for your next set."),
+            workoutTitle: String(appLocalized: "Workout"),
             lessLabel: String(appLocalized: "−15 s"),
             moreLabel: String(appLocalized: "+15 s"),
             skipLabel: String(appLocalized: "Skip")
