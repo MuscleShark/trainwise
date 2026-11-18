@@ -18,6 +18,7 @@ struct TemplateList: View {
     @Environment(SyncEngine.self) private var sync
     @State private var pendingDelete: Template?
     @State private var creating: Template?
+    @State private var isAddingShared = false
     /// The level picked here; until then the profile's, or beginner.
     @State private var pickedLevel: Level?
     /// The IronSage programs folded away, for someone who follows their own templates.
@@ -50,7 +51,7 @@ struct TemplateList: View {
             } footer: {
                 // Under the header, not in a row: a row looks like something to tap.
                 if own.isEmpty {
-                    Text("None yet. Create one with +, copy a program, or save a finished workout as a template from History.")
+                    Text("None yet. Create one with +, copy a program, save a finished workout as a template from History, or add a plan someone shared with the link button.")
                 }
             }
 
@@ -114,10 +115,18 @@ struct TemplateList: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button("Add a shared plan", systemImage: "link.badge.plus") {
+                    isAddingShared = true
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Button("New template", systemImage: "plus") {
                     creating = .new(dayName: String(appLocalized: "Day \(1)"))
                 }
             }
+        }
+        .sheet(isPresented: $isAddingShared) {
+            AddSharedPlanView()
         }
         .navigationDestination(for: TemplateRoute.self) { route in
             TemplateDetailView(templateID: route.id)
@@ -302,6 +311,7 @@ struct TemplateDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(WorkoutPresenter.self) private var workouts
     @State private var editing: Template?
+    @State private var isSharing = false
     @State private var isBlockedByActiveWorkout = false
     @State private var dayIndex = 0
 
@@ -438,6 +448,16 @@ struct TemplateDetailView: View {
                     .accessibilityIdentifier("programMenu")
                 }
             }
+        }
+        .toolbar {
+            if template.isCustom {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Share", systemImage: "square.and.arrow.up") { isSharing = true }
+                }
+            }
+        }
+        .sheet(isPresented: $isSharing) {
+            ShareTemplateView(template: template)
         }
         .sheet(item: $editing) { draft in
             TemplateEditorView(template: draft, title: draft.id == template.id ? "Edit template" : "Copy and edit") { saved in
