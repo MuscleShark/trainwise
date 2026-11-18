@@ -1665,6 +1665,243 @@
         "title": "SetWrite",
         "type": "object"
       },
+      "SharedExercise": {
+        "description": "An exercise a shared template uses, so it can be shown and copied without access\nto the sharer's exercises. Built-in ones are found by id; custom ones are copied.",
+        "properties": {
+          "base_exercise_id": {
+            "format": "uuid",
+            "title": "Base Exercise Id",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cardio_metrics": {
+            "default": [],
+            "items": {
+              "enum": [
+                "incline",
+                "speed",
+                "distance",
+                "level",
+                "resistance",
+                "damper",
+                "floors"
+              ],
+              "type": "string"
+            },
+            "title": "Cardio Metrics",
+            "type": "array"
+          },
+          "equipment": {
+            "enum": [
+              "barbell",
+              "dumbbell",
+              "machine",
+              "cable",
+              "smith",
+              "bodyweight",
+              "kettlebell",
+              "band",
+              "other"
+            ],
+            "title": "Equipment",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_custom": {
+            "title": "Is Custom",
+            "type": "boolean"
+          },
+          "kind": {
+            "default": "strength",
+            "enum": [
+              "strength",
+              "cardio"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "load_type": {
+            "enum": [
+              "total",
+              "per_side",
+              "bodyweight_plus",
+              "assisted"
+            ],
+            "title": "Load Type",
+            "type": "string"
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "primary_muscles": {
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "title": "Primary Muscles",
+            "type": "array"
+          },
+          "secondary_muscles": {
+            "default": [],
+            "items": {
+              "enum": [
+                "chest",
+                "upper_back",
+                "lats",
+                "traps",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
+              ],
+              "type": "string"
+            },
+            "title": "Secondary Muscles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "is_custom",
+          "name_en",
+          "equipment",
+          "load_type",
+          "primary_muscles"
+        ],
+        "title": "SharedExercise",
+        "type": "object"
+      },
+      "SharedTemplate": {
+        "description": "A template as it was shared: no owner, no sync columns. Anyone with the code may\nread it.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/TemplateDayRead"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "days_per_week": {
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Days Per Week",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "exercises": {
+            "items": {
+              "$ref": "#/components/schemas/SharedExercise"
+            },
+            "title": "Exercises",
+            "type": "array"
+          },
+          "level": {
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              null
+            ],
+            "title": "Level",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name_en": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_zh": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name Zh",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shared_at": {
+            "format": "date-time",
+            "title": "Shared At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name_en",
+          "days",
+          "code",
+          "shared_at",
+          "exercises"
+        ],
+        "title": "SharedTemplate",
+        "type": "object"
+      },
       "SubscriptionRead": {
         "description": "The account's coach subscription and whether it may use the AI coach.",
         "properties": {
@@ -2259,6 +2496,37 @@
           "id"
         ],
         "title": "TemplateSetWrite",
+        "type": "object"
+      },
+      "TemplateShareRead": {
+        "description": "The owner's view of a template's share link.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "copy_count": {
+            "title": "Copy Count",
+            "type": "integer"
+          },
+          "shared_at": {
+            "format": "date-time",
+            "title": "Shared At",
+            "type": "string"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "template_id",
+          "shared_at",
+          "copy_count"
+        ],
+        "title": "TemplateShareRead",
         "type": "object"
       },
       "TemplateWrite": {
@@ -3552,6 +3820,97 @@
         ]
       }
     },
+    "/v1/shared-templates/{code}": {
+      "get": {
+        "description": "A shared template, for anyone with the link: no sign-in, nothing about who\nshared it.",
+        "operationId": "getSharedTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTemplate"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Shared Template",
+        "tags": [
+          "Sharing"
+        ]
+      }
+    },
+    "/v1/shared-templates/{code}/copy": {
+      "post": {
+        "description": "Copies a shared template into the user's own templates, with new ids. Built-in\nexercises are used as they are; each custom one becomes the user's own: theirs of\nthe same name when they have one, otherwise a new copy. The next sync brings both\nto the user's devices.",
+        "operationId": "copySharedTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Copy Shared Template",
+        "tags": [
+          "Sharing"
+        ]
+      }
+    },
     "/v1/subscription": {
       "get": {
         "operationId": "getSubscription",
@@ -3857,6 +4216,142 @@
         "summary": "Put Template",
         "tags": [
           "Templates"
+        ]
+      }
+    },
+    "/v1/templates/{template_id}/share": {
+      "delete": {
+        "description": "Stops sharing: the link no longer opens. Copies already made are kept.",
+        "operationId": "stopSharingTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Stop Sharing Template",
+        "tags": [
+          "Sharing"
+        ]
+      },
+      "get": {
+        "description": "The template's share link, while it is shared.",
+        "operationId": "getTemplateShare",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateShareRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Template Share",
+        "tags": [
+          "Sharing"
+        ]
+      },
+      "put": {
+        "description": "Shares one of the user's templates, or takes a new snapshot of it when it is\nshared already. The code stays the same, so links already sent keep working.",
+        "operationId": "shareTemplate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateShareRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Share Template",
+        "tags": [
+          "Sharing"
         ]
       }
     },

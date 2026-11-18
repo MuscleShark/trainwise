@@ -345,6 +345,45 @@ class TemplateRead(SyncedRead, TemplateWrite):
     is_custom: bool
 
 
+# Sharing a template: ironsage.app/p/<code>
+
+
+class TemplateShareRead(BaseModel):
+    """The owner's view of a template's share link."""
+
+    code: str
+    template_id: uuid.UUID
+    shared_at: AwareDatetime
+    copy_count: int
+
+
+class SharedExercise(BaseModel):
+    """An exercise a shared template uses, so it can be shown and copied without access
+    to the sharer's exercises. Built-in ones are found by id; custom ones are copied."""
+
+    id: uuid.UUID
+    is_custom: bool
+    name_en: Name
+    name_zh: Name | None = None
+    equipment: Equipment
+    load_type: LoadType
+    primary_muscles: list[Muscle]
+    secondary_muscles: list[Muscle] = []
+    base_exercise_id: uuid.UUID | None = None
+    kind: ExerciseKind = "strength"
+    cardio_metrics: list[CardioMetric] = []
+
+
+class SharedTemplate(TemplateWrite):
+    """A template as it was shared: no owner, no sync columns. Anyone with the code may
+    read it."""
+
+    code: str
+    shared_at: AwareDatetime
+    days: list[TemplateDayRead]
+    exercises: list[SharedExercise]
+
+
 # Body measurements and readiness
 
 

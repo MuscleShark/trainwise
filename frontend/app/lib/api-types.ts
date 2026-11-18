@@ -259,6 +259,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/shared-templates/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Shared Template
+         * @description A shared template, for anyone with the link: no sign-in, nothing about who
+         *     shared it.
+         */
+        get: operations["getSharedTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/shared-templates/{code}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy Shared Template
+         * @description Copies a shared template into the user's own templates, with new ids. Built-in
+         *     exercises are used as they are; each custom one becomes the user's own: theirs of
+         *     the same name when they have one, otherwise a new copy. The next sync brings both
+         *     to the user's devices.
+         */
+        post: operations["copySharedTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/subscription": {
         parameters: {
             query?: never;
@@ -350,6 +394,35 @@ export interface paths {
         post?: never;
         /** Delete Template */
         delete: operations["deleteTemplate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/templates/{template_id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Template Share
+         * @description The template's share link, while it is shared.
+         */
+        get: operations["getTemplateShare"];
+        /**
+         * Share Template
+         * @description Shares one of the user's templates, or takes a new snapshot of it when it is
+         *     shared already. The code stays the same, so links already sent keep working.
+         */
+        put: operations["shareTemplate"];
+        post?: never;
+        /**
+         * Stop Sharing Template
+         * @description Stops sharing: the link no longer opens. Copies already made are kept.
+         */
+        delete: operations["stopSharingTemplate"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1036,6 +1109,88 @@ export interface components {
             weight_kg?: number | null;
         };
         /**
+         * SharedExercise
+         * @description An exercise a shared template uses, so it can be shown and copied without access
+         *     to the sharer's exercises. Built-in ones are found by id; custom ones are copied.
+         */
+        SharedExercise: {
+            /**
+             * Base Exercise Id
+             * Format: uuid
+             */
+            base_exercise_id?: string | null;
+            /**
+             * Cardio Metrics
+             * @default []
+             */
+            cardio_metrics: ("incline" | "speed" | "distance" | "level" | "resistance" | "damper" | "floors")[];
+            /**
+             * Equipment
+             * @enum {string}
+             */
+            equipment: "barbell" | "dumbbell" | "machine" | "cable" | "smith" | "bodyweight" | "kettlebell" | "band" | "other";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Custom */
+            is_custom: boolean;
+            /**
+             * Kind
+             * @default strength
+             * @enum {string}
+             */
+            kind: "strength" | "cardio";
+            /**
+             * Load Type
+             * @enum {string}
+             */
+            load_type: "total" | "per_side" | "bodyweight_plus" | "assisted";
+            /** Name En */
+            name_en: string;
+            /** Name Zh */
+            name_zh?: string | null;
+            /** Primary Muscles */
+            primary_muscles: ("chest" | "upper_back" | "lats" | "traps" | "front_delts" | "side_delts" | "rear_delts" | "biceps" | "triceps" | "forearms" | "abs" | "obliques" | "lower_back" | "glutes" | "quads" | "hamstrings" | "adductors" | "abductors" | "calves")[];
+            /**
+             * Secondary Muscles
+             * @default []
+             */
+            secondary_muscles: ("chest" | "upper_back" | "lats" | "traps" | "front_delts" | "side_delts" | "rear_delts" | "biceps" | "triceps" | "forearms" | "abs" | "obliques" | "lower_back" | "glutes" | "quads" | "hamstrings" | "adductors" | "abductors" | "calves")[];
+        };
+        /**
+         * SharedTemplate
+         * @description A template as it was shared: no owner, no sync columns. Anyone with the code may
+         *     read it.
+         */
+        SharedTemplate: {
+            /** Code */
+            code: string;
+            /** Days */
+            days: components["schemas"]["TemplateDayRead"][];
+            /** Days Per Week */
+            days_per_week?: number | null;
+            /** Exercises */
+            exercises: components["schemas"]["SharedExercise"][];
+            /**
+             * Level
+             * @enum {string|null}
+             */
+            level?: "beginner" | "intermediate" | "advanced" | null;
+            /** Name En */
+            name_en: string;
+            /** Name Zh */
+            name_zh?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Shared At
+             * Format: date-time
+             */
+            shared_at: string;
+        };
+        /**
          * SubscriptionRead
          * @description The account's coach subscription and whether it may use the AI coach.
          */
@@ -1259,6 +1414,26 @@ export interface components {
             speed_kmh?: number | null;
             /** Target Rir */
             target_rir?: number | null;
+        };
+        /**
+         * TemplateShareRead
+         * @description The owner's view of a template's share link.
+         */
+        TemplateShareRead: {
+            /** Code */
+            code: string;
+            /** Copy Count */
+            copy_count: number;
+            /**
+             * Shared At
+             * Format: date-time
+             */
+            shared_at: string;
+            /**
+             * Template Id
+             * Format: uuid
+             */
+            template_id: string;
         };
         /** TemplateWrite */
         TemplateWrite: {
@@ -1967,6 +2142,68 @@ export interface operations {
             };
         };
     };
+    getSharedTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SharedTemplate"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    copySharedTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     getSubscription: {
         parameters: {
             query?: never;
@@ -2139,6 +2376,97 @@ export interface operations {
         };
     };
     deleteTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getTemplateShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateShareRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shareTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateShareRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stopSharingTemplate: {
         parameters: {
             query?: never;
             header?: never;

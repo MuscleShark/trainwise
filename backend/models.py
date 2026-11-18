@@ -451,3 +451,27 @@ class WeeklySummary(SyncedMixin, Base):
     input_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     error: Mapped[str | None] = mapped_column(Text)
+
+
+class TemplateShare(Base):
+    """A link that shares a copy of one of a user's templates: ironsage.app/p/<code>.
+
+    The snapshot is the template as it was when shared (schemas.SharedTemplate, with the
+    exercises it uses), so later edits stay private until the owner shares again. Anyone
+    with the code can read it; nothing in it says who shared it. Stopping the share
+    (revoked_at) ends the link; sharing again brings it back with a fresh snapshot.
+    """
+
+    __tablename__ = "template_shares"
+
+    code: Mapped[str] = mapped_column(String(16), primary_key=True)
+    template_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("templates.id", ondelete="CASCADE"), unique=True, nullable=False
+    )
+    owner_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    snapshot: Mapped[dict] = mapped_column(JSON, nullable=False)
+    copy_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
+    # When the snapshot was last taken.
+    shared_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utcnow, nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(UtcDateTime)

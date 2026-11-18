@@ -204,6 +204,9 @@ templates             name_en, name_zh, level, days_per_week, owner (null = buil
 template_days         template, position, name, name_zh (built-in days, migration 0005)
 template_exercises    day, exercise, position, rest seconds, superset group
 template_sets         position, type, rep_min, rep_max, target_rir
+template_shares       code (the link's 10 random letters and digits), template, owner, snapshot
+                      (the template and the exercises it uses, as shared), copy_count, shared_at,
+                      revoked_at (migration 0012)
 body_measurements     measured_at, kind (weight, body_fat, waist, ...), value, value_low and value_high
                       (a body fat estimate's range, value its middle, migration 0010), source,
                       healthkit_sample_id
@@ -222,6 +225,7 @@ Notes:
 - **History instead of snapshots**: weight, body fat and sleep live in dated tables, so trends can be charted.
 - **Derived values are not stored**: personal records, estimated one-rep max and weekly sets are computed from sets.
 - **Exercise catalog**: 160 exercises (9 of them cardio, with `kind` and `cardio_metrics`) written for IronSage in `backend/catalog.py` (wger's data is CC BY-SA, so it was not imported). Deploys sync it to the database; ids come from the slug, and removed entries are soft-deleted so old workouts keep them.
+- **Sharing a template**: the owner shares one of their own templates and gets a link, `ironsage.app/p/<code>` (`PUT /v1/templates/{id}/share`; `DELETE` stops it). The link shows a snapshot taken then, so later edits stay private until the owner shares again (same code). Anyone with the code reads it without signing in (`GET /v1/shared-templates/{code}`, the only public read in the API; nothing in it says who shared it, and the code can't be guessed). A signed-in user copies it (`POST /v1/shared-templates/{code}/copy`): new ids for everything, built-in exercises as they are, and each custom exercise as the copier's own (theirs of the same name when they have one, otherwise a new one). The copy is theirs to change and syncs like any template.
 - **Built-in templates**: fifteen programs, five per experience level (see [coaching.md](coaching.md)), in `backend/template_catalog.py`, synced the same way after the exercises. Who each suits and how to progress on it live in the app (`ProgramGuide.swift`), keyed by slug like the exercise figures.
 
 ## AI coach
